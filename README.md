@@ -80,6 +80,15 @@ About trending sounds and copyright: naming a song in a caption or a file's deta
 - **Students can pick up where they left off:** progress is saved on their device.
 - **Preview as a student** before sharing.
 
+### Branching stories (choose your own adventure)
+- **Several clips per lesson:** add as many video files as you like, name them, and reorder them.
+- **Choice that jumps:** at any moment, pause the video and offer options that each jump to a clip, carry on, or end the lesson. Tick “best choice” on any option to score the decision.
+- **What happens when a clip ends:** go to the next clip, end the lesson, or jump to any clip, which allows loops back and several endings. Choices appear again when a student returns to a scene.
+- **Story map:** shows every path and warns about clips that no path reaches.
+- **Leonardo.ai prompt helper:** describe the character, setting and visual style once, add what happens in each clip, and copy matching prompts for Leonardo’s video tool. Download the clips from Leonardo, then add them to the lesson. Check Leonardo’s terms for your plan before publishing clips.
+- **Results:** each student’s path and ending are recorded, with an “Endings reached” chart and the path in the CSV. Students’ first choice counts for scoring unless retries are allowed.
+- Branching works with video files in the student lesson, SCORM and SLS packages; YouTube lessons use a single video.
+
 ### Ways to share and collect answers
 - **Student lesson file:** one HTML file (YouTube) or a ZIP with `lesson.html` and the video. Students hand in an answers file, an answers code, an email to the teacher’s address (opens their email app with a summary and the code), or automatically to the teacher’s own Google Sheet through the provided Apps Script, which can also email each submission.
 - **SCORM 1.2 package:** for Moodle, Canvas, Blackboard, Brightspace and offline Moodle devices. Reports the student’s score, pass or fail against the pass mark, time spent and each answer as a SCORM interaction.

@@ -60,7 +60,7 @@
       <div class="vid" id="vid"></div>
       <div class="row"><button class="btn" id="playBtn">Play</button><span id="tNow" style="font-weight:700;font-variant-numeric:tabular-nums">0:00</span><span class="hint" style="margin:0">Pause where you want something to happen, then add it.</span></div>
       <div class="tl" id="tl" aria-label="Lesson timeline: click to jump"><i id="tlHead"></i></div>
-      <div class="row"><button class="btn primary" data-addq="mc">+ Multiple choice</button><button class="btn" data-addq="open">+ Open question</button><button class="btn" data-addq="poll">+ Poll</button><button class="btn" data-addq="note">+ Pop-up note</button></div>
+      <div class="row"><button class="btn primary" data-addq="mc">+ Multiple choice</button><button class="btn" data-addq="open">+ Open question</button><button class="btn" data-addq="poll">+ Poll</button><button class="btn" data-addq="note">+ Pop-up note</button><button class="btn" data-addq="branch">+ Choice that jumps</button></div>
       <div id="results" hidden></div>
       <div class="empty-wrap" id="empty"><div class="empty" style="max-width:640px">
         <h1>Turn any video into a lesson</h1>
@@ -73,7 +73,7 @@
     <aside class="side"><section class="pane" id="pane"></section></aside>
   </div>
 </div>
-<input type="file" id="vidIn" accept="video/*" hidden><input type="file" id="capIn" accept=".vtt,.srt,text/vtt" hidden><input type="file" id="projIn" accept=".json" hidden><input type="file" id="resIn" accept=".json,.txt" multiple hidden>
+<input type="file" id="vidIn" accept="video/*" multiple hidden><input type="file" id="capIn" accept=".vtt,.srt,text/vtt" hidden><input type="file" id="projIn" accept=".json" hidden><input type="file" id="resIn" accept=".json,.txt" multiple hidden>
 <dialog id="exportDlg"><div class="dlg" style="max-width:560px"><h2>Get the student lesson</h2>
   <div class="group"><button class="btn primary block" data-ex="student">Student lesson file: share it, email it or put it on a website</button><p class="note">Students hand in with a file, a code, email or your Google Sheet.</p></div>
   <div class="group"><button class="btn block" data-ex="scorm">SCORM package: for Moodle, Canvas, Blackboard and offline boxes</button><p class="note">Scores and answers go straight into the platform’s gradebook, including on offline Moodle devices such as Beekee.</p></div>
@@ -94,41 +94,51 @@ const count = k => { if (!COUNTER.on || !/^https?:$/.test(location.protocol) || 
 try { if (!sessionStorage.getItem("booth-lesson-visit")) { sessionStorage.setItem("booth-lesson-visit", "1"); count("lesson_visits"); } } catch {}
 
 /* ---------- Lesson model ---------- */
-let L = null, sel = null, videoFile = null, videoURL = null, P = null, tab = "lesson";
+let L = null, sel = null, P = null, tab = "lesson", cur = null;
+const CF = new Map(); // clip id -> { file, url, captions }
 const newLesson = () => ({ id: uid() + uid(), title: "Untitled lesson", intro: "", items: [], noSkip: true, retries: false, showAnswers: true, rewatch: true, askName: true, askClass: false, handIn: "Download your answers and hand them in, or copy the code and paste it where your teacher asked.", sheet: "", email: "", lang: "en", shuffle: false, pass: 60, yt: "", videoName: "" });
-let captions = null; // WebVTT text for video-file lessons
 const q = () => L?.items.find(x => x.id === sel) || null;
 const sorted = () => [...L.items].sort((a, b) => a.t - b.t);
+const clipOf = it => it.clip || L.clips?.[0]?.id;
+const inClip = () => sorted().filter(it => L.yt || clipOf(it) === cur);
+const clipName = id => L.clips?.find(c => c.id === id)?.name || "";
+const hasVideo = () => !!L && (!!L.yt || !!L.clips?.length);
 
 /* ---------- Video: a file or YouTube ---------- */
-function useFile(f) {
-  videoFile = f; if (videoURL) URL.revokeObjectURL(videoURL); videoURL = URL.createObjectURL(f);
-  if (!L) L = newLesson(); L.yt = ""; L.videoName = f.name; if (L.title === "Untitled lesson") L.title = f.name.replace(/\.[^.]+$/, "");
-  $("#vid").innerHTML = `<video id="v" src="${videoURL}" playsinline controls></video>`; const v = $("#v");
-  P = { time: () => v.currentTime, dur: () => v.duration || 0, seek: t => (v.currentTime = t), play: () => v.play(), pause: () => v.pause(), paused: () => v.paused };
-  v.addEventListener("loadedmetadata", renderAll); begin();
+function addClipFiles(files) {
+  if (!L) L = newLesson(); L.yt = ""; L.clips ||= []; let first = null;
+  for (const f of files) { if (!f.type.startsWith("video/")) continue; const id = uid(); CF.set(id, { file: f, url: URL.createObjectURL(f), captions: null }); L.clips.push({ id, name: f.name.replace(/\.[^.]+$/, "").slice(0, 60), end: "next", file: f.name }); first ||= id; if (L.title === "Untitled lesson") L.title = f.name.replace(/\.[^.]+$/, ""); }
+  if (first) { showClip(cur && files.length && L.clips.length > files.length ? cur : first); begin(); }
 }
+function showClip(id) {
+  const c = CF.get(id); if (!c) return; cur = id; P?.pause?.();
+  $("#vid").innerHTML = `<video id="v" src="${c.url}" playsinline controls></video>`; const v = $("#v");
+  P = { time: () => v.currentTime, dur: () => v.duration || 0, seek: t => (v.currentTime = t), play: () => v.play(), pause: () => v.pause(), paused: () => v.paused };
+  v.addEventListener("loadedmetadata", () => { const cl = L.clips.find(x => x.id === id); if (cl) cl.dur = v.duration; renderAll(); }); renderAll();
+}
+const useFile = f => addClipFiles([f]);
 function ytId(u) { const m = String(u).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/); return m ? m[1] : /^[\w-]{11}$/.test(u) ? u : null; }
 let ytReady = null;
 function useYT(id) {
-  if (!L) L = newLesson(); L.yt = id; videoFile = null; $("#vid").innerHTML = `<div id="yt"></div>`;
+  if (!L) L = newLesson(); L.yt = id; L.clips = []; cur = null; $("#vid").innerHTML = `<div id="yt"></div>`;
   ytReady ||= new Promise(r => { window.onYouTubeIframeAPIReady = r; const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s); });
   ytReady.then(() => { const p = new YT.Player("yt", { videoId: id, host: "https://www.youtube-nocookie.com", playerVars: { rel: 0, playsinline: 1 }, events: { onReady: () => { P = { time: () => p.getCurrentTime() || 0, dur: () => p.getDuration() || 0, seek: t => p.seekTo(t, true), play: () => p.playVideo(), pause: () => p.pauseVideo(), paused: () => p.getPlayerState() !== 1 }; renderAll(); } } }); });
   begin();
 }
 function begin() { $("#empty").hidden = true; tab = "lesson"; renderAll(); }
 $("#pickVideo").onclick = () => $("#vidIn").click();
-$("#vidIn").onchange = () => { const f = $("#vidIn").files[0]; $("#vidIn").value = ""; if (f) useFile(f); };
+$("#vidIn").onchange = () => { const fs = [...$("#vidIn").files]; $("#vidIn").value = ""; if (fs.length) addClipFiles(fs); };
 $("#useYT").onclick = () => { const u = prompt("Paste the YouTube link"); if (!u) return; const id = ytId(u.trim()); if (!id) return toast("That doesn’t look like a YouTube link."); useYT(id); };
 $("#playBtn").onclick = () => { if (!P) return; P.paused() ? P.play() : P.pause(); };
 setInterval(() => { if (!P) return; const t = P.time(), d = P.dur(); $("#tNow").textContent = `${fmt(t)}${d ? " / " + fmt(d) : ""}`; $("#tlHead").style.left = d ? `${t / d * 100}%` : "0"; $("#playBtn").textContent = P.paused() ? "Play" : "Pause"; }, 250);
 $("#tl").addEventListener("click", e => { if (!P) return; const b = e.target.closest("b"); if (b) { sel = b.dataset.q; const it = q(); P.seek(it.t); P.pause(); return renderAll(); } const r = $("#tl").getBoundingClientRect(); P.seek((e.clientX - r.left) / r.width * P.dur()); });
-function renderTimeline() { const d = P?.dur() || 0; $("#tl").querySelectorAll("b").forEach(b => b.remove()); if (!d) return; sorted().forEach((it, i) => { const b = document.createElement("b"); b.dataset.q = it.id; b.textContent = i + 1; b.style.left = `${it.t / d * 100}%`; b.title = `${fmt(it.t)} ${it.prompt || it.text || ""}`; b.setAttribute("aria-current", it.id === sel); $("#tl").appendChild(b); }); }
+function renderTimeline() { const d = P?.dur() || 0; $("#tl").querySelectorAll("b").forEach(b => b.remove()); if (!d) return; inClip().forEach((it, i) => { const b = document.createElement("b"); b.dataset.q = it.id; b.textContent = i + 1; b.style.left = `${it.t / d * 100}%`; b.title = `${fmt(it.t)} ${it.prompt || it.text || ""}`; b.setAttribute("aria-current", it.id === sel); $("#tl").appendChild(b); }); }
 
 /* ---------- Adding and editing questions ---------- */
 $$("[data-addq]").forEach(b => b.onclick = () => {
   if (!P) return toast("Add a video first."); P.pause(); const type = b.dataset.addq, t = Math.round(P.time() * 10) / 10;
-  const it = { id: uid(), type, t, prompt: "", required: true };
+  const it = { id: uid(), type, t, prompt: "", required: true }; if (!L.yt) it.clip = cur;
+  if (type === "branch") { if (L.yt) return toast("Choices that jump between clips need video files, not YouTube."); const others = L.clips.filter(c => c.id !== cur); Object.assign(it, { prompt: "What should happen next?", choices: [{ text: "", to: others[0]?.id || "", ok: false }, { text: "", to: others[1]?.id || others[0]?.id || "", ok: false }] }); }
   if (type === "mc") Object.assign(it, { prompt: "", choices: [{ text: "", ok: true }, { text: "", ok: false }, { text: "", ok: false }], fbOk: "", fbNo: "" });
   if (type === "poll") Object.assign(it, { choices: [{ text: "Yes" }, { text: "No" }, { text: "Not sure" }] });
   if (type === "note") Object.assign(it, { prompt: "", text: "", link: "" });
@@ -139,45 +149,89 @@ function renderPane() {
   const pane = $("#pane"); if (!L) { pane.innerHTML = `<h2>Lessons</h2><p class="hint">Choose a video to start, or open class results.</p>`; return; }
   const it = q(); let h = `<div class="tabs" role="tablist"><button role="tab" data-tab="lesson" aria-selected="${tab === "lesson"}">Lesson</button><button role="tab" data-tab="results" aria-selected="${tab === "results"}">Results</button></div>`;
   if (tab === "results") h += `<p class="hint">Add the answers files your students handed in, or paste their answer codes.</p><button class="btn primary" id="addRes">Add answers files</button><div class="field"><label for="codes">Or paste answer codes, one per line</label><textarea id="codes" rows="4" placeholder="BL1.…"></textarea></div><button class="btn" id="addCodes">Add codes</button>${R.length ? `<button class="btn" id="csv">Download results as a spreadsheet (CSV)</button><button class="btn danger" id="clearRes">Clear results</button>` : ""}<p class="note">Results stay in this browser tab and aren’t uploaded anywhere.</p>`;
-  else if (!it) h += `<h2>Lesson settings</h2>
+  else if (!it) h += clipsPane() + `<h2>Lesson settings</h2>
     <div class="field"><label for="lTitle">Title</label><input type="text" id="lTitle" value="${esc(L.title)}"></div>
     <div class="field"><label for="lIntro">Instructions for students (optional)</label><textarea id="lIntro" rows="2">${esc(L.intro)}</textarea></div>
     ${chk("lNoSkip", "Don’t let students skip ahead", L.noSkip)}${chk("lRewatch", "Offer “watch that part again”", L.rewatch)}${chk("lRetries", "Allow up to 3 tries on multiple choice", L.retries)}${chk("lShow", "Show the correct answer after each question", L.showAnswers)}${chk("lName", "Ask for the student’s name at the start", L.askName)}${chk("lClass", "Also ask for their class", L.askClass)}${chk("lShuffle", "Shuffle the answer order for each student", L.shuffle)}
     <div class="row2"><div class="field"><label for="lLang">Language for students</label><select id="lLang">${[["en", "English"], ["ms", "Bahasa Melayu"], ["zh", "中文"], ["ta", "தமிழ்"], ["id", "Bahasa Indonesia"], ["vi", "Tiếng Việt"]].map(([v, n]) => `<option value="${v}" ${L.lang === v ? "selected" : ""}>${n}</option>`).join("")}</select></div><div class="field"><label for="lPass">Pass mark for SCORM (%)</label><input type="number" id="lPass" min="0" max="100" value="${L.pass ?? 60}"></div></div>
-    ${!L.yt ? `<div class="field"><label>Captions (optional)</label><button class="btn" id="capBtn">${captions ? "Change captions file" : "Add captions (.vtt or .srt)"}</button>${captions ? `<p class="note">Captions added.</p>` : ""}</div>` : ""}
+    ${!L.yt && cur ? `<div class="field"><label>Captions for “${esc(clipName(cur))}” (optional)</label><button class="btn" id="capBtn">${CF.get(cur)?.captions ? "Change captions file" : "Add captions (.vtt or .srt)"}</button></div>` : ""}
     <div class="field"><label for="lEmail">Your email, for students to email their answers (optional)</label><input type="email" id="lEmail" placeholder="teacher@school.edu" value="${esc(L.email || "")}"></div>
     <div class="field"><label for="lHand">How students hand in (shown at the end)</label><textarea id="lHand" rows="2">${esc(L.handIn)}</textarea></div>
     <details class="sec"><summary>Collect answers automatically (optional)</summary><div class="group"><p class="note">Answers can arrive straight in your own Google Sheet. In a new sheet, open Extensions, then Apps Script, paste this code, choose Deploy, New deployment, Web app, with access for Anyone, and paste the web app address below.</p><textarea rows="6" readonly id="gsCode" style="font-family:ui-monospace,monospace;font-size:.75rem">${esc(GS)}</textarea><button class="btn" id="copyGs">Copy the code</button><div class="field"><label for="lSheet">Web app address</label><input type="url" id="lSheet" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(L.sheet)}"></div><p class="note">Tell students their name and answers go to your sheet. Students can still download their answers as a backup.</p></div></details>
-    ${L.items.length ? `<span class="lbl">In this lesson</span><div class="qlist">${sorted().map((x, i) => `<button class="qi" data-pick="${x.id}"><span class="tag">${i + 1}</span><span>${esc(x.prompt || x.text || "(no question yet)").slice(0, 60)}</span><small>${fmt(x.t)}</small></button>`).join("")}</div>` : `<p class="note">No questions yet. Play the video, pause, then use the buttons under the timeline.</p>`}`;
+    ${L.items.length ? `<span class="lbl">In this lesson</span><div class="qlist">${sorted().map((x, i) => `<button class="qi" data-pick="${x.id}"><span class="tag">${i + 1}</span><span>${esc(x.prompt || x.text || "(no question yet)").slice(0, 60)}</span><small>${!L.yt && L.clips.length > 1 ? esc(clipName(clipOf(x))).slice(0, 14) + " · " : ""}${fmt(x.t)}</small></button>`).join("")}</div>` : `<p class="note">No questions yet. Play the video, pause, then use the buttons under the timeline.</p>`}`;
   else {
-    const kind = { mc: "Multiple choice", open: "Open question", poll: "Poll", note: "Pop-up note" }[it.type];
+    const kind = { mc: "Multiple choice", open: "Open question", poll: "Poll", note: "Pop-up note", branch: "Choice that jumps" }[it.type];
     h += `<h2>${kind}</h2><div class="row2"><div class="field"><label for="qT">Appears at (seconds)</label><input type="number" id="qT" min="0" step="0.1" value="${it.t}"></div><div class="field"><label>&nbsp;</label><button class="btn" id="qNow">Use current time</button></div></div>
       <div class="field"><label for="qPrompt">${it.type === "note" ? "Heading" : "Question"}</label><textarea id="qPrompt" rows="2">${esc(it.prompt)}</textarea></div>`;
     if (it.type === "note") h += `<div class="field"><label for="qText">Text</label><textarea id="qText" rows="4">${esc(it.text)}</textarea></div><div class="field"><label for="qLink">Link (optional)</label><input type="url" id="qLink" value="${esc(it.link)}"></div>`;
+    if (it.type === "branch") h += `<span class="lbl">Options: each one jumps to a clip</span>${it.choices.map((c, i) => `<div class="field" style="border:1px solid var(--line);border-radius:10px;padding:.5rem"><div class="chrow" style="grid-template-columns:1fr auto"><input type="text" data-ch="${i}" value="${esc(c.text)}" placeholder="Option ${i + 1}, for example: Help the stranger"><button class="ibtn" data-delch="${i}" aria-label="Remove option ${i + 1}">✕</button></div><div class="row2"><select data-to="${i}" aria-label="Where option ${i + 1} goes"><option value="">Carry on in this clip</option>${L.clips.map(cl => `<option value="${cl.id}" ${c.to === cl.id ? "selected" : ""}>Go to: ${esc(cl.name)}</option>`).join("")}<option value="__end" ${c.to === "__end" ? "selected" : ""}>End the lesson</option></select><label class="check"><input type="checkbox" data-ok="${i}" ${c.ok ? "checked" : ""}> Best choice</label></div></div>`).join("")}${it.choices.length < 6 ? `<button class="btn" id="addCh">Add an option</button>` : ""}<p class="note">Tick “best choice” on any option to score this decision. Leave all unticked for a free choice.</p>`;
     if (it.type === "mc" || it.type === "poll") h += `<span class="lbl">${it.type === "mc" ? "Answers: tick every correct one" : "Options"}</span>${it.choices.map((c, i) => `<div class="chrow">${it.type === "mc" ? `<input type="checkbox" data-ok="${i}" ${c.ok ? "checked" : ""} aria-label="Answer ${i + 1} is correct">` : `<span class="tag">${i + 1}</span>`}<input type="text" data-ch="${i}" value="${esc(c.text)}" placeholder="Answer ${i + 1}"><button class="ibtn" data-delch="${i}" aria-label="Remove answer ${i + 1}">✕</button></div>`).join("")}${it.choices.length < 6 ? `<button class="btn" id="addCh">Add an answer</button>` : ""}`;
     if (it.type === "mc") h += `<div class="field"><label for="qOk">Feedback when right (optional)</label><input type="text" id="qOk" value="${esc(it.fbOk)}"></div><div class="field"><label for="qNo">Feedback when wrong (optional)</label><input type="text" id="qNo" value="${esc(it.fbNo)}" placeholder="For example: Watch the part about…"></div>`;
     if (it.type === "open") h += chk("qReq", "Students must write something", it.required !== false);
     h += `<div class="row3"><button class="btn" id="qDup">Duplicate</button><button class="btn danger" id="qDel">Delete</button><button class="btn primary" id="qDone">Done</button></div>`;
   }
-  pane.innerHTML = h; renderTimeline();
+  pane.innerHTML = h; renderTimeline(); renderStory(); renderLeo();
 }
 $("#pane").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return; const it = q();
   if (b.dataset.tab) { tab = b.dataset.tab; sel = null; return renderAll(); }
   if (b.dataset.pick) { sel = b.dataset.pick; P?.seek(q().t); P?.pause(); return renderAll(); }
+  if (b.dataset.clip) { sel = null; showClip(b.dataset.clip); return; }
+  if (b.dataset.delclip) { if (!confirm("Remove this clip and the questions in it?")) return; const id = b.dataset.delclip; L.items = L.items.filter(x => clipOf(x) !== id); L.clips = L.clips.filter(c => c.id !== id); L.clips.forEach(c => { if (c.end === id) c.end = "next"; }); L.items.forEach(x => x.choices?.forEach(c => { if (c.to === id) c.to = ""; })); CF.delete(id); if (cur === id) { if (L.clips[0]) showClip(L.clips[0].id); else { cur = null; P = null; $("#vid").innerHTML = ""; } } return renderAll(); }
+  if (b.dataset.cup) { const i = L.clips.findIndex(c => c.id === b.dataset.cup); if (i > 0) [L.clips[i - 1], L.clips[i]] = [L.clips[i], L.clips[i - 1]]; return renderAll(); }
   if (b.dataset.delch != null && it) { if (it.choices.length <= 2) return toast("Keep at least two answers."); it.choices.splice(+b.dataset.delch, 1); return renderPane(); }
-  const act = { addCh: () => { it.choices.push({ text: "", ok: false }); renderPane(); }, qNow: () => { it.t = Math.round(P.time() * 10) / 10; renderAll(); }, qDel: () => { L.items = L.items.filter(x => x !== it); sel = null; renderAll(); }, qDup: () => { const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.t += 2; L.items.push(c); sel = c.id; renderAll(); }, qDone: () => { sel = null; renderAll(); },
+  const act = { addCh: () => { it.choices.push({ text: "", ok: false, to: "" }); renderPane(); }, addClips: () => $("#vidIn").click(), copyPrompts: async () => { try { await navigator.clipboard.writeText([...document.querySelectorAll(".lprompt")].map(x => x.value).join("\n\n")); toast("Prompts copied"); } catch { toast("Couldn’t copy. Select the text instead."); } }, qNow: () => { it.t = Math.round(P.time() * 10) / 10; renderAll(); }, qDel: () => { L.items = L.items.filter(x => x !== it); sel = null; renderAll(); }, qDup: () => { const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.t += 2; L.items.push(c); sel = c.id; renderAll(); }, qDone: () => { sel = null; renderAll(); },
     capBtn: () => $("#capIn").click(),
     copyGs: async () => { try { await navigator.clipboard.writeText(GS); toast("Code copied"); } catch { $("#gsCode").select(); } }, addRes: () => $("#resIn").click(), addCodes: () => { addCodes($("#codes").value); }, csv: csvOut, clearRes: () => { R.length = 0; renderAll(); } };
   act[b.id]?.();
 });
 $("#pane").addEventListener("input", e => {
   const el = e.target, it = q(), v = el.value, on = el.checked;
-  if (el.dataset.ch != null) { it.choices[+el.dataset.ch].text = v; return; } if (el.dataset.ok != null) { it.choices[+el.dataset.ok].ok = on; return; }
+  if (el.dataset.ch != null) { it.choices[+el.dataset.ch].text = v; return; } if (el.dataset.ok != null) { it.choices[+el.dataset.ok].ok = on; return; } if (el.dataset.to != null) { it.choices[+el.dataset.to].to = v; return; }
+  if (el.dataset.clipname) { const c = L.clips.find(x => x.id === el.dataset.clipname); c.name = v; return; } if (el.dataset.clipend) { L.clips.find(x => x.id === el.dataset.clipend).end = v; renderStory(); return; }
+  if (el.dataset.story) { L.story ||= {}; L.story[el.dataset.story] = v; updateLeo(); return; } if (el.dataset.scene) { L.clips.find(x => x.id === el.dataset.scene).scene = v; updateLeo(); return; }
   ({ lTitle: () => L.title = v, lIntro: () => L.intro = v, lNoSkip: () => L.noSkip = on, lRewatch: () => L.rewatch = on, lRetries: () => L.retries = on, lShow: () => L.showAnswers = on, lName: () => L.askName = on, lClass: () => L.askClass = on, lHand: () => L.handIn = v, lSheet: () => L.sheet = v.trim(), lShuffle: () => L.shuffle = on, lLang: () => L.lang = v, lPass: () => L.pass = Math.max(0, Math.min(100, +v || 0)), lEmail: () => L.email = v.trim(),
     qT: () => { it.t = Math.max(0, +v || 0); renderTimeline(); }, qPrompt: () => { it.prompt = v; renderTimeline(); }, qText: () => it.text = v, qLink: () => it.link = v, qOk: () => it.fbOk = v, qNo: () => it.fbNo = v, qReq: () => it.required = on })[el.id]?.();
 });
 function renderAll() { renderPane(); renderResults(); }
+function clipsPane() {
+  if (L.yt || !L.clips?.length) return "";
+  const ends = c => `<select data-clipend="${c.id}" aria-label="When ${esc(c.name)} ends"><option value="next" ${c.end === "next" ? "selected" : ""}>Then: next clip</option><option value="end" ${c.end === "end" ? "selected" : ""}>Then: end the lesson</option>${L.clips.filter(x => x.id !== c.id).map(x => `<option value="${x.id}" ${c.end === x.id ? "selected" : ""}>Then: go to ${esc(x.name)}</option>`).join("")}</select>`;
+  return `<details class="sec" open data-sec="clips"><summary>Clips and story (${L.clips.length})</summary><div class="group">
+    <p class="note">Each clip is a scene. Add a “Choice that jumps” to let students decide where the story goes, and choose what happens when each clip ends.</p>
+    <div class="qlist">${L.clips.map((c, i) => `<div class="qi" style="grid-template-columns:auto 1fr auto" aria-current="${c.id === cur}"><button class="tag" data-clip="${c.id}" title="Edit this clip" style="border:0">${i + 1}</button><div style="display:grid;gap:.3rem"><input type="text" data-clipname="${c.id}" value="${esc(c.name)}" aria-label="Clip ${i + 1} name">${ends(c)}</div><div style="display:grid;gap:.2rem">${i ? `<button class="ibtn" data-cup="${c.id}" aria-label="Move up">↑</button>` : ""}<button class="ibtn" data-delclip="${c.id}" aria-label="Remove clip">✕</button></div></div>`).join("")}</div>
+    <button class="btn" id="addClips">Add clips</button>
+    <div id="story"></div>
+  </div></details>
+  <details class="sec" data-sec="leo"><summary>Make outcome clips with Leonardo.ai</summary><div class="group" id="leo"></div></details>`;
+}
+function storyIssues() {
+  const ids = L.clips.map(c => c.id), reach = new Set([ids[0]]), queue = [ids[0]];
+  const outs = id => { const c = L.clips.find(x => x.id === id), o = []; L.items.filter(x => x.type === "branch" && clipOf(x) === id).forEach(b => b.choices.forEach(ch => { if (ch.to && ch.to !== "__end") o.push(ch.to); })); if (c.end === "next") { const i = ids.indexOf(id); if (ids[i + 1]) o.push(ids[i + 1]); } else if (c.end !== "end") o.push(c.end); return o; };
+  while (queue.length) { const id = queue.shift(); for (const n of outs(id)) if (!reach.has(n) && ids.includes(n)) { reach.add(n); queue.push(n); } }
+  return { unreachable: L.clips.filter(c => !reach.has(c.id)), outs };
+}
+function renderStory() {
+  const box = $("#story"); if (!box || !L.clips?.length) return; const { unreachable, outs } = storyIssues();
+  box.innerHTML = `<span class="lbl">Story map</span><div style="display:grid;gap:.25rem;font-size:.85rem">${L.clips.map((c, i) => { const br = L.items.filter(x => x.type === "branch" && clipOf(x) === c.id); const lines = br.flatMap(b => b.choices.map(ch => `“${esc(ch.text || "option")}” → ${ch.to === "__end" ? "the end" : ch.to ? esc(clipName(ch.to)) : "carry on"}`)); const after = c.end === "end" ? "the end" : c.end === "next" ? (L.clips[i + 1] ? esc(L.clips[i + 1].name) : "the end") : esc(clipName(c.end)); return `<div><b>${i + 1}. ${esc(c.name)}</b>${lines.length ? `<br>&nbsp;&nbsp;${lines.join("<br>&nbsp;&nbsp;")}` : ""}<br>&nbsp;&nbsp;<span style="color:var(--muted)">when it ends → ${after}</span></div>`; }).join("")}</div>${unreachable.length ? `<p class="note" style="color:var(--danger,#C2362B)"><b>No path leads to:</b> ${unreachable.map(c => esc(c.name)).join(", ")}. Add a choice that jumps there, or remove it.</p>` : `<p class="note">Every clip can be reached.</p>`}`;
+}
+function renderLeo() {
+  const box = $("#leo"); if (!box) return; const st = L.story ||= { character: "", setting: "", style: "Cinematic, soft natural light, consistent character design" };
+  const prompt = leoPrompt;
+  box.innerHTML = "";
+  void 0; return renderLeoInner(box, st, prompt);
+}
+function leoPrompt(c) { const st = L.story || {}; return [st.style, st.setting && `Setting: ${st.setting}`, st.character && `Main character: ${st.character} (same face, hair and clothes in every scene)`, `Scene: ${c.scene || c.name}`, "Smooth camera movement, 16:9, about 5 seconds, no text on screen"].filter(Boolean).join(". ") + "."; }
+function updateLeo() { document.querySelectorAll(".lprompt").forEach(t => { const c = L.clips.find(x => x.id === t.dataset.for); if (c) t.value = leoPrompt(c); }); }
+function renderLeoInner(box, st, prompt) {
+  box.innerHTML = `<p class="note">Describe the character and look once, so every outcome matches. Booth writes a prompt for each clip; paste it into Leonardo.ai’s video tool, download the clip, then add it here. For the most consistent results, first make one still image of your character, then use it as the reference or starting frame for each clip.</p>
+    <div class="field"><label for="stChar">Main character</label><input type="text" id="stChar" data-story="character" value="${esc(st.character)}" placeholder="A Malay teenage girl with a navy hijab and school uniform"></div>
+    <div class="field"><label for="stSet">Setting</label><input type="text" id="stSet" data-story="setting" value="${esc(st.setting)}" placeholder="A busy hawker centre in Singapore at lunchtime"></div>
+    <div class="field"><label for="stStyle">Visual style</label><input type="text" id="stStyle" data-story="style" value="${esc(st.style)}"></div>
+    ${L.clips.map(c => `<div class="field"><label>What happens in “${esc(c.name)}”</label><input type="text" data-scene="${c.id}" value="${esc(c.scene || "")}" placeholder="She notices a classmate eating alone and walks over"><textarea class="lprompt" data-for="${c.id}" rows="3" readonly>${esc(prompt(c))}</textarea></div>`).join("")}
+    <div class="row2"><button class="btn" id="copyPrompts">Copy all prompts</button><a class="btn" href="https://app.leonardo.ai" target="_blank" rel="noopener">Open Leonardo.ai</a></div>
+    <p class="note">Check Leonardo’s current terms for your plan before using clips in teaching or published materials, and avoid real people’s faces or students’ images.</p>`;
+}
 
 /* ---------- Preview and export ---------- */
 const GS = `var EMAIL = ""; // optional: your email address, to get each submission by email too
@@ -192,7 +246,7 @@ function doPost(e) {
     d.answers.map(function (a) { return a.prompt + "\n   " + (a.answer === null ? "(skipped)" : [].concat(a.answer).join(", ")); }).join("\n"));
   return ContentService.createTextOutput("ok");
 }`;
-const PLAYER_CSS = `*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#F4F5F7;color:#1B1F24;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+const PLAYER_CSS = `[hidden]{display:none!important}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#F4F5F7;color:#1B1F24;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.8rem 1.2rem;background:#fff;border-bottom:1px solid #E2E5EA}header h1{font-size:1.1rem;margin:0}#score{font-weight:700;color:#1E7B4C}
 main{max-width:1000px;margin:0 auto;padding:1rem}.stage{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9}
 #media,#media video,#media iframe,#media>div{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -212,41 +266,46 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:.65rem 1
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}`;
 let playerJS = null;
 async function playerCode() { return playerJS ||= await (await fetch("assets/lesson-player.js")).text(); }
-function lessonData() { const d = { ...L }; delete d.videoName; d.items = sorted(); return d; }
+function lessonData() { const d = JSON.parse(JSON.stringify(L)); delete d.videoName; delete d.story; d.items = sorted().map(x => ({ ...x, clip: L.yt ? undefined : clipOf(x) })); (d.clips || []).forEach(c => { delete c.file; delete c.scene; }); return d; }
+const clipMap = mode => { const m = {}; (L.clips || []).forEach((c, i) => { const f = CF.get(c.id).file; m[c.id] = mode === "blob" ? CF.get(c.id).url : `clip-${i + 1}${(f.name.match(/\.\w+$/) || [".mp4"])[0].toLowerCase()}`; }); return m; };
+const addClipsToZip = (zip, map) => (L.clips || []).forEach(c => zip.file(map[c.id], CF.get(c.id).file));
+const totalSize = () => (L.clips || []).reduce((n, c) => n + (CF.get(c.id)?.file.size || 0), 0);
 async function lessonHTML(videoSrc, opts = {}) {
   const js = await playerCode(), safe = o => JSON.stringify(o).replace(/</g, "\\u003c");
-  const vars = `window.LESSON=${safe(lessonData())};${videoSrc ? `window.LESSON_VIDEO=${safe(videoSrc)};` : ""}window.LESSON_MODE=${safe(opts.mode || "standalone")};${captions ? `window.LESSON_CAPTIONS=${safe(captions)};` : ""}${opts.preview ? "window.LESSON_PREVIEW=true;" : ""}`;
+  const caps = {}; (L.clips || []).forEach(c => { const cap = CF.get(c.id)?.captions; if (cap) caps[c.id] = cap; });
+  const vars = `window.LESSON=${safe(lessonData())};${videoSrc ? `window.LESSON_VIDEOS=${safe(videoSrc)};` : ""}window.LESSON_MODE=${safe(opts.mode || "standalone")};${Object.keys(caps).length ? `window.LESSON_CAPTIONS=${safe(caps)};` : ""}${opts.preview ? "window.LESSON_PREVIEW=true;" : ""}`;
   return `<!doctype html><html lang="${esc(L.lang || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(L.title)}</title><style>${PLAYER_CSS}</style>${opts.head || ""}</head><body><script>${vars}<\/script><script>${js.replace(/<\/script/gi, "<\\/script")}<\/script></body></html>`;
 }
-function checkReady() { if (!L || (!videoFile && !L.yt)) { toast("Add a video first."); return false; } if (!L.items.length) { toast("Add at least one question or note first."); return false; } const bad = L.items.find(x => x.type === "mc" && (!x.prompt.trim() || x.choices.some(c => !c.text.trim()) || !x.choices.some(c => c.ok))); if (bad) { sel = bad.id; renderAll(); toast("Finish this question: it needs words, answers and at least one correct answer.", 4000); return false; } return true; }
+function checkReady() { if (!hasVideo()) { toast("Add a video first."); return false; } if (!L.yt && L.clips.some(c => !CF.get(c.id))) { toast("Some clips are missing their video files. Open the lesson again and choose them."); return false; }
+  const badB = L.items.find(x => x.type === "branch" && (x.choices.length < 2 || x.choices.some(c => !c.text.trim()))); if (badB) { sel = badB.id; cur = clipOf(badB); showClip(cur); toast("Finish this choice: every option needs words.", 4000); return false; } if (!L.items.length) { toast("Add at least one question or note first."); return false; } const bad = L.items.find(x => x.type === "mc" && (!x.prompt.trim() || x.choices.some(c => !c.text.trim()) || !x.choices.some(c => c.ok))); if (bad) { sel = bad.id; renderAll(); toast("Finish this question: it needs words, answers and at least one correct answer.", 4000); return false; } return true; }
 $("#previewBtn").onclick = async () => {
   if (!checkReady()) return; P?.pause();
-  const html = await lessonHTML(videoFile ? videoURL : null, { preview: true }), w = document.createElement("div"); w.className = "preview";
+  const html = await lessonHTML(L.yt ? null : clipMap("blob"), { preview: true }), w = document.createElement("div"); w.className = "preview";
   w.innerHTML = `<div><header><strong>Student preview</strong><button class="btn" id="closePv">Close preview</button></header><iframe title="Student preview" allow="autoplay; fullscreen"></iframe></div>`; document.body.appendChild(w);
   w.querySelector("iframe").srcdoc = html; $("#closePv").onclick = () => w.remove(); w.addEventListener("click", e => { if (e.target === w) w.remove(); });
 };
 let JSZipReady = null;
 const loadZip = () => JSZipReady ||= new Promise((r, j) => { const s = document.createElement("script"); s.src = "vendor/jszip/jszip.min.js"; s.onload = r; s.onerror = j; document.head.appendChild(s); });
 const slug = s => (s || "lesson").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lesson";
-$("#exportBtn").onclick = () => { if (!checkReady()) return; $("#sls").disabled = !!L.yt; $('[data-ex="embedHTML"]').disabled = !L.yt; $("#slsNote").textContent = L.yt ? "SLS needs everything inside the package, so use a video file rather than YouTube for SLS." : "Upload in SLS: Question, Free-Response, then Integrated Scorable Response. Set the maximum marks to " + L.items.filter(x => x.type === "mc").length + "."; $("#exportDlg").showModal(); };
+$("#exportBtn").onclick = () => { if (!checkReady()) return; $("#sls").disabled = !!L.yt; $('[data-ex="embedHTML"]').disabled = !L.yt; $("#slsNote").textContent = L.yt ? "SLS needs everything inside the package, so use a video file rather than YouTube for SLS." : "Upload in SLS: Question, Free-Response, then Integrated Scorable Response. Set the maximum marks to " + L.items.filter(x => x.type === "mc" || (x.type === "branch" && x.choices.some(c => c.ok))).length + "."; $("#exportDlg").showModal(); };
 $("#exClose").onclick = () => $("#exportDlg").close();
-const vExt = () => (videoFile.name.match(/\.\w+$/) || [".mp4"])[0].toLowerCase();
+
 $("#exportDlg").addEventListener("click", async e => {
   const b = e.target.closest("button[data-ex]"); if (!b) return; const kind = b.dataset.ex;
   try {
     if (kind === "student") {
       if (L.yt) { download(new Blob([await lessonHTML(null)], { type: "text/html" }), `${slug(L.title)}.html`); toast("Lesson saved: send students this one file, or put it on a website.", 5000); }
-      else { toast("Packing the lesson with its video…"); await loadZip(); const zip = new JSZip(), vname = `video${vExt()}`, folder = zip.folder(slug(L.title)); folder.file("lesson.html", await lessonHTML(vname)); folder.file(vname, videoFile); folder.file("READ ME FIRST.txt", `Open lesson.html in any web browser to start the lesson.\nKeep lesson.html and ${vname} together in the same folder.\n`); download(await zip.generateAsync({ type: "blob", compression: "STORE" }), `${slug(L.title)}.zip`); toast("Lesson saved: students unzip it and open lesson.html.", 6000); }
+      else { toast("Packing the lesson with its videos…"); await loadZip(); const zip = new JSZip(), map = clipMap(), folder = zip.folder(slug(L.title)); folder.file("lesson.html", await lessonHTML(map)); addClipsToZip(folder, map); folder.file("READ ME FIRST.txt", `Open lesson.html in any web browser to start the lesson.\nKeep lesson.html and the clip files together in the same folder.\n`); download(await zip.generateAsync({ type: "blob", compression: "STORE" }), `${slug(L.title)}.zip`); toast("Lesson saved: students unzip it and open lesson.html.", 6000); }
     }
     if (kind === "scorm") {
-      toast("Building the SCORM package…"); await loadZip(); const zip = new JSZip(), vname = L.yt ? null : `video${vExt()}`;
-      zip.file("index.html", await lessonHTML(vname, { mode: "scorm" })); if (vname) zip.file(vname, videoFile); zip.file("imsmanifest.xml", manifest(vname));
+      toast("Building the SCORM package…"); await loadZip(); const zip = new JSZip(), map = L.yt ? null : clipMap();
+      zip.file("index.html", await lessonHTML(map, { mode: "scorm" })); if (map) addClipsToZip(zip, map); zip.file("imsmanifest.xml", manifest(map ? Object.values(map) : []));
       download(await zip.generateAsync({ type: "blob", compression: "STORE" }), `${slug(L.title)}-scorm.zip`); toast("SCORM package saved. Upload it to Moodle, Canvas, Blackboard or any SCORM 1.2 platform as a SCORM activity.", 6500);
     }
     if (kind === "sls") {
-      if (L.yt) return toast("For SLS, use a video file: SLS packages can’t load YouTube."); if (videoFile.size > 480 * 1024 * 1024) return toast("SLS allows up to 500 MB. Compress the video in Booth Video first.", 5000);
-      toast("Building the SLS package…"); await loadZip(); const zip = new JSZip(), vname = `video${vExt()}`, xapi = await (await fetch("vendor/xapi/xapiwrapper.min.js")).text();
-      zip.file("index.html", await lessonHTML(vname, { mode: "sls", head: `<script src="xapiwrapper.min.js"><\/script>` })); zip.file("xapiwrapper.min.js", xapi); zip.file(vname, videoFile);
+      if (L.yt) return toast("For SLS, use a video file: SLS packages can’t load YouTube."); if (totalSize() > 480 * 1024 * 1024) return toast("SLS allows up to 500 MB. Compress the clips in Booth Video first.", 5000);
+      toast("Building the SLS package…"); await loadZip(); const zip = new JSZip(), map = clipMap(), xapi = await (await fetch("vendor/xapi/xapiwrapper.min.js")).text();
+      zip.file("index.html", await lessonHTML(map, { mode: "sls", head: `<script src="xapiwrapper.min.js"><\/script>` })); zip.file("xapiwrapper.min.js", xapi); addClipsToZip(zip, map);
       download(await zip.generateAsync({ type: "blob", compression: "STORE" }), `${slug(L.title)}-sls.zip`); toast("SLS package saved. Upload it as an Integrated Scorable Response question.", 6500);
     }
     if (kind === "embedHTML") { const html = await lessonHTML(null); try { await navigator.clipboard.writeText(html); toast("Copied. In Google Sites, choose Embed, then Embed code, and paste.", 5000); } catch { toast("Couldn’t copy. Download the student lesson instead."); } }
@@ -255,8 +314,8 @@ $("#exportDlg").addEventListener("click", async e => {
     count("lesson_exports_" + kind);
   } catch (err) { console.error(err); toast("Something went wrong building that file."); }
 });
-$("#capIn").onchange = async () => { const f = $("#capIn").files[0]; $("#capIn").value = ""; if (!f) return; let txt = await f.text(); if (!/^WEBVTT/.test(txt.trim())) txt = "WEBVTT\n\n" + txt.replace(/\r/g, "").replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, "$1.$2"); captions = txt; renderPane(); toast("Captions added"); };
-function manifest(vname) {
+$("#capIn").onchange = async () => { const f = $("#capIn").files[0]; $("#capIn").value = ""; if (!f) return; let txt = await f.text(); if (!/^WEBVTT/.test(txt.trim())) txt = "WEBVTT\n\n" + txt.replace(/\r/g, "").replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, "$1.$2"); const c = CF.get(cur); if (c) c.captions = txt; renderPane(); toast(`Captions added to “${clipName(cur)}”`); };
+function manifest(files) {
   const x = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])), id = "booth-" + L.id;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${id}" version="1.0" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
@@ -264,15 +323,21 @@ function manifest(vname) {
   <organizations default="org1"><organization identifier="org1"><title>${x(L.title)}</title>
     <item identifier="item1" identifierref="res1" isvisible="true"><title>${x(L.title)}</title><adlcp:masteryscore>${L.pass ?? 60}</adlcp:masteryscore></item>
   </organization></organizations>
-  <resources><resource identifier="res1" type="webcontent" adlcp:scormtype="sco" href="index.html"><file href="index.html"/>${vname ? `<file href="${vname}"/>` : ""}</resource></resources>
+  <resources><resource identifier="res1" type="webcontent" adlcp:scormtype="sco" href="index.html"><file href="index.html"/>${files.map(f => `<file href="${f}"/>`).join("")}</resource></resources>
 </manifest>`;
 }
-$("#saveBtn").onclick = () => { if (!L) return; download(new Blob([JSON.stringify({ kind: "booth-lesson", v: 1, lesson: L })], { type: "application/json" }), `${slug(L.title)}-booth-lesson.json`); toast(videoFile ? "Lesson saved. When you open it again, Booth will ask for the same video file." : "Lesson saved."); };
+$("#saveBtn").onclick = () => { if (!L) return; download(new Blob([JSON.stringify({ kind: "booth-lesson", v: 1, lesson: L })], { type: "application/json" }), `${slug(L.title)}-booth-lesson.json`); toast(L.yt ? "Lesson saved." : "Lesson saved. When you open it again, Booth will ask for the same clip files."); };
 $("#openBtn").onclick = $("#openLesson").onclick = () => $("#projIn").click();
 $("#projIn").onchange = async () => {
   const f = $("#projIn").files[0]; $("#projIn").value = ""; if (!f) return;
   try { const d = JSON.parse(await f.text()); if (d.kind !== "booth-lesson") throw 0; L = d.lesson; sel = null;
-    if (L.yt) useYT(L.yt); else { toast(`Now choose the video: ${L.videoName || "the same video file"}`, 5000); const keep = L; $("#vidIn").onchange = () => { const v = $("#vidIn").files[0]; $("#vidIn").value = ""; $("#vidIn").onchange = () => { const x = $("#vidIn").files[0]; $("#vidIn").value = ""; if (x) useFile(x); }; if (!v) return; L = keep; useFile(v); L.items = keep.items; renderAll(); }; $("#vidIn").click(); } }
+    if (L.yt) useYT(L.yt); else {
+      if (!L.clips?.length && L.videoName) L.clips = [{ id: uid(), name: L.videoName.replace(/\.[^.]+$/, ""), end: "end", file: L.videoName }];
+      const keep = L; toast(`Now choose the clip files: ${keep.clips.map(c => c.file).join(", ")}`, 7000);
+      $("#vidIn").onchange = () => { const fs = [...$("#vidIn").files]; $("#vidIn").value = ""; $("#vidIn").onchange = () => { const x = [...$("#vidIn").files]; $("#vidIn").value = ""; if (x.length) addClipFiles(x); };
+        L = keep; keep.clips.forEach((c, i) => { const f = fs.find(x => x.name === c.file) || fs[i]; if (f) CF.set(c.id, { file: f, url: URL.createObjectURL(f), captions: null }); });
+        const missing = keep.clips.filter(c => !CF.get(c.id)); if (missing.length) toast(`Still missing: ${missing.map(c => c.file).join(", ")}`, 6000); if (keep.clips[0] && CF.get(keep.clips[0].id)) { showClip(keep.clips[0].id); begin(); } };
+      $("#vidIn").click(); } }
   catch { toast("That isn’t a Booth lesson file."); }
 };
 
@@ -296,6 +361,7 @@ function renderResults() {
   const per = [...qs.values()].sort((a, b) => a.t - b.t).map((x, i) => {
     let body = ""; const n = x.list.length;
     if (x.type === "mc") { const right = x.list.filter(l => l.a.correct).length, pct = Math.round(right / n * 100), counts = {}; x.list.forEach(l => [].concat(l.a.answer || ["(skipped)"]).forEach(v => counts[v] = (counts[v] || 0) + 1)); body = `<p class="note"><b>${pct}%</b> answered correctly (${right} of ${n})${pct < 60 ? ". <b>Worth revisiting.</b>" : ""}</p><div class="bars">${Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div><span>${esc(k)}</span><span class="b"><i style="width:${v / n * 100}%"></i></span><span>${v}</span></div>`).join("")}</div>`; }
+    else if (x.type === "branch") { const counts = {}; x.list.forEach(l => [].concat(l.a.answer || ["(not reached)"]).forEach(v => counts[v] = (counts[v] || 0) + 1)); const graded = x.list.some(l => l.a.correct !== null); body = `${graded ? `<p class="note"><b>${Math.round(x.list.filter(l => l.a.correct).length / n * 100)}%</b> made the best choice.</p>` : ""}<div class="bars">${Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div><span>${esc(k)}</span><span class="b"><i style="width:${v / n * 100}%"></i></span><span>${v}</span></div>`).join("")}</div>`; }
     else if (x.type === "poll") { const counts = {}; x.list.forEach(l => [].concat(l.a.answer || ["(skipped)"]).forEach(v => counts[v] = (counts[v] || 0) + 1)); body = `<div class="bars">${Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div><span>${esc(k)}</span><span class="b"><i style="width:${v / n * 100}%"></i></span><span>${v}</span></div>`).join("")}</div>`; }
     else if (x.type === "open") body = `<div style="display:grid;gap:.35rem">${x.list.map(l => `<p class="note" style="margin:0"><b>${esc(l.name)}:</b> ${esc(l.a.answer ?? "(skipped)")}</p>`).join("")}</div>`;
     else return "";
@@ -304,12 +370,13 @@ function renderResults() {
   box.innerHTML = `<div class="res"><h2 style="margin:0">Class results${lessons.length === 1 ? `: ${esc(lessons[0])}` : ""}</h2>${lessons.length > 1 ? `<p class="note"><b>These answers come from ${lessons.length} different lessons.</b> Clear them and add one lesson at a time for clearer results.</p>` : ""}
     <div class="row"><span class="tag">${R.length} student${R.length === 1 ? "" : "s"}</span><span class="tag">Average score ${avg}%</span><span class="tag">Average watched ${watched}%</span></div>
     <div style="overflow-x:auto"><table><thead><tr><th>Student</th><th>Class</th><th>Score</th><th>Watched</th><th>Finished</th><th></th></tr></thead><tbody>${R.map(r => `<tr><td>${esc(r.student.name)}</td><td>${esc(r.student.cls || "")}</td><td>${r.score.correct} / ${r.score.gradable}</td><td>${r.watched}%</td><td>${new Date(r.finishedAt).toLocaleString()}</td><td>${r._edited ? `<span class="tag" title="This file was changed after the student finished">Edited?</span>` : ""}</td></tr>`).join("")}</tbody></table></div>
+    ${R.some(r => r.ending) ? (() => { const c = {}; R.forEach(r => { if (r.ending) c[r.ending] = (c[r.ending] || 0) + 1; }); return `<h3 style="margin:.4rem 0 0">Endings reached</h3><div class="bars">${Object.entries(c).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div><span>${esc(k)}</span><span class="b"><i style="width:${v / R.length * 100}%"></i></span><span>${v}</span></div>`).join("")}</div>`; })() : ""}
     <h3 style="margin:.4rem 0 0">Question by question</h3>${per}</div>`;
 }
 function csvOut() {
   const qs = [...new Map(R.flatMap(r => r.answers.map(a => [a.id, a]))).values()].sort((a, b) => a.t - b.t), cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const rows = [["Student", "Class", "Lesson", "Score", "Out of", "Watched %", "Finished", "Possibly edited", ...qs.map((x, i) => `Q${i + 1} ${x.prompt}`)]];
-  R.forEach(r => rows.push([r.student.name, r.student.cls, r.lesson.title, r.score.correct, r.score.gradable, r.watched, r.finishedAt, r._edited ? "yes" : "", ...qs.map(x => { const a = r.answers.find(y => y.id === x.id); return a ? [].concat(a.answer ?? "(skipped)").join("; ") + (a.correct === null ? "" : a.correct ? " (right)" : " (wrong)") : ""; })]));
+  const rows = [["Student", "Class", "Lesson", "Score", "Out of", "Watched %", "Finished", "Possibly edited", "Ending", "Path", ...qs.map((x, i) => `Q${i + 1} ${x.prompt}`)]];
+  R.forEach(r => rows.push([r.student.name, r.student.cls, r.lesson.title, r.score.correct, r.score.gradable, r.watched, r.finishedAt, r._edited ? "yes" : "", r.ending || "", (r.path || []).join(" → "), ...qs.map(x => { const a = r.answers.find(y => y.id === x.id); return a ? [].concat(a.answer ?? "(skipped)").join("; ") + (a.correct === null ? "" : a.correct ? " (right)" : " (wrong)") : ""; })]));
   download(new Blob(["\ufeff" + rows.map(r => r.map(cell).join(",")).join("\r\n")], { type: "text/csv" }), `${slug(R[0].lesson.title)}-results.csv`);
 }
 window.BoothDrop = { accept: f => f.type.startsWith("video/") || /\.json$/i.test(f.name), acceptType: t => !t || t.startsWith("video/") || t === "application/json", label: () => "Drop a video to make a lesson, or answers files to see results", hint: "Video files, or the .json answers files students hand in.", reject: "Videos or answers files only.",
