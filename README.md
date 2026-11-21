@@ -147,3 +147,6 @@ The new studios must be opened from a website or a local server, not by double-c
 
 ## Compact mode
 The **Compact** button in the header (or Ctrl+\ on Windows, Cmd+\ on a Mac) hides the side panel so the work area gets the full width, which helps in narrow windows. The panel then slides in as a drawer: open it from the header button, the **Tools** tab on the right edge, or by choosing a tool in the left rail, and close it with Esc, ✕ or a click outside. The choice is remembered in the browser. The code is in `assets/compact.js`.
+
+## Studio menu and header on smaller screens
+The studio menu shows as many studios as fit, always whole, and moves the rest into **More ▾**, with a one-line description of each. The current studio always stays visible; on very narrow screens the menu becomes a single button named after it (for example **Photo ▾**) that lists every studio. When space runs short, header buttons switch to icons first, and on phones secondary actions move into a **⋯** menu, while undo, redo and the main save or export button stay visible. Menus work with the keyboard (arrow keys and Esc). The code is in `assets/nav.js`.

@@ -57,9 +57,9 @@
     <span class="spacer"></span>
     <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="ibtn" id="redo" disabled aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
-    <button class="ibtn" id="saveBtn" title="Save the lesson so you can edit it later"><span class="t">Save</span></button>
-    <button class="ibtn" id="openBtn" title="Open a saved lesson"><span class="t">Open</span></button>
-    <button class="ibtn" id="previewBtn" title="Try the lesson as a student"><span class="t">Preview</span></button>
+    <button class="ibtn" id="saveBtn" title="Save the lesson so you can edit it later"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg><span class="t">Save</span></button>
+    <button class="ibtn" id="openBtn" title="Open a saved lesson"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3z"/></svg><span class="t">Open</span></button>
+    <button class="ibtn" id="previewBtn" title="Try the lesson as a student"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span class="t">Preview</span></button>
     <button class="btn primary" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Share lesson</span></button>
   </header>
   <div class="work">
@@ -92,6 +92,7 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
 <script src="assets/compact.js" data-app="booth"></script>
+<script src="assets/nav.js"></script>
 <script>
 "use strict";
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)], uid = () => Math.random().toString(36).slice(2, 9);
