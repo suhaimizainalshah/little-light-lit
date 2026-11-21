@@ -80,6 +80,18 @@ About trending sounds and copyright: naming a song in a caption or a file's deta
 - **Students can pick up where they left off:** progress is saved on their device.
 - **Preview as a student** before sharing.
 
+### Building and editing
+- **Undo and redo** every change (Ctrl+Z and Ctrl+Shift+Z, or the header buttons).
+- **Move questions and notes** by dragging their markers on the timeline (the video follows), with the nudge buttons (−1 s, −0.1 s, +0.1 s, +1 s), “Use current time”, or Alt + ← →. “Play from here” checks the timing. In branching stories, move an item to another clip.
+- **Colour-coded markers** by type, with a legend. Unfinished questions show “!” on the timeline and ⚠ in the list, with a note on what’s missing.
+- **Autosave:** the lesson is kept in the browser as you work. If the tab closes, “Carry on with…” reopens it; choose the video files again to continue.
+- **Shortcuts:** Space play or pause, ← → skip 5 s, Delete removes the selected item, Esc deselects.
+
+### For students
+- After a multiple-choice answer, the feedback shows briefly and the question closes by itself, with a draining bar; a click anywhere or Enter continues sooner. Polls close after a short thank-you, and open answers close straight away with a “Saved” message.
+- Notes can be closed with ✕, a click outside, Esc or “Continue”, and can close by themselves after a set time. Questions can’t be dismissed by an accidental click.
+- Number keys pick answers; Enter submits or continues (Ctrl+Enter in long answers).
+
 ### Branching stories (choose your own adventure)
 - **Several clips per lesson:** add as many video files as you like, name them, and reorder them.
 - **Choice that jumps:** at any moment, pause the video and offer options that each jump to a clip, carry on, or end the lesson. Tick “best choice” on any option to score the decision.

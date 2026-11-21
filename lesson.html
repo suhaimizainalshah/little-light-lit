@@ -18,7 +18,12 @@
 .tl{position:relative;height:46px;background:var(--panel);border:1px solid var(--line);border-radius:10px;cursor:pointer}
 .tl i{position:absolute;top:0;bottom:0;width:2px;background:var(--accent)}
 .tl b{position:absolute;top:8px;width:22px;height:28px;margin-left:-11px;border-radius:6px;background:var(--ink);color:var(--panel);font-size:.72rem;display:grid;place-items:center;font-weight:800}
-.tl b[aria-current=true]{background:var(--accent)}
+.tl b{cursor:grab;touch-action:none;user-select:none;border:2px solid transparent}.tl b.drag{cursor:grabbing;transform:scale(1.15);z-index:3}
+.tl b[data-type=mc]{background:#2B6CB0}.tl b[data-type=open]{background:#2F855A}.tl b[data-type=poll]{background:#6B46C1}.tl b[data-type=note]{background:#718096}.tl b[data-type=branch]{background:#C05621}
+.tl b[aria-current=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent)}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:.3rem;vertical-align:-1px}
+.nudge{display:flex;gap:.3rem;flex-wrap:wrap}.nudge .btn{min-height:34px;padding:0 .6rem;font-size:.85rem}
+.warn{color:#C05621;font-weight:800}
 .row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 .tbtn{display:inline-flex}
 .qlist{display:grid;gap:.35rem}
@@ -48,24 +53,28 @@
 <div class="app">
   <header class="top">
     <a class="brand" href="./" aria-label="Booth home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Booth</span></a>
-    <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html" aria-current="page">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+    <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html" aria-current="page">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <span class="spacer"></span>
+    <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+    <button class="ibtn" id="redo" disabled aria-label="Redo" title="Redo (Ctrl+Shift+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
     <button class="ibtn" id="saveBtn" title="Save the lesson so you can edit it later"><span class="t">Save</span></button>
     <button class="ibtn" id="openBtn" title="Open a saved lesson"><span class="t">Open</span></button>
-    <button class="ibtn" id="previewBtn"><span class="t">Preview as a student</span></button>
-    <button class="btn primary" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Get the student lesson</span></button>
+    <button class="ibtn" id="previewBtn" title="Try the lesson as a student"><span class="t">Preview</span></button>
+    <button class="btn primary" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="t">Share lesson</span></button>
   </header>
   <div class="work">
     <main class="stage" id="stage">
       <div class="vid" id="vid"></div>
       <div class="row"><button class="btn" id="playBtn">Play</button><span id="tNow" style="font-weight:700;font-variant-numeric:tabular-nums">0:00</span><span class="hint" style="margin:0">Pause where you want something to happen, then add it.</span></div>
-      <div class="tl" id="tl" aria-label="Lesson timeline: click to jump"><i id="tlHead"></i></div>
+      <div class="tl" id="tl" aria-label="Lesson timeline: click to jump, drag a marker to move it"><i id="tlHead"></i></div>
+      <div class="legend" id="legend"><span><i style="background:#2B6CB0"></i>Multiple choice</span><span><i style="background:#2F855A"></i>Open</span><span><i style="background:#6B46C1"></i>Poll</span><span><i style="background:#718096"></i>Note</span><span><i style="background:#C05621"></i>Choice that jumps</span><span>Drag a marker to move it</span></div>
       <div class="row"><button class="btn primary" data-addq="mc">+ Multiple choice</button><button class="btn" data-addq="open">+ Open question</button><button class="btn" data-addq="poll">+ Poll</button><button class="btn" data-addq="note">+ Pop-up note</button><button class="btn" data-addq="branch">+ Choice that jumps</button></div>
       <div id="results" hidden></div>
       <div class="empty-wrap" id="empty"><div class="empty" style="max-width:640px">
         <h1>Turn any video into a lesson</h1>
         <p>Add questions, polls and notes at the right moments. The video pauses for each one, students answer, and you see who understood what. No student accounts, and answers stay with you and your students.</p>
         <div class="row" style="justify-content:center"><button class="btn primary" id="pickVideo">Use a video file</button><button class="btn" id="useYT">Use a YouTube video</button></div>
+        <div class="row" style="justify-content:center" id="draftRow" hidden><button class="btn primary" id="openDraft">Carry on with your last lesson</button></div>
         <div class="row" style="justify-content:center"><button class="btn" id="openResults">See class results</button><button class="btn" id="openLesson">Open a saved lesson</button></div>
         <p class="note">A video file makes a lesson that works offline. A YouTube lesson is a tiny file, but students need internet.</p>
       </div></div>
@@ -74,7 +83,7 @@
   </div>
 </div>
 <input type="file" id="vidIn" accept="video/*" multiple hidden><input type="file" id="capIn" accept=".vtt,.srt,text/vtt" hidden><input type="file" id="projIn" accept=".json" hidden><input type="file" id="resIn" accept=".json,.txt" multiple hidden>
-<dialog id="exportDlg"><div class="dlg" style="max-width:560px"><h2>Get the student lesson</h2>
+<dialog id="exportDlg"><div class="dlg" style="max-width:560px"><h2>Share the lesson with students</h2>
   <div class="group"><button class="btn primary block" data-ex="student">Student lesson file: share it, email it or put it on a website</button><p class="note">Students hand in with a file, a code, email or your Google Sheet.</p></div>
   <div class="group"><button class="btn block" data-ex="scorm">SCORM package: for Moodle, Canvas, Blackboard and offline boxes</button><p class="note">Scores and answers go straight into the platform’s gradebook, including on offline Moodle devices such as Beekee.</p></div>
   <div class="group"><button class="btn block" id="sls" data-ex="sls">Singapore Student Learning Space (SLS) package</button><p class="note" id="slsNote"></p></div>
@@ -97,6 +106,17 @@ try { if (!sessionStorage.getItem("booth-lesson-visit")) { sessionStorage.setIte
 let L = null, sel = null, P = null, tab = "lesson", cur = null;
 const CF = new Map(); // clip id -> { file, url, captions }
 const newLesson = () => ({ id: uid() + uid(), title: "Untitled lesson", intro: "", items: [], noSkip: true, retries: false, showAnswers: true, rewatch: true, askName: true, askClass: false, handIn: "Download your answers and hand them in, or copy the code and paste it where your teacher asked.", sheet: "", email: "", lang: "en", shuffle: false, pass: 60, yt: "", videoName: "" });
+let hist = [], fut = [], typing = null;
+function commit() { if (!L) return; hist.push(JSON.stringify(L)); if (hist.length > 80) hist.shift(); fut = []; syncHist(); draft(); }
+function syncHist() { $("#undo").disabled = !hist.length; $("#redo").disabled = !fut.length; }
+function restoreState(st) { L = JSON.parse(st); if (!L.yt) { if (!L.clips.find(c => c.id === cur)) cur = L.clips[0]?.id || null; if (cur && CF.get(cur) && $("#v")?.getAttribute("src") !== CF.get(cur).url) return showClip(cur); } if (sel && !q()) sel = null; renderAll(); draft(); }
+function undo() { if (!hist.length) return; fut.push(JSON.stringify(L)); restoreState(hist.pop()); syncHist(); toast("Undone"); }
+function redo() { if (!fut.length) return; hist.push(JSON.stringify(L)); restoreState(fut.pop()); syncHist(); toast("Redone"); }
+let draftT = null, draftAt = 0;
+function saveDraftNow() { draftAt = Date.now(); try { if (L && (L.items.length || L.clips?.length || L.yt)) localStorage.setItem("booth-lesson-draft", JSON.stringify({ savedAt: draftAt, lesson: L })); } catch (e) { console.warn("Couldn’t save a draft", e); } }
+function draft() { clearTimeout(draftT); if (Date.now() - draftAt > 1500) saveDraftNow(); draftT = setTimeout(saveDraftNow, 400); }
+addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveDraftNow(); }); addEventListener("pagehide", saveDraftNow); addEventListener("beforeunload", saveDraftNow);
+const incomplete = x => x.type === "mc" ? !x.prompt.trim() || x.choices.some(c => !c.text.trim()) || !x.choices.some(c => c.ok) : x.type === "branch" || x.type === "poll" ? !x.prompt.trim() || x.choices.some(c => !c.text.trim()) : x.type === "open" ? !x.prompt.trim() : !x.prompt.trim() && !x.text.trim();
 const q = () => L?.items.find(x => x.id === sel) || null;
 const sorted = () => [...L.items].sort((a, b) => a.t - b.t);
 const clipOf = it => it.clip || L.clips?.[0]?.id;
@@ -106,7 +126,7 @@ const hasVideo = () => !!L && (!!L.yt || !!L.clips?.length);
 
 /* ---------- Video: a file or YouTube ---------- */
 function addClipFiles(files) {
-  if (!L) L = newLesson(); L.yt = ""; L.clips ||= []; let first = null;
+  if (L) commit(); if (!L) L = newLesson(); L.yt = ""; L.clips ||= []; let first = null;
   for (const f of files) { if (!f.type.startsWith("video/")) continue; const id = uid(); CF.set(id, { file: f, url: URL.createObjectURL(f), captions: null }); L.clips.push({ id, name: f.name.replace(/\.[^.]+$/, "").slice(0, 60), end: "next", file: f.name }); first ||= id; if (L.title === "Untitled lesson") L.title = f.name.replace(/\.[^.]+$/, ""); }
   if (first) { showClip(cur && files.length && L.clips.length > files.length ? cur : first); begin(); }
 }
@@ -131,12 +151,22 @@ $("#vidIn").onchange = () => { const fs = [...$("#vidIn").files]; $("#vidIn").va
 $("#useYT").onclick = () => { const u = prompt("Paste the YouTube link"); if (!u) return; const id = ytId(u.trim()); if (!id) return toast("That doesn’t look like a YouTube link."); useYT(id); };
 $("#playBtn").onclick = () => { if (!P) return; P.paused() ? P.play() : P.pause(); };
 setInterval(() => { if (!P) return; const t = P.time(), d = P.dur(); $("#tNow").textContent = `${fmt(t)}${d ? " / " + fmt(d) : ""}`; $("#tlHead").style.left = d ? `${t / d * 100}%` : "0"; $("#playBtn").textContent = P.paused() ? "Play" : "Pause"; }, 250);
-$("#tl").addEventListener("click", e => { if (!P) return; const b = e.target.closest("b"); if (b) { sel = b.dataset.q; const it = q(); P.seek(it.t); P.pause(); return renderAll(); } const r = $("#tl").getBoundingClientRect(); P.seek((e.clientX - r.left) / r.width * P.dur()); });
-function renderTimeline() { const d = P?.dur() || 0; $("#tl").querySelectorAll("b").forEach(b => b.remove()); if (!d) return; inClip().forEach((it, i) => { const b = document.createElement("b"); b.dataset.q = it.id; b.textContent = i + 1; b.style.left = `${it.t / d * 100}%`; b.title = `${fmt(it.t)} ${it.prompt || it.text || ""}`; b.setAttribute("aria-current", it.id === sel); $("#tl").appendChild(b); }); }
+$("#tl").addEventListener("click", e => { if (!P || e.target.closest("b")) return; const r = $("#tl").getBoundingClientRect(); P.seek((e.clientX - r.left) / r.width * P.dur()); });
+let mdrag = null;
+$("#tl").addEventListener("pointerdown", e => { const b = e.target.closest("b"); if (!b || !P) return; e.preventDefault(); mdrag = { b, id: b.dataset.q, x0: e.clientX, moved: false, lastSeek: 0 }; b.setPointerCapture(e.pointerId); });
+$("#tl").addEventListener("pointermove", e => {
+  if (!mdrag) return; if (!mdrag.moved && Math.abs(e.clientX - mdrag.x0) < 4) return;
+  const it = L.items.find(x => x.id === mdrag.id); if (!it) return; if (!mdrag.moved) { commit(); mdrag.moved = true; mdrag.b.classList.add("drag"); P.pause(); }
+  const r = $("#tl").getBoundingClientRect(), d = P.dur(); it.t = Math.round(Math.max(0, Math.min(d - .1, (e.clientX - r.left) / r.width * d)) * 10) / 10;
+  mdrag.b.style.left = `${it.t / d * 100}%`; mdrag.b.title = fmt(it.t); $("#qT") && sel === it.id && ($("#qT").value = it.t);
+  const now = performance.now(); if (now - mdrag.lastSeek > 120) { P.seek(it.t); mdrag.lastSeek = now; }
+});
+$("#tl").addEventListener("pointerup", () => { if (!mdrag) return; const it = L.items.find(x => x.id === mdrag.id); const moved = mdrag.moved; mdrag = null; sel = it?.id || null; if (it) { P.seek(it.t); P.pause(); } renderAll(); if (moved && it) toast(`Moved to ${fmt(it.t)}${it.t % 1 ? " (" + it.t.toFixed(1) + " s)" : ""}. Undo with Ctrl+Z.`); });
+function renderTimeline() { const d = P?.dur() || 0; $("#tl").querySelectorAll("b").forEach(b => b.remove()); if (!d) return; inClip().forEach((it, i) => { const b = document.createElement("b"); b.dataset.q = it.id; b.dataset.type = it.type; b.textContent = incomplete(it) ? "!" : i + 1; b.style.left = `${it.t / d * 100}%`; b.title = `${fmt(it.t)} ${it.prompt || it.text || ""}`; b.setAttribute("aria-current", it.id === sel); $("#tl").appendChild(b); }); }
 
 /* ---------- Adding and editing questions ---------- */
 $$("[data-addq]").forEach(b => b.onclick = () => {
-  if (!P) return toast("Add a video first."); P.pause(); const type = b.dataset.addq, t = Math.round(P.time() * 10) / 10;
+  if (!P) return toast("Add a video first."); P.pause(); commit(); const type = b.dataset.addq, t = Math.round(P.time() * 10) / 10;
   const it = { id: uid(), type, t, prompt: "", required: true }; if (!L.yt) it.clip = cur;
   if (type === "branch") { if (L.yt) return toast("Choices that jump between clips need video files, not YouTube."); const others = L.clips.filter(c => c.id !== cur); Object.assign(it, { prompt: "What should happen next?", choices: [{ text: "", to: others[0]?.id || "", ok: false }, { text: "", to: others[1]?.id || others[0]?.id || "", ok: false }] }); }
   if (type === "mc") Object.assign(it, { prompt: "", choices: [{ text: "", ok: true }, { text: "", ok: false }, { text: "", ok: false }], fbOk: "", fbNo: "" });
@@ -158,12 +188,16 @@ function renderPane() {
     <div class="field"><label for="lEmail">Your email, for students to email their answers (optional)</label><input type="email" id="lEmail" placeholder="teacher@school.edu" value="${esc(L.email || "")}"></div>
     <div class="field"><label for="lHand">How students hand in (shown at the end)</label><textarea id="lHand" rows="2">${esc(L.handIn)}</textarea></div>
     <details class="sec"><summary>Collect answers automatically (optional)</summary><div class="group"><p class="note">Answers can arrive straight in your own Google Sheet. In a new sheet, open Extensions, then Apps Script, paste this code, choose Deploy, New deployment, Web app, with access for Anyone, and paste the web app address below.</p><textarea rows="6" readonly id="gsCode" style="font-family:ui-monospace,monospace;font-size:.75rem">${esc(GS)}</textarea><button class="btn" id="copyGs">Copy the code</button><div class="field"><label for="lSheet">Web app address</label><input type="url" id="lSheet" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(L.sheet)}"></div><p class="note">Tell students their name and answers go to your sheet. Students can still download their answers as a backup.</p></div></details>
-    ${L.items.length ? `<span class="lbl">In this lesson</span><div class="qlist">${sorted().map((x, i) => `<button class="qi" data-pick="${x.id}"><span class="tag">${i + 1}</span><span>${esc(x.prompt || x.text || "(no question yet)").slice(0, 60)}</span><small>${!L.yt && L.clips.length > 1 ? esc(clipName(clipOf(x))).slice(0, 14) + " · " : ""}${fmt(x.t)}</small></button>`).join("")}</div>` : `<p class="note">No questions yet. Play the video, pause, then use the buttons under the timeline.</p>`}`;
+    <p class="note">Shortcuts: Space play or pause · ← → skip 5 s · Alt + ← → move the selected item by 0.1 s · Delete removes it · Ctrl+Z undo.</p>
+    ${L.items.length ? `<span class="lbl">In this lesson</span><div class="qlist">${sorted().map((x, i) => `<button class="qi" data-pick="${x.id}"><span class="tag">${i + 1}</span><span>${incomplete(x) ? `<span class="warn" title="Not finished yet">⚠ </span>` : ""}${esc(x.prompt || x.text || "(no question yet)").slice(0, 60)}</span><small>${!L.yt && L.clips.length > 1 ? esc(clipName(clipOf(x))).slice(0, 14) + " · " : ""}${fmt(x.t)}</small></button>`).join("")}</div>` : `<p class="note">No questions yet. Play the video, pause, then use the buttons under the timeline.</p>`}`;
   else {
     const kind = { mc: "Multiple choice", open: "Open question", poll: "Poll", note: "Pop-up note", branch: "Choice that jumps" }[it.type];
-    h += `<h2>${kind}</h2><div class="row2"><div class="field"><label for="qT">Appears at (seconds)</label><input type="number" id="qT" min="0" step="0.1" value="${it.t}"></div><div class="field"><label>&nbsp;</label><button class="btn" id="qNow">Use current time</button></div></div>
+    h += `<h2>${kind}</h2><div class="field"><label for="qT">Appears at (seconds), or drag its marker on the timeline</label><input type="number" id="qT" min="0" step="0.1" value="${it.t}"></div>
+      <div class="nudge" role="group" aria-label="Move this item"><button class="btn" data-nudge="-1">−1 s</button><button class="btn" data-nudge="-0.1">−0.1 s</button><button class="btn" data-nudge="0.1">+0.1 s</button><button class="btn" data-nudge="1">+1 s</button><button class="btn" id="qNow">Use current time</button><button class="btn" id="qPlay">Play from here</button></div>
+      ${!L.yt && L.clips.length > 1 ? `<div class="field"><label for="qClip">In clip</label><select id="qClip">${L.clips.map(c => `<option value="${c.id}" ${clipOf(it) === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>` : ""}
+      ${incomplete(it) ? `<p class="note warn">⚠ Not finished yet: ${it.type === "mc" ? "add the question, fill in every answer and tick at least one correct one." : it.type === "note" ? "add a heading or some text." : "add the question and fill in every option."}</p>` : ""}
       <div class="field"><label for="qPrompt">${it.type === "note" ? "Heading" : "Question"}</label><textarea id="qPrompt" rows="2">${esc(it.prompt)}</textarea></div>`;
-    if (it.type === "note") h += `<div class="field"><label for="qText">Text</label><textarea id="qText" rows="4">${esc(it.text)}</textarea></div><div class="field"><label for="qLink">Link (optional)</label><input type="url" id="qLink" value="${esc(it.link)}"></div>`;
+    if (it.type === "note") h += `<div class="field"><label for="qText">Text</label><textarea id="qText" rows="4">${esc(it.text)}</textarea></div><div class="field"><label for="qLink">Link (optional)</label><input type="url" id="qLink" value="${esc(it.link)}"></div><div class="field"><label for="qAuto">Close by itself after (seconds, 0 = students close it)</label><input type="number" id="qAuto" min="0" max="60" step="1" value="${it.auto || 0}"></div><p class="note">Students can always close a note with ✕, by clicking outside it, or with Esc.</p>`;
     if (it.type === "branch") h += `<span class="lbl">Options: each one jumps to a clip</span>${it.choices.map((c, i) => `<div class="field" style="border:1px solid var(--line);border-radius:10px;padding:.5rem"><div class="chrow" style="grid-template-columns:1fr auto"><input type="text" data-ch="${i}" value="${esc(c.text)}" placeholder="Option ${i + 1}, for example: Help the stranger"><button class="ibtn" data-delch="${i}" aria-label="Remove option ${i + 1}">✕</button></div><div class="row2"><select data-to="${i}" aria-label="Where option ${i + 1} goes"><option value="">Carry on in this clip</option>${L.clips.map(cl => `<option value="${cl.id}" ${c.to === cl.id ? "selected" : ""}>Go to: ${esc(cl.name)}</option>`).join("")}<option value="__end" ${c.to === "__end" ? "selected" : ""}>End the lesson</option></select><label class="check"><input type="checkbox" data-ok="${i}" ${c.ok ? "checked" : ""}> Best choice</label></div></div>`).join("")}${it.choices.length < 6 ? `<button class="btn" id="addCh">Add an option</button>` : ""}<p class="note">Tick “best choice” on any option to score this decision. Leave all unticked for a free choice.</p>`;
     if (it.type === "mc" || it.type === "poll") h += `<span class="lbl">${it.type === "mc" ? "Answers: tick every correct one" : "Options"}</span>${it.choices.map((c, i) => `<div class="chrow">${it.type === "mc" ? `<input type="checkbox" data-ok="${i}" ${c.ok ? "checked" : ""} aria-label="Answer ${i + 1} is correct">` : `<span class="tag">${i + 1}</span>`}<input type="text" data-ch="${i}" value="${esc(c.text)}" placeholder="Answer ${i + 1}"><button class="ibtn" data-delch="${i}" aria-label="Remove answer ${i + 1}">✕</button></div>`).join("")}${it.choices.length < 6 ? `<button class="btn" id="addCh">Add an answer</button>` : ""}`;
     if (it.type === "mc") h += `<div class="field"><label for="qOk">Feedback when right (optional)</label><input type="text" id="qOk" value="${esc(it.fbOk)}"></div><div class="field"><label for="qNo">Feedback when wrong (optional)</label><input type="text" id="qNo" value="${esc(it.fbNo)}" placeholder="For example: Watch the part about…"></div>`;
@@ -177,25 +211,41 @@ $("#pane").addEventListener("click", async e => {
   if (b.dataset.tab) { tab = b.dataset.tab; sel = null; return renderAll(); }
   if (b.dataset.pick) { sel = b.dataset.pick; P?.seek(q().t); P?.pause(); return renderAll(); }
   if (b.dataset.clip) { sel = null; showClip(b.dataset.clip); return; }
-  if (b.dataset.delclip) { if (!confirm("Remove this clip and the questions in it?")) return; const id = b.dataset.delclip; L.items = L.items.filter(x => clipOf(x) !== id); L.clips = L.clips.filter(c => c.id !== id); L.clips.forEach(c => { if (c.end === id) c.end = "next"; }); L.items.forEach(x => x.choices?.forEach(c => { if (c.to === id) c.to = ""; })); CF.delete(id); if (cur === id) { if (L.clips[0]) showClip(L.clips[0].id); else { cur = null; P = null; $("#vid").innerHTML = ""; } } return renderAll(); }
-  if (b.dataset.cup) { const i = L.clips.findIndex(c => c.id === b.dataset.cup); if (i > 0) [L.clips[i - 1], L.clips[i]] = [L.clips[i], L.clips[i - 1]]; return renderAll(); }
-  if (b.dataset.delch != null && it) { if (it.choices.length <= 2) return toast("Keep at least two answers."); it.choices.splice(+b.dataset.delch, 1); return renderPane(); }
-  const act = { addCh: () => { it.choices.push({ text: "", ok: false, to: "" }); renderPane(); }, addClips: () => $("#vidIn").click(), copyPrompts: async () => { try { await navigator.clipboard.writeText([...document.querySelectorAll(".lprompt")].map(x => x.value).join("\n\n")); toast("Prompts copied"); } catch { toast("Couldn’t copy. Select the text instead."); } }, qNow: () => { it.t = Math.round(P.time() * 10) / 10; renderAll(); }, qDel: () => { L.items = L.items.filter(x => x !== it); sel = null; renderAll(); }, qDup: () => { const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.t += 2; L.items.push(c); sel = c.id; renderAll(); }, qDone: () => { sel = null; renderAll(); },
+  if (b.dataset.nudge && it) { commit(); it.t = Math.max(0, Math.round((it.t + +b.dataset.nudge) * 10) / 10); P?.seek(it.t); return renderAll(); }
+  if (b.dataset.delclip) { commit(); const id = b.dataset.delclip; L.items = L.items.filter(x => clipOf(x) !== id); L.clips = L.clips.filter(c => c.id !== id); L.clips.forEach(c => { if (c.end === id) c.end = "next"; }); L.items.forEach(x => x.choices?.forEach(c => { if (c.to === id) c.to = ""; })); toast("Clip removed. Undo with Ctrl+Z."); if (cur === id) { if (L.clips[0]) showClip(L.clips[0].id); else { cur = null; P = null; $("#vid").innerHTML = ""; } } return renderAll(); }
+  if (b.dataset.cup) { commit(); const i = L.clips.findIndex(c => c.id === b.dataset.cup); if (i > 0) [L.clips[i - 1], L.clips[i]] = [L.clips[i], L.clips[i - 1]]; return renderAll(); }
+  if (b.dataset.delch != null && it) { if (it.choices.length <= 2) return toast("Keep at least two answers."); commit(); it.choices.splice(+b.dataset.delch, 1); return renderPane(); }
+  const act = { qPlay: () => { P.seek(Math.max(0, it.t - 2)); P.play(); }, addCh: () => { commit(); it.choices.push({ text: "", ok: false, to: "" }); renderPane(); }, addClips: () => $("#vidIn").click(), copyPrompts: async () => { try { await navigator.clipboard.writeText([...document.querySelectorAll(".lprompt")].map(x => x.value).join("\n\n")); toast("Prompts copied"); } catch { toast("Couldn’t copy. Select the text instead."); } }, qNow: () => { commit(); it.t = Math.round(P.time() * 10) / 10; renderAll(); }, qDel: () => { commit(); L.items = L.items.filter(x => x !== it); sel = null; renderAll(); toast("Deleted. Undo with Ctrl+Z."); }, qDup: () => { commit(); const c = JSON.parse(JSON.stringify(it)); c.id = uid(); c.t += 2; L.items.push(c); sel = c.id; renderAll(); }, qDone: () => { sel = null; renderAll(); },
     capBtn: () => $("#capIn").click(),
     copyGs: async () => { try { await navigator.clipboard.writeText(GS); toast("Code copied"); } catch { $("#gsCode").select(); } }, addRes: () => $("#resIn").click(), addCodes: () => { addCodes($("#codes").value); }, csv: csvOut, clearRes: () => { R.length = 0; renderAll(); } };
   act[b.id]?.();
 });
 $("#pane").addEventListener("input", e => {
   const el = e.target, it = q(), v = el.value, on = el.checked;
+  if (!/^(codes|embedUrl)$/.test(el.id)) { if (!typing) commit(); clearTimeout(typing); typing = setTimeout(() => { typing = null; draft(); if (q()) { renderTimeline(); const w = document.querySelector(".note.warn"); if (!!w !== incomplete(q())) renderPane(); } }, 700); }
   if (el.dataset.ch != null) { it.choices[+el.dataset.ch].text = v; return; } if (el.dataset.ok != null) { it.choices[+el.dataset.ok].ok = on; return; } if (el.dataset.to != null) { it.choices[+el.dataset.to].to = v; return; }
   if (el.dataset.clipname) { const c = L.clips.find(x => x.id === el.dataset.clipname); c.name = v; return; } if (el.dataset.clipend) { L.clips.find(x => x.id === el.dataset.clipend).end = v; renderStory(); return; }
   if (el.dataset.story) { L.story ||= {}; L.story[el.dataset.story] = v; updateLeo(); return; } if (el.dataset.scene) { L.clips.find(x => x.id === el.dataset.scene).scene = v; updateLeo(); return; }
   ({ lTitle: () => L.title = v, lIntro: () => L.intro = v, lNoSkip: () => L.noSkip = on, lRewatch: () => L.rewatch = on, lRetries: () => L.retries = on, lShow: () => L.showAnswers = on, lName: () => L.askName = on, lClass: () => L.askClass = on, lHand: () => L.handIn = v, lSheet: () => L.sheet = v.trim(), lShuffle: () => L.shuffle = on, lLang: () => L.lang = v, lPass: () => L.pass = Math.max(0, Math.min(100, +v || 0)), lEmail: () => L.email = v.trim(),
-    qT: () => { it.t = Math.max(0, +v || 0); renderTimeline(); }, qPrompt: () => { it.prompt = v; renderTimeline(); }, qText: () => it.text = v, qLink: () => it.link = v, qOk: () => it.fbOk = v, qNo: () => it.fbNo = v, qReq: () => it.required = on })[el.id]?.();
+    qT: () => { it.t = Math.max(0, +v || 0); renderTimeline(); }, qClip: () => { it.clip = v; showClip(v); }, qAuto: () => it.auto = Math.max(0, +v || 0), qPrompt: () => { it.prompt = v; renderTimeline(); }, qText: () => it.text = v, qLink: () => it.link = v, qOk: () => it.fbOk = v, qNo: () => it.fbNo = v, qReq: () => it.required = on })[el.id]?.();
 });
-function renderAll() { renderPane(); renderResults(); }
+function renderAll() { renderPane(); renderResults(); syncHist(); }
+$("#undo").onclick = undo; $("#redo").onclick = redo;
+addEventListener("keydown", e => {
+  const typingIn = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName), mod = e.ctrlKey || e.metaKey;
+  if (document.querySelector(".preview")) { if (e.key === "Escape") document.querySelector(".preview")?.remove(); return; }
+  if (document.querySelector("dialog[open]")) return;
+  if (mod && e.key.toLowerCase() === "z" && !typingIn) { e.preventDefault(); return e.shiftKey ? redo() : undo(); }
+  if (mod && e.key.toLowerCase() === "y" && !typingIn) { e.preventDefault(); return redo(); }
+  if (typingIn || !L || tab !== "lesson") return;
+  if (e.key === " ") { e.preventDefault(); P && (P.paused() ? P.play() : P.pause()); }
+  else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { if (!P) return; e.preventDefault(); const it = q(), dir = e.key === "ArrowLeft" ? -1 : 1; if (it && e.altKey) { commit(); it.t = Math.max(0, Math.round((it.t + dir * .1) * 10) / 10); P.seek(it.t); return renderAll(); } P.seek(Math.max(0, P.time() + dir * (e.shiftKey ? 1 : 5))); }
+  else if ((e.key === "Delete" || e.key === "Backspace") && q()) { e.preventDefault(); commit(); const id = sel; L.items = L.items.filter(x => x.id !== id); sel = null; renderAll(); toast("Deleted. Undo with Ctrl+Z."); }
+  else if (e.key === "Escape" && sel) { sel = null; renderAll(); }
+});
 function clipsPane() {
   if (L.yt || !L.clips?.length) return "";
+  if (L.clips.length === 1) return `<div class="field" style="border:1px dashed var(--line);border-radius:12px;padding:.7rem"><p class="note" style="margin:0 0 .5rem"><b>Make it a choose-your-own-adventure:</b> add more clips, then use “Choice that jumps” to let students decide what happens next.</p><button class="btn" id="addClips">Add more clips</button></div>`;
   const ends = c => `<select data-clipend="${c.id}" aria-label="When ${esc(c.name)} ends"><option value="next" ${c.end === "next" ? "selected" : ""}>Then: next clip</option><option value="end" ${c.end === "end" ? "selected" : ""}>Then: end the lesson</option>${L.clips.filter(x => x.id !== c.id).map(x => `<option value="${x.id}" ${c.end === x.id ? "selected" : ""}>Then: go to ${esc(x.name)}</option>`).join("")}</select>`;
   return `<details class="sec" open data-sec="clips"><summary>Clips and story (${L.clips.length})</summary><div class="group">
     <p class="note">Each clip is a scene. Add a “Choice that jumps” to let students decide where the story goes, and choose what happens when each clip ends.</p>
@@ -246,7 +296,10 @@ function doPost(e) {
     d.answers.map(function (a) { return a.prompt + "\n   " + (a.answer === null ? "(skipped)" : [].concat(a.answer).join(", ")); }).join("\n"));
   return ContentService.createTextOutput("ok");
 }`;
-const PLAYER_CSS = `[hidden]{display:none!important}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#F4F5F7;color:#1B1F24;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+const PLAYER_CSS = `[hidden]{display:none!important}*{box-sizing:border-box}.card{position:relative}.x{position:absolute;top:.45rem;right:.45rem;background:transparent;color:#5A646E;padding:.25rem .55rem;font-size:1.05rem;border-radius:8px}.x:hover{background:#EDF0F3}
+.auto{height:4px;background:#EDF0F3;border-radius:3px;margin-top:.8rem;overflow:hidden}.auto i{display:block;height:100%;background:#2B6CB0;animation:drain linear forwards}@keyframes drain{from{width:100%}to{width:0}}
+.flash{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);background:rgba(20,24,28,.86);color:#fff;padding:.45rem .9rem;border-radius:999px;font-weight:700;font-size:.9rem;z-index:5}
+@media (prefers-reduced-motion:reduce){.auto i{animation:none;width:0}}html,body{margin:0;min-height:100%;background:#F4F5F7;color:#1B1F24;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.8rem 1.2rem;background:#fff;border-bottom:1px solid #E2E5EA}header h1{font-size:1.1rem;margin:0}#score{font-weight:700;color:#1E7B4C}
 main{max-width:1000px;margin:0 auto;padding:1rem}.stage{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9}
 #media,#media video,#media iframe,#media>div{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -330,16 +383,20 @@ $("#saveBtn").onclick = () => { if (!L) return; download(new Blob([JSON.stringif
 $("#openBtn").onclick = $("#openLesson").onclick = () => $("#projIn").click();
 $("#projIn").onchange = async () => {
   const f = $("#projIn").files[0]; $("#projIn").value = ""; if (!f) return;
-  try { const d = JSON.parse(await f.text()); if (d.kind !== "booth-lesson") throw 0; L = d.lesson; sel = null;
+  try { const d = JSON.parse(await f.text()); if (d.kind !== "booth-lesson") throw 0; openLesson(d.lesson); }
+  catch { toast("That isn’t a Booth lesson file."); }
+};
+function openLesson(lesson) { L = lesson; sel = null; hist = []; fut = []; syncHist();
     if (L.yt) useYT(L.yt); else {
       if (!L.clips?.length && L.videoName) L.clips = [{ id: uid(), name: L.videoName.replace(/\.[^.]+$/, ""), end: "end", file: L.videoName }];
-      const keep = L; toast(`Now choose the clip files: ${keep.clips.map(c => c.file).join(", ")}`, 7000);
+      const keep = L; toast(`Choose the video files for this lesson: ${keep.clips.map(c => c.file).join(", ")}`, 7000);
+      $("#empty").hidden = true; tab = "lesson"; P = null; cur = null; $("#vid").innerHTML = `<div style="position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.7rem;color:#fff;text-align:center;padding:1rem"><p style="margin:0">Choose the video files for this lesson:<br><small>${esc(keep.clips.map(c => c.file).join(", "))}</small></p><button class="btn primary" id="relink">Choose files</button></div>`; $("#relink").onclick = () => $("#vidIn").click(); renderAll();
       $("#vidIn").onchange = () => { const fs = [...$("#vidIn").files]; $("#vidIn").value = ""; $("#vidIn").onchange = () => { const x = [...$("#vidIn").files]; $("#vidIn").value = ""; if (x.length) addClipFiles(x); };
         L = keep; keep.clips.forEach((c, i) => { const f = fs.find(x => x.name === c.file) || fs[i]; if (f) CF.set(c.id, { file: f, url: URL.createObjectURL(f), captions: null }); });
         const missing = keep.clips.filter(c => !CF.get(c.id)); if (missing.length) toast(`Still missing: ${missing.map(c => c.file).join(", ")}`, 6000); if (keep.clips[0] && CF.get(keep.clips[0].id)) { showClip(keep.clips[0].id); begin(); } };
-      $("#vidIn").click(); } }
-  catch { toast("That isn’t a Booth lesson file."); }
-};
+      $("#vidIn").click(); }
+}
+try { const dr = JSON.parse(localStorage.getItem("booth-lesson-draft") || "null"); if (dr?.lesson) { $("#draftRow").hidden = false; $("#openDraft").textContent = `Carry on with “${dr.lesson.title}”`; $("#openDraft").onclick = () => openLesson(dr.lesson); } } catch {}
 
 /* ---------- Results dashboard ---------- */
 const R = [];
