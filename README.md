@@ -150,3 +150,15 @@ The **Compact** button in the header (or Ctrl+\ on Windows, Cmd+\ on a Mac) hide
 
 ## Studio menu and header on smaller screens
 The studio menu shows as many studios as fit, always whole, and moves the rest into **More ▾**, with a one-line description of each. The current studio always stays visible; on very narrow screens the menu becomes a single button named after it (for example **Photo ▾**) that lists every studio. When space runs short, header buttons switch to icons first, and on phones secondary actions move into a **⋯** menu, while undo, redo and the main save or export button stay visible. Menus work with the keyboard (arrow keys and Esc). The code is in `assets/nav.js`.
+
+## Cropping to exact sizes (Photo)
+While cropping, the current size is shown inside the crop box and in the side panel, with width, height and position fields you can type into. **Exact size** presets (1280 × 800, 1920 × 1080, 1080 × 1080, 1080 × 1350, 1200 × 630, 1584 × 396) or your own numbers lock the crop to that shape and produce a photo of exactly that size. If the selection is smaller than the target, a note warns that it will be enlarged.
+
+## Photo booth (photo strips)
+`photobooth.html` turns any camera into a photo booth, in three steps.
+
+1. **Snap:** choose **1 to 5 photos** and a countdown (3, 5 or 10 seconds), then press the shutter or Space. A large countdown, a soft flash and an optional shutter sound take each photo, with a short pause between them. Thumbnails show every photo, and any one can be **retaken**. The camera is mirrored like a real mirror (optional), and phones can switch between front and back cameras. No camera? Use up to five existing photos instead, or drop them onto the page.
+2. **Style:** the strip updates live as you choose a **look** (colour, black and white, greyscale or sepia), a **background** (colour swatches, any colour, or your own image), a **layout** (vertical strip, row or grid), the space between photos, rounded corners, and an optional **caption** (clean, handwritten or classic lettering) with today’s date. Text switches between dark and white to stay readable.
+3. **Share:** on phones, **Share** opens the phone’s share sheet for Instagram, WhatsApp, email and more. On computers, download a **PNG** (best quality) or **JPG** (smaller), **copy** the image to paste into an email or chat, or use **Email it**, which downloads the strip and opens your email app.
+
+Photos are captured at 1200 × 900 each, so a four-photo strip is about 1,200 × 3,600 pixels, sharp enough to print. Everything happens on the device: the camera is used only after you allow it, nothing is uploaded, and the camera switches off when you leave the page. Clear messages explain what to do if camera access is blocked. Your choices (number of photos, timer, look, background and layout) are remembered in the browser.

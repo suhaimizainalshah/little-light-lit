@@ -91,7 +91,7 @@ button{cursor:pointer}
 .h[data-h=w]{left:0;top:50%;cursor:ew-resize}.h[data-h=e]{left:100%;top:50%;cursor:ew-resize}
 .crop.locked .h[data-h=n],.crop.locked .h[data-h=s],.crop.locked .h[data-h=e],.crop.locked .h[data-h=w]{display:none}
 .guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
-.crop-size{position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);background:rgba(10,12,14,.8);color:#fff;font-size:.78rem;font-weight:600;line-height:1;padding:.35rem .55rem;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none}
+.crop-size{position:absolute;left:8px;top:8px;background:rgba(10,12,14,.82);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:.4rem .6rem;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}.crop.tiny .crop-size{top:auto;bottom:calc(100% + 6px);left:0}
 
 /* Empty state */
 .empty{display:grid;justify-items:center;text-align:center;gap:1.1rem;padding:2rem;max-width:560px}
@@ -267,7 +267,7 @@ a.brand:hover{background:var(--soft)}
       <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg>
       <span>Booth</span>
     </a>
-    <nav class="modes" aria-label="Studios"><a href="./" id="navPhoto" aria-current="page">Photo</a><a href="./#batch" id="navBatch" class="m-hide">Many photos</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+    <nav class="modes" aria-label="Studios"><a href="./" id="navPhoto" aria-current="page">Photo</a><a href="./#batch" id="navBatch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <button class="ibtn ed-only" id="openBtn" title="Open a photo (O)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3M12 4v12M7 9l5-5 5 5"/></svg><span class="t">Open</span></button>
     <button class="ibtn ed-only" id="undoBtn" disabled title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="ibtn ed-only" id="redoBtn" disabled title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
@@ -300,7 +300,7 @@ a.brand:hover{background:var(--soft)}
           <button class="btn" id="emptyBatch">Compress or resize many photos</button>
         </div>
         <p class="note">You can also drop photos anywhere on this page, or paste one with Ctrl+V.</p>
-        <nav class="studios" aria-label="More studios"><a href="video.html">Edit a video</a><a href="audio.html">Edit audio</a><a href="design.html">Design a post or poster</a><a href="animate.html">Make an animation</a><a href="lesson.html">Make a video lesson</a><a href="360.html">360° photos and videos</a><a href="3d.html">Make a 3D model</a></nav>
+        <nav class="studios" aria-label="More studios"><a href="video.html">Edit a video</a><a href="audio.html">Edit audio</a><a href="photobooth.html">Make a photo strip</a><a href="design.html">Design a post or poster</a><a href="animate.html">Make an animation</a><a href="lesson.html">Make a video lesson</a><a href="360.html">360° photos and videos</a><a href="3d.html">Make a 3D model</a></nav>
         <p class="privacy">Booth counts visits and saves anonymously, without cookies or personal data.</p>
       </section>
       <div class="wrap" id="wrap" hidden>
@@ -322,6 +322,17 @@ a.brand:hover{background:var(--soft)}
         <p class="hint" id="cropHint">Drag the corners to choose what to keep.</p>
         <div class="group" id="aspectGroup"><span class="lbl">Shape</span>
           <div class="chips" id="aspects"></div>
+        </div>
+        <div class="group" id="cropFields"><span class="lbl">Crop area (pixels)</span>
+          <div class="row2"><div class="field"><label for="cW">Width</label><input type="number" id="cW" min="1"></div><div class="field"><label for="cH">Height</label><input type="number" id="cH" min="1"></div></div>
+          <div class="row2"><div class="field"><label for="cX">From left</label><input type="number" id="cX" min="0"></div><div class="field"><label for="cY">From top</label><input type="number" id="cY" min="0"></div></div>
+          <p class="note" id="cropNow"></p>
+        </div>
+        <div class="group" id="exactGroup"><span class="lbl">Exact size</span>
+          <div class="chips" id="sizePresets"></div>
+          <div class="row2"><div class="field"><label for="eW">Width</label><input type="number" id="eW" min="16" placeholder="1280"></div><div class="field"><label for="eH">Height</label><input type="number" id="eH" min="16" placeholder="800"></div></div>
+          <button class="btn" id="eUse">Crop to this size</button>
+          <p class="note" id="eNote" aria-live="polite"></p>
         </div>
         <div class="group"><span class="lbl">Rotate and flip</span>
           <div class="row4">
@@ -813,9 +824,21 @@ function syncPanels() { syncSliders(); syncFilterSel(); syncTextUI(); syncSwatch
 /* ---------- Crop ---------- */
 const cropEl = $("#crop"), guide = $("#guide");
 const ASPECTS = [["Free", null], ["Original", "orig"], ["Square", 1], ["4:5", 4 / 5], ["3:2", 3 / 2], ["4:3", 4 / 3], ["16:9", 16 / 9], ["9:16", 9 / 16]];
-let cr = { x: 0, y: 0, w: 1, h: 1 }, aspect = null, aspectKey = "Free", ppMode = null;
+let cr = { x: 0, y: 0, w: 1, h: 1 }, aspect = null, aspectKey = "Free", ppMode = null, exact = null;
+const SIZE_PRESETS = [[1280, 800], [1920, 1080], [1080, 1080], [1080, 1350], [1200, 630], [1584, 396]];
+$("#sizePresets").innerHTML = SIZE_PRESETS.map(([w, h]) => `<button class="chip" data-sw="${w}" data-sh="${h}" aria-pressed="false">${w} × ${h}</button>`).join("");
+function useExact(w, h) { exact = { w, h }; aspectKey = "exact"; $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", "false")); $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", +c.dataset.sw === w && +c.dataset.sh === h)); $("#eW").value = w; $("#eH").value = h; setAspect(w / h); toast(`Move the box to choose what to keep. The photo will be exactly ${w} × ${h} px.`); }
+$("#sizePresets").onclick = e => { const b = e.target.closest("[data-sw]"); if (b) useExact(+b.dataset.sw, +b.dataset.sh); };
+$("#eUse").onclick = () => { const w = Math.round(+$("#eW").value), h = Math.round(+$("#eH").value); if (!(w >= 16 && h >= 16 && w <= 12000 && h <= 12000)) return toast("Type a width and height between 16 and 12,000 pixels."); useExact(w, h); };
+function cropFromFields() {
+  const W = S.base.width, H = S.base.height; let w = clamp(+$("#cW").value || 1, 1, W), h = clamp(+$("#cH").value || 1, 1, H);
+  if (aspect) { if (document.activeElement === $("#cH")) w = Math.min(W, Math.round(h * aspect)); else h = Math.min(H, Math.round(w / aspect)); }
+  const x = clamp(+$("#cX").value || 0, 0, W - w), y = clamp(+$("#cY").value || 0, 0, H - h);
+  cr = { x: x / W, y: y / H, w: w / W, h: h / H }; placeCrop();
+}
+["#cW", "#cH", "#cX", "#cY"].forEach(id => $(id).addEventListener("change", cropFromFields));
 $("#aspects").innerHTML = ASPECTS.map(([n]) => `<button class="chip" data-a="${n}" aria-pressed="${n === "Free"}">${n}</button>`).join("");
-$("#aspects").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; aspectKey = b.dataset.a; const a = ASPECTS.find(x => x[0] === aspectKey)[1]; setAspect(a === "orig" ? S.base.width / S.base.height : a); $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); };
+$("#aspects").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; exact = null; $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", "false")); aspectKey = b.dataset.a; const a = ASPECTS.find(x => x[0] === aspectKey)[1]; setAspect(a === "orig" ? S.base.width / S.base.height : a); $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); };
 function setAspect(a) {
   aspect = a; cropEl.classList.toggle("locked", !!a);
   if (a) { const W = S.base.width, H = S.base.height; let w = 1, h = W / (a * H); if (h > 1) { h = 1; w = a * H / W; } w *= .92; h *= .92; cr = { x: (1 - w) / 2, y: (1 - h) / 2, w, h }; }
@@ -824,7 +847,7 @@ function setAspect(a) {
 }
 function startCrop(pp = null) {
   ppMode = pp; wrap.classList.add("cropping"); cropEl.hidden = false; cropEl.classList.toggle("pp", !!pp); guide.toggleAttribute("hidden", !pp);
-  $("#aspectGroup").hidden = !!pp;
+  $("#aspectGroup").hidden = !!pp; $("#exactGroup").hidden = !!pp; if (!pp) { exact = null; $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", "false")); }
   $("#cropTitle").textContent = pp ? "Line up the face" : "Crop and rotate";
   $("#cropHint").textContent = pp ? "Move and resize the frame so the top of the head and the chin sit on the two lines." : "Drag the corners to choose what to keep.";
   $("#cropApply").textContent = pp ? "Use this framing" : "Apply crop";
@@ -835,7 +858,12 @@ function endCrop() { wrap.classList.remove("cropping"); cropEl.hidden = true; pp
 function placeCrop() {
   if (cropEl.hidden) return;
   Object.assign(cropEl.style, { left: cr.x * 100 + "%", top: cr.y * 100 + "%", width: cr.w * 100 + "%", height: cr.h * 100 + "%" });
-  $("#cropSize").textContent = `${Math.round(cr.w * S.base.width)} × ${Math.round(cr.h * S.base.height)}`;
+  const pw = Math.round(cr.w * S.base.width), ph = Math.round(cr.h * S.base.height), set = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v; };
+  $("#cropSize").textContent = `${pw} × ${ph} px${exact ? `  →  ${exact.w} × ${exact.h}` : ""}`;
+  cropEl.classList.toggle("tiny", cropEl.getBoundingClientRect().height < 46);
+  set("#cW", pw); set("#cH", ph); set("#cX", Math.round(cr.x * S.base.width)); set("#cY", Math.round(cr.y * S.base.height));
+  $("#cropNow").innerHTML = `Photo ${S.base.width} × ${S.base.height} px${exact ? ` · result <b>exactly ${exact.w} × ${exact.h}</b>` : ""}`;
+  $("#eNote").textContent = exact && (exact.w > pw + 1 || exact.h > ph + 1) ? `Your selection is smaller than ${exact.w} × ${exact.h}, so it will be enlarged and may look soft.` : "";
   if (ppMode) drawGuide();
 }
 function drawGuide() {
@@ -884,9 +912,10 @@ function applyCrop() {
     commit();
     const c = canvas(sw, sh); c.getContext("2d").drawImage(S.base, sx, sy, sw, sh, 0, 0, sw, sh);
     S.texts.forEach(t => { t.x = (t.x - cr.x) / cr.w; t.y = (t.y - cr.y) / cr.h; t.size = t.size / cr.w; });
-    S.base = c; fitPreview(); render(); syncHistory();
-    toast(wasPP ? "Face framed" : "Cropped");
-  }
+    S.base = exact && !wasPP ? resample(c, exact.w, exact.h) : c; fitPreview(); render(); syncHistory();
+    toast(wasPP ? "Face framed" : exact ? `Cropped to exactly ${exact.w} × ${exact.h} px` : `Cropped to ${sw} × ${sh} px`);
+  } else if (exact && !wasPP && (W !== exact.w || H !== exact.h)) { commit(); S.base = resample(S.base, exact.w, exact.h); fitPreview(); render(); syncHistory(); toast(`Resized to exactly ${exact.w} × ${exact.h} px`); }
+  exact = null;
   endCrop();
   if (wasPP) { ppDone.add(2); selectTool("passport"); } else selectTool("adjust");
 }
