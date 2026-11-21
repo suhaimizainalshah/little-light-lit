@@ -46,7 +46,7 @@
 .presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;width:min(760px,100%)}
 .busy{position:fixed;inset:0;background:rgba(10,12,14,.55);display:grid;place-items:center;z-index:50}
 .busy>div{background:var(--panel);border-radius:16px;padding:1.3rem;width:min(420px,92vw);display:grid;gap:.8rem}
-@media (max-width:860px){.work{grid-template-columns:1fr;grid-template-rows:minmax(320px,55vh) auto}.side{border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(320px,55vh) auto}.side{border-left:0;border-top:1px solid var(--line)}}
 </style>
 </head>
 <body>
@@ -93,6 +93,7 @@
 <div class="busy" id="busy" hidden><div role="dialog" aria-live="polite"><strong id="busyMsg">Working…</strong><div class="progress"><i id="busyBar" style="width:40%"></i></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 <script src="assets/animate-art.js"></script>
 <script>
 "use strict";

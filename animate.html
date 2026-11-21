@@ -50,7 +50,7 @@
 .busy{position:fixed;inset:0;background:rgba(10,12,14,.55);display:grid;place-items:center;z-index:50}
 .busy>div{background:var(--panel);border-radius:16px;padding:1.3rem;width:min(420px,92vw);display:grid;gap:.8rem}
 .mychars{display:flex;flex-wrap:wrap;gap:.35rem}
-@media (max-width:860px){.work{grid-template-columns:1fr;grid-template-rows:minmax(300px,50vh) auto}.side{border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(300px,50vh) auto}.side{border-left:0;border-top:1px solid var(--line)}}
 </style>
 </head>
 <body>
@@ -97,6 +97,7 @@
 <div class="toast" id="toast" role="status"></div>
 <div class="busy" id="busy" hidden><div role="dialog" aria-live="polite" aria-label="Exporting"><strong id="busyMsg">Exporting…</strong><div class="progress"><i id="busyBar"></i></div><p class="note">Your animation plays through once while it records. Keep this tab open.</p><button class="btn" id="cancelExport">Cancel</button></div></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 <script src="assets/animate-art.js"></script>
 <script src="assets/animate-strokes.js"></script>
 <script>

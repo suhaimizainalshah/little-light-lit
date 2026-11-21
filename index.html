@@ -44,7 +44,7 @@ button{cursor:pointer}
 
 /* App frame */
 .app{height:100%;display:grid;grid-template-rows:auto 1fr}
-.top{display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-bottom:1px solid var(--line);background:var(--panel)}
+.top{display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-bottom:1px solid var(--line);background:var(--panel);min-width:0}
 .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.25rem;letter-spacing:-.02em;margin-right:.6rem;user-select:none}
 .brand svg{flex:none}
 .top .spacer{flex:1}
@@ -185,7 +185,7 @@ dialog::backdrop{background:rgba(10,12,14,.55)}
 
 #batchBtn{display:none!important}
 /* Studio switcher */
-.modes{display:flex;gap:.2rem;padding:.2rem;border-radius:999px;background:var(--soft);margin-right:.4rem;overflow-x:auto;scrollbar-width:none}
+.modes{display:flex;gap:.2rem;padding:.2rem;border-radius:999px;background:var(--soft);margin-right:.4rem;overflow-x:auto;scrollbar-width:none;min-width:0;flex:0 1 auto}
 .modes a{padding:.4rem .85rem;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.9rem;white-space:nowrap}
 .modes a:hover{color:var(--ink)}
 .modes a[aria-current=page]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -229,22 +229,26 @@ a.brand:hover{background:var(--soft)}
 @keyframes sp{to{transform:rotate(360deg)}}
 .stats{display:grid;gap:.4rem}
 .stats div{display:flex;justify-content:space-between;padding:.5rem .7rem;background:var(--paper);border-radius:8px;font-variant-numeric:tabular-nums}
-@media (max-width:860px){
+@media (max-width:720px){
   .batch{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
   .bside{border-left:0;border-top:1px solid var(--line);max-height:46vh}
   .brow{grid-template-columns:48px minmax(0,1fr) auto;grid-template-areas:"i n a" "i r a"}
   .brow img{grid-area:i;width:48px;height:48px}.bname{grid-area:n}.bres{grid-area:r;text-align:left;min-width:0}.bacts{grid-area:a;flex-direction:column}
 }
 
+/* Mid-width windows: compact header, labels become icons (as in the other studios) */
+@media (max-width:860px){.brand span{display:none}.top{padding:.45rem .5rem;gap:.15rem}.ibtn .t{display:none}.ibtn{min-width:34px;padding:0 .4rem}.top .btn{padding:0 .75rem}.brand{margin-right:.1rem}}
+.ibtn .t{white-space:nowrap}
 /* Mobile */
-@media (max-width:860px){
+@media (max-width:720px){
   .brand span{display:none}
   .top{padding:.45rem .5rem;gap:.15rem}
   .ibtn .t{display:none}
   .ibtn{min-width:34px;padding:0 .4rem}
   .top .btn{padding:0 .75rem}
   .brand{margin-right:.1rem}
-  .work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto auto}
+  .work,.work:has(.side.closed){grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto auto}
+  .side.closed{display:none}
   .stage{grid-row:1}
   .side{grid-row:2;border-left:0;border-top:1px solid var(--line);max-height:42vh}
   .rail{grid-row:3;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:.3rem;overflow-x:auto;padding-bottom:calc(.3rem + env(safe-area-inset-bottom,0px))}
@@ -519,6 +523,7 @@ a.brand:hover{background:var(--soft)}
 </dialog>
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 
 <script>
 "use strict";

@@ -33,7 +33,7 @@ details.sec>.group{margin-top:.7rem}
 .busy{position:fixed;inset:0;z-index:55;display:grid;place-items:center;background:rgba(10,12,14,.5)}
 .busy>div{background:var(--panel);padding:1.2rem 1.4rem;border-radius:14px;font-weight:700}
 #recBtn.rec{color:var(--accent)}
-@media (max-width:860px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:44vh}.wavewrap{min-height:150px}}
+@media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:44vh}.wavewrap{min-height:150px}}
 </style>
 </head>
 <body>
@@ -130,6 +130,7 @@ details.sec>.group{margin-top:.7rem}
 <div class="busy" id="busy" hidden><div id="busyMsg" role="status">Working…</div></div>
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 <script src="assets/sounds.js"></script>
 <script src="assets/recut.js"></script>
 <script>

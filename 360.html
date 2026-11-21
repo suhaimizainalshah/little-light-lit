@@ -27,7 +27,7 @@ details.sec summary{font-weight:700;cursor:pointer;list-style:none;display:flex;
 details.sec summary::after{content:"+";color:var(--muted)}
 details.sec[open] summary::after{content:"–"}
 details.sec .group{margin-top:.7rem}
-@media (max-width:860px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:42vh}.vidbar{bottom:66px}}
+@media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:42vh}.vidbar{bottom:66px}}
 </style>
 </head>
 <body>
@@ -125,6 +125,7 @@ details.sec .group{margin-top:.7rem}
 <div class="busy" id="busy" hidden><div role="dialog" aria-live="polite" aria-label="Exporting"><strong id="busyMsg">Exporting…</strong><div class="progress"><i id="busyBar"></i></div><p class="note">Keep this tab open while the video records.</p><button class="btn" id="cancel">Cancel</button></div></div>
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 
 <script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js" } }</script>
 <script type="module">

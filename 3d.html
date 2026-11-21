@@ -38,7 +38,7 @@
 .size{font-variant-numeric:tabular-nums;font-weight:700}
 .empty3d{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
 .empty3d .empty{pointer-events:auto;background:color-mix(in srgb,var(--panel) 88%,transparent);border-radius:18px;padding:1.6rem;box-shadow:0 20px 50px -25px rgba(0,0,0,.4)}
-@media (max-width:860px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:40vh}.tb{min-width:44px;font-size:.64rem}.tb svg{width:20px;height:20px}}
+@media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.side{border-left:0;border-top:1px solid var(--line);max-height:40vh}.tb{min-width:44px;font-size:.64rem}.tb svg{width:20px;height:20px}}
 </style>
 </head>
 <body>
@@ -108,6 +108,7 @@
 </div></dialog>
 <div class="toast" id="toast" role="status"></div>
 <script src="assets/booth-ux.js"></script>
+<script src="assets/compact.js" data-app="booth"></script>
 
 <script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/addons/" } }</script>
 <script type="module">

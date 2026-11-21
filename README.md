@@ -145,3 +145,5 @@ Add answers files or codes to see each student’s score and how much they watch
 
 The new studios must be opened from a website or a local server, not by double-clicking the file, because browsers block their modules on file:// pages.
 
+## Compact mode
+The **Compact** button in the header (or Ctrl+\ on Windows, Cmd+\ on a Mac) hides the side panel so the work area gets the full width, which helps in narrow windows. The panel then slides in as a drawer: open it from the header button, the **Tools** tab on the right edge, or by choosing a tool in the left rail, and close it with Esc, ✕ or a click outside. The choice is remembered in the browser. The code is in `assets/compact.js`.
