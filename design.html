@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* one-time move of settings and drafts saved under the old name (Booth) */try{for(let i=localStorage.length;i--;){const k=localStorage.key(i);if(k&&/^booth/.test(k)){const n=k.replace(/^booth/,"littlelightlit");if(localStorage.getItem(n)===null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Booth Design: free graphic design in your browser</title>
+<title>Little Light Lit Design: free graphic design in your browser</title>
 <meta name="description" content="Design social posts, posters, thumbnails and slides with templates, layers, photo retouching, mockups and QR codes. Free, and nothing leaves your device.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><rect x='8' y='8' width='16' height='16' rx='3' fill='none' stroke='white' stroke-width='3'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&family=Inter:wght@400;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Caveat:wght@700&family=Permanent+Marker&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/booth.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
 .work{display:grid;grid-template-columns:1fr var(--side);min-height:0}
@@ -53,7 +54,7 @@
 <a class="skip" href="#pane">Skip to tools</a>
 <div class="app">
   <header class="top">
-    <a class="brand" href="./" aria-label="Booth home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Booth</span></a>
+    <a class="brand" href="./" aria-label="Little Light Lit home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Little Light Lit</span></a>
     <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html" aria-current="page">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <span class="spacer"></span>
     <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
@@ -89,24 +90,24 @@
   <div class="group"><button class="btn primary block" data-primary data-ex="png">PNG: best quality</button><button class="btn block" data-ex="jpg">JPG: smaller file</button><button class="btn block" data-ex="pdf">PDF: for printing</button><button class="btn block" data-ex="transparent">PNG with transparent background</button></div>
   <div class="group"><span class="lbl">Show it in a mockup</span><div class="chips"><button class="chip" data-mock="phone">Phone</button><button class="chip" data-mock="laptop">Laptop</button><button class="chip" data-mock="poster">Framed poster</button><button class="chip" data-mock="tablet">Tablet</button></div></div>
   <div style="display:flex;justify-content:flex-end"><button class="btn" id="exClose">Close</button></div></div></dialog>
-<dialog id="resizeDlg"><div class="dlg"><h2>Resize your design</h2><p class="note">Booth repositions and rescales everything to fit the new format.</p><div class="presets" id="resizeGrid" style="grid-template-columns:1fr 1fr"></div><div style="display:flex;justify-content:flex-end"><button class="btn" id="rzClose">Close</button></div></div></dialog>
+<dialog id="resizeDlg"><div class="dlg"><h2>Resize your design</h2><p class="note">Little Light Lit repositions and rescales everything to fit the new format.</p><div class="presets" id="resizeGrid" style="grid-template-columns:1fr 1fr"></div><div style="display:flex;justify-content:flex-end"><button class="btn" id="rzClose">Close</button></div></div></dialog>
 <div class="busy" id="busy" hidden><div role="dialog" aria-live="polite"><strong id="busyMsg">Working…</strong><div class="progress"><i id="busyBar" style="width:40%"></i></div></div></div>
 <div class="toast" id="toast" role="status"></div>
-<script src="assets/booth-ux.js"></script>
-<script src="assets/compact.js" data-app="booth"></script>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/compact.js" data-app="littlelightlit"></script>
 <script src="assets/nav.js"></script>
 <script src="assets/animate-art.js"></script>
 <script>
 "use strict";
-const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)], A = window.BoothArt;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)], A = window.LightLitArt;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), uid = () => Math.random().toString(36).slice(2, 9), esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function toast(m, ms = 2800) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); }
 function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000); }
 const busy = (m) => { $("#busy").hidden = !m; if (m) $("#busyMsg").textContent = m; };
-const COUNTER = { on: true, ns: "booth-photo-editor" };
-const noCount = () => { try { return localStorage.getItem("booth-nocount") === "1"; } catch { return false; } };
+const COUNTER = { on: true, ns: "littlelightlit" };
+const noCount = () => { try { return localStorage.getItem("littlelightlit-nocount") === "1"; } catch { return false; } };
 const count = k => { if (noCount()) return; if (!COUNTER.on || !/^https?:$/.test(location.protocol) || navigator.doNotTrack === "1" || navigator.globalPrivacyControl) return; fetch(`https://abacus.jasoncameron.dev/hit/${COUNTER.ns}/${k}`).catch(() => {}); };
-try { if (!sessionStorage.getItem("booth-design-visit")) { sessionStorage.setItem("booth-design-visit", "1"); count("design_visits"); } } catch {}
+try { if (!sessionStorage.getItem("littlelightlit-design-visit")) { sessionStorage.setItem("littlelightlit-design-visit", "1"); count("design_visits"); } } catch {}
 
 /* ---------- Formats, fonts and options ---------- */
 const PRESETS = [["insta", "Instagram post", 1080, 1080], ["story", "Story or reel cover", 1080, 1920], ["yt", "YouTube thumbnail", 1280, 720], ["linkedin", "LinkedIn post", 1200, 627], ["banner", "LinkedIn banner", 1584, 396], ["slide", "Presentation slide", 1920, 1080], ["a4", "A4 poster", 2480, 3508], ["flyer", "A5 flyer", 1748, 2480], ["card", "Business card", 1050, 600], ["x", "X post", 1600, 900]];
@@ -119,8 +120,8 @@ const PALETTE = ["#1B1F24", "#FFFFFF", "#E0412B", "#F6C744", "#2F855A", "#2B6CB0
 /* ---------- Document model ---------- */
 let D = null, sel = null, hist = [], fut = [], edit = null;
 const pix = new Map(); // image id -> { orig, work } canvases
-const brand = (() => { try { return JSON.parse(localStorage.getItem("booth-brand") || "null") || { colors: ["#E0412B", "#1B1F24", "#F6C744", "#FFFFFF"], head: "Bebas Neue", body: "Schibsted Grotesk" }; } catch { return { colors: [], head: "Bebas Neue", body: "Schibsted Grotesk" }; } })();
-const saveBrand = () => { try { localStorage.setItem("booth-brand", JSON.stringify(brand)); } catch {} };
+const brand = (() => { try { return JSON.parse(localStorage.getItem("littlelightlit-brand") || "null") || { colors: ["#E0412B", "#1B1F24", "#F6C744", "#FFFFFF"], head: "Bebas Neue", body: "Schibsted Grotesk" }; } catch { return { colors: [], head: "Bebas Neue", body: "Schibsted Grotesk" }; } })();
+const saveBrand = () => { try { localStorage.setItem("littlelightlit-brand", JSON.stringify(brand)); } catch {} };
 const layer = () => D?.layers.find(l => l.id === sel) || null;
 const snap = () => JSON.stringify(D);
 function commit() { hist.push(snap()); if (hist.length > 60) hist.shift(); fut = []; syncHist(); }
@@ -403,7 +404,7 @@ function renderPane() {
     if (l.type === "text") h += sec("text", "Text", `<div class="field"><label for="tText">Words</label><textarea id="tText" rows="3">${esc(l.text)}</textarea></div><div class="field"><label for="tFont">Font</label><select id="tFont">${FONTS.map(f => `<option ${f === l.font ? "selected" : ""}>${f}</option>`).join("")}</select></div>${slider("tSize", "Size", Math.round(l.size), 8, Math.round(400 * S()) + 100, 1, "px")}<div class="chips">${chip("talign", "left", l.align, "Left")}${chip("talign", "center", l.align, "Centre")}${chip("talign", "right", l.align, "Right")}${chip("weight", 400, l.weight, "Regular")}${chip("weight", 800, l.weight, "Bold")}${chip("upper", "toggle", l.upper ? "toggle" : "", "CAPS")}</div>${slider("tLH", "Line spacing", l.lineH || 1.15, .7, 2.5, .05)}${slider("tLS", "Letter spacing", l.letter || 0, -5, 40, 1)}${color("tColor", "Colour", l.color)}${quick("tColor")}<label class="check"><input type="checkbox" id="tBg" ${l.bgOn ? "checked" : ""}> Highlight box</label>${l.bgOn ? color("tBgC", "Box colour", l.bgColor || "#F6C744") : ""}`);
     if (l.type === "shape") h += sec("fill", "Shape", `<div class="chips">${SHAPES.map(([k, t]) => chip("shape", k, l.shape, t)).join("")}</div>${color("sFill", "Fill", l.fill)}${quick("sFill")}${l.shape !== "line" ? `<label class="check"><input type="checkbox" id="sGrad" ${l.fill2 ? "checked" : ""}> Gradient fill</label>${l.fill2 ? color("sFill2", "Gradient to", l.fill2) : ""}` : slider("sStroke", "Thickness", Math.round(l.strokeW || 10), 1, 80, 1, "px")}${l.shape === "rect" ? slider("sRad", "Corner rounding", l.radius || 0, 0, 1, .02) : ""}`);
     if (l.type === "icon") h += sec("fill", "Icon", `<div class="grid4">${Object.entries(A.PROPS).map(([k, v]) => `<button class="ibx" data-seticon="${k}" title="${v[0]}" aria-label="${v[0]}"><canvas width="90" height="90" data-icon="${k}"></canvas></button>`).join("")}</div>${color("iColor", "Main colour", l.color || "#F6C744")}${quick("iColor")}`);
-    if (l.type === "char") { const L = l.look; h += sec("fill", "Character", `<span class="lbl">Skin</span><div class="swatches">${A.SKIN.map((c, i) => `<button class="sw" style="background:${c}" data-skin="${i}" aria-label="Skin ${i + 1}"></button>`).join("")}</div><div class="chips">${A.HAIR.map(([v, t]) => chip("hair", v, L.hair, t)).join("")}</div><div class="chips">${A.TOPS.map(([v, t]) => chip("top", v, L.top, t)).join("")}</div><div class="swatches">${A.OUTFIT.map((c, i) => `<button class="sw" style="background:${c}" data-topc="${i}" aria-label="Top colour ${i + 1}"></button>`).join("")}</div><span class="lbl">Pose</span><div class="chips">${A.POSE.map(([v, t]) => chip("pose", v, l.pose, t)).join("")}</div><span class="lbl">Expression</span><div class="chips">${A.EXPR.map(([v, t]) => chip("expr", v, l.expr, t)).join("")}</div><button class="btn" data-act="flipc">Face the other way</button><p class="note">More options, including hairstyles, glasses and saved characters, are in Booth Animate.</p>`); }
+    if (l.type === "char") { const L = l.look; h += sec("fill", "Character", `<span class="lbl">Skin</span><div class="swatches">${A.SKIN.map((c, i) => `<button class="sw" style="background:${c}" data-skin="${i}" aria-label="Skin ${i + 1}"></button>`).join("")}</div><div class="chips">${A.HAIR.map(([v, t]) => chip("hair", v, L.hair, t)).join("")}</div><div class="chips">${A.TOPS.map(([v, t]) => chip("top", v, L.top, t)).join("")}</div><div class="swatches">${A.OUTFIT.map((c, i) => `<button class="sw" style="background:${c}" data-topc="${i}" aria-label="Top colour ${i + 1}"></button>`).join("")}</div><span class="lbl">Pose</span><div class="chips">${A.POSE.map(([v, t]) => chip("pose", v, l.pose, t)).join("")}</div><span class="lbl">Expression</span><div class="chips">${A.EXPR.map(([v, t]) => chip("expr", v, l.expr, t)).join("")}</div><button class="btn" data-act="flipc">Face the other way</button><p class="note">More options, including hairstyles, glasses and saved characters, are in Little Light Lit Animate.</p>`); }
     if (l.type === "qr") h += sec("fill", "QR code", `<div class="field"><label for="qText">Link or text</label><input type="text" id="qText" value="${esc(l.text)}"></div>${color("qColor", "Dots", l.color)}${color("qBg", "Background", l.bg)}<p class="note">Test it with your phone camera before printing. Keep strong contrast between dots and background.</p>`);
     if (l.type === "image") {
       h += sec("retouch", "Retouch (Photoshop-style)", `<div class="toolrow">${[["erase", "Erase"], ["restore", "Restore"], ["clone", "Clone"], ["heal", "Heal"], ["wand", "Remove colour"]].map(([k, t]) => `<button class="chip" data-tool="${k}" aria-pressed="${edit?.tool === k}">${t}</button>`).join("")}</div>
@@ -501,7 +502,7 @@ $("#resizeGrid").addEventListener("click", e => {
 $("#exportBtn").onclick = () => { if (!D) return toast("Start a design first."); $("#exportDlg").showModal(); };
 $("#exClose").onclick = () => $("#exportDlg").close();
 function flat(opts = {}) { const c = canvas(D.w, D.h); render(c.getContext("2d"), opts); return c; }
-const fname = ext => `booth-design-${(D.name || "custom").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${ext}`;
+const fname = ext => `littlelightlit-design-${(D.name || "custom").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.${ext}`;
 $("#exportDlg").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return; const ex = b.dataset.ex, mk = b.dataset.mock; if (!ex && !mk) return;
   await document.fonts?.ready; const prevSel = sel; sel = null; edit = null;
@@ -534,12 +535,12 @@ function mockup(kind) {
 }
 
 /* ---------- Save and open projects ---------- */
-$("#saveBtn").onclick = () => { if (!D) return; const images = {}; for (const l of D.layers) if (l.type === "image" && pix.has(l.mid)) { const p = pix.get(l.mid); images[l.mid] = { work: p.work.toDataURL("image/png"), orig: p.orig.toDataURL("image/jpeg", .9) }; } download(new Blob([JSON.stringify({ v: 1, doc: D, images })], { type: "application/json" }), "booth-design.json"); toast("Design saved as a file you can open again"); };
+$("#saveBtn").onclick = () => { if (!D) return; const images = {}; for (const l of D.layers) if (l.type === "image" && pix.has(l.mid)) { const p = pix.get(l.mid); images[l.mid] = { work: p.work.toDataURL("image/png"), orig: p.orig.toDataURL("image/jpeg", .9) }; } download(new Blob([JSON.stringify({ v: 1, doc: D, images })], { type: "application/json" }), "littlelightlit-design.json"); toast("Design saved as a file you can open again"); };
 $("#openBtn").onclick = () => $("#projIn").click();
 $("#projIn").onchange = async () => {
   const f = $("#projIn").files[0]; if (!f) return; $("#projIn").value = "";
   try { const j = JSON.parse(await f.text()); for (const [mid, v] of Object.entries(j.images || {})) { const load = async src => { const i = new Image(); i.src = src; await i.decode(); const c = canvas(i.naturalWidth, i.naturalHeight); c.getContext("2d").drawImage(i, 0, 0); return c; }; pix.set(mid, { work: await load(v.work), orig: await load(v.orig) }); }
-    D = j.doc; hist = []; fut = []; sel = null; edit = null; $("#empty").hidden = true; afterLoad(); toast("Design opened"); } catch { toast("That file isn’t a Booth Design project."); }
+    D = j.doc; hist = []; fut = []; sel = null; edit = null; $("#empty").hidden = true; afterLoad(); toast("Design opened"); } catch { toast("That file isn’t a Little Light Lit Design project."); }
 };
 
 /* ---------- Keyboard and drop ---------- */
@@ -553,7 +554,7 @@ addEventListener("keydown", e => {
   if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); commit(); D.layers = D.layers.filter(x => x !== l); sel = null; edit = null; renderPane(); return draw(); }
   const mv = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (mv && !l.locked) { e.preventDefault(); l.x += mv[0] * step * S() * 2; l.y += mv[1] * step * S() * 2; draw(); }
 });
-window.BoothDrop = { accept: f => f.type.startsWith("image/") || /\.json$/i.test(f.name), acceptType: t => !t || t.startsWith("image/") || t === "application/json", label: () => D ? "Drop photos to add them to your design" : "Drop photos to start a design", hint: "JPG, PNG, WebP or a saved Booth Design file.", reject: "Images or Booth Design files only.",
+window.LightLitDrop = { accept: f => f.type.startsWith("image/") || /\.json$/i.test(f.name), acceptType: t => !t || t.startsWith("image/") || t === "application/json", label: () => D ? "Drop photos to add them to your design" : "Drop photos to start a design", hint: "JPG, PNG, WebP or a saved Little Light Lit Design file.", reject: "Images or Little Light Lit Design files only.",
   open: async files => { const j = files.find(f => /\.json$/i.test(f.name)); if (j) { const dt = new DataTransfer(); dt.items.add(j); $("#projIn").files = dt.files; return $("#projIn").onchange(); } if (!D) newDoc("insta", 1080, 1080, "Instagram post"); await addImages(files); }, onReject: () => toast("Drop an image or a saved design.") };
 $("#zoomFit").onclick = () => draw();
 document.fonts?.ready.then(() => D && draw());

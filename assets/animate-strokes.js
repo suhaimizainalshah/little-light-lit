@@ -1,4 +1,4 @@
-/* Booth Animate: pen paths, so the drawing hand follows real shapes.
+/* Little Light Lit Animate: pen paths, so the drawing hand follows real shapes.
    1. record(): runs the vector art against a stand-in canvas and keeps every line it would draw.
    2. text(): lays out words in a single-line pen font (EMS fonts, SIL Open Font License).
    3. traceSVG(): follows the paths of an imported SVG illustration, in document order. */
@@ -76,9 +76,9 @@
   }
   /* ---------- 2. Single-line pen fonts ---------- */
   const FONT_FILES = { Script: "script", Casual: "casual", Print: "print" }, loading = {};
-  function loadFont(name) { const F = window.BoothStrokeFonts?.[name]; if (F) return Promise.resolve(F); return loading[name] ||= new Promise((res, rej) => { const s = document.createElement("script"); s.src = `vendor/strokefonts/${FONT_FILES[name]}.js`; s.onload = () => res(window.BoothStrokeFonts[name]); s.onerror = rej; document.head.appendChild(s); }); }
+  function loadFont(name) { const F = window.LightLitStrokeFonts?.[name]; if (F) return Promise.resolve(F); return loading[name] ||= new Promise((res, rej) => { const s = document.createElement("script"); s.src = `vendor/strokefonts/${FONT_FILES[name]}.js`; s.onload = () => res(window.LightLitStrokeFonts[name]); s.onerror = rej; document.head.appendChild(s); }); }
   function text(str, fontName, fs, align = "center", lineH = 1.3) {
-    const F = window.BoothStrokeFonts?.[fontName]; if (!F) { loadFont(fontName); return null; }
+    const F = window.LightLitStrokeFonts?.[fontName]; if (!F) { loadFont(fontName); return null; }
     const k = fs * 1.25 / F.upm, lines = String(str).split("\n"), lh = fs * lineH, widths = lines.map(l => [...l].reduce((w, ch) => w + (F.glyphs[ch] || F.glyphs[" "] || [378])[0] * k, 0)), W = Math.max(...widths, fs * .5), H = lines.length * lh, polys = [];
     lines.forEach((l, li) => { let x = align === "left" ? -W / 2 : align === "right" ? W / 2 - widths[li] : -widths[li] / 2; const base = -H / 2 + lh * (li + .5) + F.cap * k / 2; for (const ch of l) { const g = F.glyphs[ch] || F.glyphs[" "] || [378, ""]; if (g[1]) polys.push(...parsePath(g[1], k, x, base, true)); x += g[0] * k; } });
     const S = finish(polys); S.box = { x: -W / 2, y: -H / 2, w: W, h: H }; return S;
@@ -107,5 +107,5 @@
     });
     host.remove(); const S = finish(polys); S.box = { x: -vb[2] / 2, y: -vb[3] / 2, w: vb[2], h: vb[3] }; S.svg = new XMLSerializer().serializeToString(root); return S;
   }
-  window.BoothStrokes = { record, drawUpTo, parsePath, text, loadFont, traceSVG, FONTS: Object.keys(FONT_FILES) };
+  window.LightLitStrokes = { record, drawUpTo, parsePath, text, loadFont, traceSVG, FONTS: Object.keys(FONT_FILES) };
 })();

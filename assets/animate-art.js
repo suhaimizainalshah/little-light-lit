@@ -1,4 +1,4 @@
-/* Booth Animate: vector art drawn in code (no image files), in two modes:
+/* Little Light Lit Animate: vector art drawn in code (no image files), in two modes:
    "color" for cartoon scenes and "line" for whiteboard sketching.
    Characters: feet at (0,0), about 310 units tall. Props: centred, about 200 units across. */
 (() => {
@@ -176,5 +176,5 @@
     c.restore();
   }
 
-  window.BoothArt = { INK, SKIN, HAIRC, OUTFIT, HAIR, TOPS, BOTTOMS, GLASSES, BEARD, EXPR, POSE, DEFAULT_LOOK, character, CHAR_BOX, PROPS, PROP_BOX, prop, BGS, background, isDark, hand };
+  window.LightLitArt = { INK, SKIN, HAIRC, OUTFIT, HAIR, TOPS, BOTTOMS, GLASSES, BEARD, EXPR, POSE, DEFAULT_LOOK, character, CHAR_BOX, PROPS, PROP_BOX, prop, BGS, background, isDark, hand };
 })();

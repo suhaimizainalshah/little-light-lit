@@ -1,4 +1,4 @@
-/* Booth: automatic silence detection (Recut-style), shared by the Audio and Video studios.
+/* Little Light Lit: automatic silence detection (Recut-style), shared by the Audio and Video studios.
    Works on decoded audio (Float32Array channels). Everything runs on the device. */
 (() => {
   const WIN = 0.02; // 20 ms analysis windows
@@ -64,5 +64,5 @@
     }
     return out;
   }
-  window.BoothRecut = { find, keep, total, autoThreshold, cutBuffer };
+  window.LightLitRecut = { find, keep, total, autoThreshold, cutBuffer };
 })();

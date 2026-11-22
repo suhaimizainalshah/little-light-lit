@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* one-time move of settings and drafts saved under the old name (Booth) */try{for(let i=localStorage.length;i--;){const k=localStorage.key(i);if(k&&/^booth/.test(k)){const n=k.replace(/^booth/,"littlelightlit");if(localStorage.getItem(n)===null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Booth Audio: free audio editor in your browser</title>
+<title>Little Light Lit Audio: free audio editor in your browser</title>
 <meta name="description" content="Cut, trim, fade, clean up and add effects to audio, extract the sound from your video files, record your voice and export WAV or MP3. Free and private.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><path d='M7 16h2M11 11v10M15 7v18M19 12v8M23 14v4M25 16h0' stroke='white' stroke-width='2.4' stroke-linecap='round'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/booth.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
 .work{display:grid;grid-template-columns:1fr var(--side);min-height:0}
@@ -40,7 +41,7 @@ details.sec>.group{margin-top:.7rem}
 <a class="skip" href="#side">Skip to the tools</a>
 <div class="app">
   <header class="top">
-    <a class="brand" href="./" aria-label="Booth home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Booth</span></a>
+    <a class="brand" href="./" aria-label="Little Light Lit home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Little Light Lit</span></a>
     <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html" aria-current="page">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <span class="spacer"></span>
     <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
@@ -129,8 +130,8 @@ details.sec>.group{margin-top:.7rem}
 </div></dialog>
 <div class="busy" id="busy" hidden><div id="busyMsg" role="status">Working…</div></div>
 <div class="toast" id="toast" role="status"></div>
-<script src="assets/booth-ux.js"></script>
-<script src="assets/compact.js" data-app="booth"></script>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/compact.js" data-app="littlelightlit"></script>
 <script src="assets/nav.js"></script>
 <script src="assets/sounds.js"></script>
 <script src="assets/recut.js"></script>
@@ -143,8 +144,8 @@ const fmt = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60), s = t 
 function toast(m, ms = 3000) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); }
 function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); }
 const busy = m => { $("#busy").hidden = !m; if (m) $("#busyMsg").textContent = m; };
-const NS = "booth-photo-editor", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
-const noCount = () => { try { return localStorage.getItem("booth-nocount") === "1"; } catch { return false; } };
+const NS = "littlelightlit", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
+const noCount = () => { try { return localStorage.getItem("littlelightlit-nocount") === "1"; } catch { return false; } };
 const count = k => { if (noCount()) return; if (canCount) fetch(`https://abacus.jasoncameron.dev/hit/${NS}/${k}`, { keepalive: true }).catch(() => {}); };
 
 let AC = null; const ac = () => (AC ||= new (window.AudioContext || window.webkitAudioContext)());
@@ -174,19 +175,19 @@ async function decodeFile(f) { const ab = await f.arrayBuffer(); return await ac
 async function openFile(f) {
   busy(f.type.startsWith("video/") ? "Extracting the sound from your video…" : "Opening…");
   try { const b = await decodeFile(f); stopPlay(); hist = []; fut = []; buf = b; name = f.name.replace(/\.[^.]+$/, ""); selA = selB = null; head = 0; showEditor(); fit(); changed(); count("audio_opens"); toast(f.type.startsWith("video/") ? "Sound extracted from the video" : "Opened"); }
-  catch (e) { console.error(e); toast(f.type.startsWith("video/") ? "This video has no sound Booth can read. Try an MP4 or WebM file." : "This file can’t be opened. Try MP3, M4A, WAV, OGG or FLAC.", 5000); }
+  catch (e) { console.error(e); toast(f.type.startsWith("video/") ? "This video has no sound Little Light Lit can read. Try an MP4 or WebM file." : "This file can’t be opened. Try MP3, M4A, WAV, OGG or FLAC.", 5000); }
   busy(false);
 }
 function showEditor() { $("#empty").hidden = true; $("#editor").hidden = false; requestAnimationFrame(drawWave); }
 $("#openBtn").onclick = $("#emptyOpen").onclick = () => { $("#fileIn").value = ""; $("#fileIn").click(); };
 $("#fileIn").onchange = () => $("#fileIn").files[0] && openFile($("#fileIn").files[0]);
-$("#findBtn").onclick = $("#emptyFind").onclick = () => window.BoothSounds.open();
+$("#findBtn").onclick = $("#emptyFind").onclick = () => window.LightLitSounds.open();
 const stage = $("#stage");
-/* drop files anywhere on the page (handled by assets/booth-ux.js) */
+/* drop files anywhere on the page (handled by assets/littlelightlit-ux.js) */
 const isImg = f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|avif|bmp|heic|heif)$/i.test(f.name);
 const isVid = f => f.type.startsWith("video/") || /\.(mp4|m4v|mov|webm|mkv|avi)$/i.test(f.name);
 const isAud = f => f.type.startsWith("audio/") || /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|weba)$/i.test(f.name);
-window.BoothDrop = {
+window.LightLitDrop = {
   accept: f => isAud(f) || isVid(f), acceptType: t => /^(audio|video)\//.test(t),
   label: () => (buf ? "Drop to replace, or hold Shift to add at the end" : "Drop audio, or a video to extract its sound"), hint: "MP3, M4A, WAV, OGG, FLAC, or MP4, MOV and WebM video.",
   reject: "Audio and video files only.",
@@ -318,15 +319,15 @@ let addMode = null;
 const rcChannels = () => [...Array(buf.numberOfChannels).keys()].map(c => buf.getChannelData(c));
 function rcFind() {
   const chs = rcChannels();
-  if ($("#rcAuto").checked) { const t = Math.round(BoothRecut.autoThreshold(chs, buf.sampleRate)); $("#rcThr").value = t; $("#rcThr").previousElementSibling.textContent = `${t} dB (auto)`; }
-  const cuts = BoothRecut.find(chs, buf.sampleRate, { thresholdDb: +$("#rcThr").value, minSilence: +$("#rcMin").value, keepPause: +$("#rcKeep").value });
-  const t = BoothRecut.total(cuts); silences = cuts; drawWave();
+  if ($("#rcAuto").checked) { const t = Math.round(LightLitRecut.autoThreshold(chs, buf.sampleRate)); $("#rcThr").value = t; $("#rcThr").previousElementSibling.textContent = `${t} dB (auto)`; }
+  const cuts = LightLitRecut.find(chs, buf.sampleRate, { thresholdDb: +$("#rcThr").value, minSilence: +$("#rcMin").value, keepPause: +$("#rcKeep").value });
+  const t = LightLitRecut.total(cuts); silences = cuts; drawWave();
   $("#rcInfo").textContent = cuts.length ? `Found ${cuts.length} pause${cuts.length > 1 ? "s" : ""}: removing them saves ${fmt(t)} (${Math.round(t / dur() * 100)}% of the audio).` : "No pauses found at this level. Raise “Quiet below” or lower “Shortest pause”.";
   return cuts;
 }
 const OPS = {
   rcFind: () => { rcFind(); },
-  rcCut: () => { const cuts = silences || rcFind(); if (!cuts.length) return; const saved = BoothRecut.total(cuts); push(BoothRecut.cutBuffer(ac(), buf, cuts)); selA = selB = null; head = 0; fit(); drawWave(); toast(`Removed ${cuts.length} pause${cuts.length > 1 ? "s" : ""}, ${fmt(saved)} shorter`); },
+  rcCut: () => { const cuts = silences || rcFind(); if (!cuts.length) return; const saved = LightLitRecut.total(cuts); push(LightLitRecut.cutBuffer(ac(), buf, cuts)); selA = selB = null; head = 0; fit(); drawWave(); toast(`Removed ${cuts.length} pause${cuts.length > 1 ? "s" : ""}, ${fmt(saved)} shorter`); },
   all: () => { selA = 0; selB = dur(); head = 0; syncInfo(); drawWave(); },
   trim: () => { if (needSel()) return; const [s0, s1] = range(); push(slice(buf, s0, s1)); selA = selB = null; head = 0; fit(); drawWave(); toast("Kept only the selection"); },
   del: () => { if (needSel()) return; const [s0, s1] = range(); if (s1 - s0 >= buf.length) return toast("That would delete everything."); push(replace(buf, s0, s1, mk(buf.numberOfChannels, 0, buf.sampleRate))); head = selA; selA = selB = null; changed(); toast("Deleted"); },
@@ -392,7 +393,7 @@ async function mp3(b, kbps) {
   for (let i = 0; i < L.length; i += block) { const m = ch > 1 ? enc.encodeBuffer(L.subarray(i, i + block), R.subarray(i, i + block)) : enc.encodeBuffer(L.subarray(i, i + block)); if (m.length) parts.push(new Uint8Array(m)); if (i % (block * 400) === 0) await new Promise(r => setTimeout(r)); }
   const end = enc.flush(); if (end.length) parts.push(new Uint8Array(end)); return new Blob(parts, { type: "audio/mpeg" });
 }
-function idb() { return new Promise((res, rej) => { const r = indexedDB.open("booth", 1); r.onupgradeneeded = () => r.result.createObjectStore("handoff"); r.onsuccess = () => res(r.result); r.onerror = rej; }); }
+function idb() { return new Promise((res, rej) => { const r = indexedDB.open("littlelightlit", 1); r.onupgradeneeded = () => r.result.createObjectStore("handoff"); r.onsuccess = () => res(r.result); r.onerror = rej; }); }
 async function handoff(blob, nm) { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction("handoff", "readwrite"); tx.objectStore("handoff").put({ blob, name: nm }, "audio"); tx.oncomplete = res; tx.onerror = rej; }); }
 dlg.addEventListener("click", async e => {
   const b = e.target.closest("[data-ex]"); if (!b) return; const k = b.dataset.ex, ob = outBuf(), nm = `${name}${$("#exSel").checked ? "-part" : ""}`; dlg.close();
@@ -414,7 +415,7 @@ addEventListener("keydown", e => {
   else if (e.key === "Escape") { selA = selB = null; syncInfo(); drawWave(); }
   else if (e.key === "Home") $("#toStart").click();
 });
-try { if (!sessionStorage.getItem("booth-audio-visit")) { sessionStorage.setItem("booth-audio-visit", "1"); count("audio_visits"); } } catch {}
+try { if (!sessionStorage.getItem("littlelightlit-audio-visit")) { sessionStorage.setItem("littlelightlit-audio-visit", "1"); count("audio_visits"); } } catch {}
 })();
 </script>
 </body>

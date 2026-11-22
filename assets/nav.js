@@ -1,4 +1,4 @@
-/* Booth studio menu: show as many studios as fit, always whole, and move the rest into "More".
+/* Little Light Lit studio menu: show as many studios as fit, always whole, and move the rest into "More".
    The current studio always stays visible. Recalculates when the window or header changes size. */
 (() => {
   const DESC = { "./": "Edit photos and make passport photos", "./#batch": "Compress or resize many photos at once", "photobooth.html": "Snap a photo booth strip with your camera", "design.html": "Posts, posters, slides and more", "video.html": "Edit clips, add music and export video", "audio.html": "Edit, clean up and record audio", "animate.html": "Whiteboard and cartoon explainers", "lesson.html": "Interactive video lessons and quizzes", "360.html": "View and edit 360° photos and videos", "3d.html": "Build and export 3D models" };
@@ -18,7 +18,7 @@
 .nav-menu b{font-weight:700;font-size:.92rem}.nav-menu small{color:var(--muted,#5A646E);font-size:.8rem}
 @media (max-width:860px){.nav-more{padding:.35rem .55rem;font-size:.84rem}}
 .top.nav-tight .ibtn:has(svg) .t,.top.nav-tight .ib:has(svg) .t,.top.nav-tight .btn:has(svg) .t{display:none}
-.top.nav-tight .brand span{display:none}
+.brand span{white-space:nowrap}@media (max-width:760px){.top .brand span{display:none}}
 .top.nav-tight .modes a{padding:.4rem .65rem}
 .top [data-act-hidden]{display:none!important}
 .act-more{display:none;flex-shrink:0}.act-more.show{display:inline-flex}

@@ -1,9 +1,9 @@
-/* Compact mode, shared by Booth and Folio.
+/* Compact mode, shared by Little Light Lit and Folio.
    The side panel becomes a drawer that slides in over the work, so the canvas or document gets the full width.
    Open it from the header button, the "Tools" tab on the right edge, or by choosing a tool in the rail.
    Close it with Esc, the close button or a click outside. The choice is remembered per app. */
 (() => {
-  const app = document.currentScript?.dataset.app || "booth", KEY = `${app}-compact`;
+  const app = document.currentScript?.dataset.app || "littlelightlit", KEY = `${app}-compact`;
   const css = `
 .cm-btn[aria-pressed=true]{background:var(--soft,#EDF0F3);color:var(--ink,#1B1F24)}
 body.compact .work{grid-template-columns:1fr!important}
@@ -45,7 +45,7 @@ body.compact .cm-close{display:flex}
     addEventListener("resize", measure);
     let saved = null; try { saved = localStorage.getItem(KEY); } catch {}
     if (saved === "1") setCompact(true); else measure();
-    window.BoothCompact = { set: setCompact, open: setOpen };
+    window.LightLitCompact = { set: setCompact, open: setOpen };
   }
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", init) : init();
 })();

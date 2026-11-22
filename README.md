@@ -1,4 +1,4 @@
-# Booth: free photo editor and passport photo maker
+# Little Light Lit: free photo editor and passport photo maker
 
 One file (`index.html`), no account, no server. Photos are edited inside your browser and never uploaded anywhere.
 
@@ -17,13 +17,13 @@ One file (`index.html`), no account, no server. Photos are edited inside your br
 - Undo/redo (Ctrl+Z / Ctrl+Shift+Z), hold **Compare** to see the original, **Start over** anytime.
 
 ## Visitor and save counts
-Booth counts visits and saves anonymously with the free [Abacus](https://abacus.jasoncameron.dev) counter: no cookies, no names, no tracking across sites, and nothing is counted for visitors whose browser sends *Do Not Track* or *Global Privacy Control*. To see your totals, add `#stats` to your site address, for example `https://your-site.example/#stats`. Change `COUNTER.ns` near the top of the script to a name only you use, or set `COUNTER.on` to `false` to switch counting off.
+Little Light Lit counts visits and saves anonymously with the free [Abacus](https://abacus.jasoncameron.dev) counter: no cookies, no names, no tracking across sites, and nothing is counted for visitors whose browser sends *Do Not Track* or *Global Privacy Control*. To see your totals, add `#stats` to your site address, for example `https://your-site.example/#stats`. Change `COUNTER.ns` near the top of the script to a name only you use, or set `COUNTER.on` to `false` to switch counting off.
 
-Click the Booth logo at any time to go back to the start.
+Click the Little Light Lit logo at any time to go back to the start.
 
 ## Good to know
 - **Background removal needs the internet the first time.** It downloads an AI model (tens of MB) from IMG.LY's servers; your browser caches it after that. The photo itself is processed on your device.
-- The background-removal library (`@imgly/background-removal`) is licensed under **AGPL-3.0**. Free personal and non-commercial use is fine. If you ever turn Booth into a commercial product, review that licence or swap the library.
+- The background-removal library (`@imgly/background-removal`) is licensed under **AGPL-3.0**. Free personal and non-commercial use is fine. If you ever turn Little Light Lit into a commercial product, review that licence or swap the library.
 - Very large photos are reduced to 4096 px on the longest side for smooth editing.
 - Passport rules differ by country and change. Always check the official requirements before you submit. Print sheets at 100% size, not "fit to page".
 - iPhone HEIC photos open fine on iPhone/Safari. On other browsers, export them as JPG first.
@@ -46,7 +46,7 @@ Switch between them with the tabs at the top of every page.
 
 **Find music (Video and Audio studios):** links to official trend charts (TikTok Creative Center, YouTube Charts, Shazam, Spotify Charts) and free music libraries (YouTube Audio Library, Pixabay Music, Free Music Archive, Freesound, Incompetech), plus a credit-line maker. In the Video editor each audio track has a credit field, a button to show the credit at the end of the video, and "Copy music credits" in Export.
 
-About trending sounds and copyright: naming a song in a caption or a file's details is good practice but does not give permission to use it. Trending sounds on TikTok, Instagram and YouTube Shorts are licensed for use inside those apps, so the safe route is to export from Booth without that song and add it in the app when posting. Booth does not download audio from YouTube or other sites: that breaks their terms of service and usually copyright. For your own YouTube uploads, download the file from YouTube Studio and open it in Booth.
+About trending sounds and copyright: naming a song in a caption or a file's details is good practice but does not give permission to use it. Trending sounds on TikTok, Instagram and YouTube Shorts are licensed for use inside those apps, so the safe route is to export from Little Light Lit without that song and add it in the app when posting. Little Light Lit does not download audio from YouTube or other sites: that breaks their terms of service and usually copyright. For your own YouTube uploads, download the file from YouTube Studio and open it in Little Light Lit.
 
 **360° (`360.html`):** opens stitched 360 photos and videos and stitches raw dual-lens files (for example Samsung Gear 360). Level the horizon, set the starting direction, adjust brightness, contrast, saturation and warmth, add a vignette to views, and hide the tripod with a colour patch or your logo. Views: 360, little planet, tunnel and flat. Save 360 photos with Facebook/Google metadata, pictures of the current view, spin-around and spinning-planet videos from photos, 360 videos and flat videos of one view.
 
@@ -134,7 +134,7 @@ Add answers files or codes to see each student’s score and how much they watch
 - **Full HD 1080p** export by default, or HD 720p for smaller files.
 
 ## Remove silences
-- **Audio studio:** “Remove silences” finds pauses, shows them in red on the waveform, then cuts them with smooth joins. Set the quiet level (or let Booth choose it), the shortest pause to cut, and how much pause to leave.
+- **Audio studio:** “Remove silences” finds pauses, shows them in red on the waveform, then cuts them with smooth joins. Set the quiet level (or let Little Light Lit choose it), the shortest pause to cut, and how much pause to leave.
 - **Video studio:** choose a pace (Natural, Tight or Very tight), then remove silences from one clip or every clip. Clips are split around the pauses, and Undo restores everything.
 
 ## Opening files
@@ -181,4 +181,4 @@ In **Background**, besides the on-device AI remover, choose **Pick a colour from
 - **For site owners:** mention the counter in your site’s privacy notice. To keep counts entirely on infrastructure you control, replace the Abacus address with your own counter, or switch counting off with `COUNTER.on = false`.
 
 ## Resizing by file size (Photo and Many photos)
-In **Resize**, use **Or by file size** to make a photo fit a limit such as “under 500 KB”: type any number, choose **KB** or **MB**, pick **JPG**, **WebP** or **PNG**, and press **Make it this size**. Booth keeps the full pixel size and the highest quality that fits; if that isn’t enough, it makes the photo slightly smaller while keeping quality at 60% or more, because a slightly smaller sharp photo looks better than a blocky full-size one. The result shows the file size, pixel size and quality, with a download button. The **Save** window and **Many photos** offer the same limits (50 KB to 5 MB, or **Custom…** in KB or MB). Sizes use 1 MB = 1,000 KB, so files fit whether a form counts in thousands or in 1,024s. JPG and WebP make much smaller files than PNG.
+In **Resize**, use **Or by file size** to make a photo fit a limit such as “under 500 KB”: type any number, choose **KB** or **MB**, pick **JPG**, **WebP** or **PNG**, and press **Make it this size**. Little Light Lit keeps the full pixel size and the highest quality that fits; if that isn’t enough, it makes the photo slightly smaller while keeping quality at 60% or more, because a slightly smaller sharp photo looks better than a blocky full-size one. The result shows the file size, pixel size and quality, with a download button. The **Save** window and **Many photos** offer the same limits (50 KB to 5 MB, or **Custom…** in KB or MB). Sizes use 1 MB = 1,000 KB, so files fit whether a form counts in thousands or in 1,024s. JPG and WebP make much smaller files than PNG.

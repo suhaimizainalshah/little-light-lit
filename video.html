@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* one-time move of settings and drafts saved under the old name (Booth) */try{for(let i=localStorage.length;i--;){const k=localStorage.key(i);if(k&&/^booth/.test(k)){const n=k.replace(/^booth/,"littlelightlit");if(localStorage.getItem(n)===null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Booth Video: free video editor in your browser</title>
+<title>Little Light Lit Video: free video editor in your browser</title>
 <meta name="description" content="Trim, cut, change speed, add music and text, and turn photos into a video. Free, and your files never leave your device.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><path d='M12 10v12l10-6z' fill='white'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&family=Inter:wght@400;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Caveat:wght@700&family=Permanent+Marker&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/booth.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
 .work{display:grid;grid-template-columns:1fr var(--side);min-height:0}
@@ -72,7 +73,7 @@ details.sec>.group{margin-top:.7rem}
 <a class="skip" href="#cv">Skip to the preview</a>
 <div class="app">
   <header class="top">
-    <a class="brand" href="./" aria-label="Booth home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Booth</span></a>
+    <a class="brand" href="./" aria-label="Little Light Lit home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Little Light Lit</span></a>
     <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html" aria-current="page">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <span class="spacer"></span>
     <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
@@ -153,8 +154,8 @@ details.sec>.group{margin-top:.7rem}
 </div></dialog>
 <div class="busy" id="busy" hidden><div role="dialog" aria-live="polite" aria-label="Exporting"><strong id="busyMsg">Exporting…</strong><div class="progress"><i id="busyBar"></i></div><p class="note" id="busyNote">Your video plays through once while it records. Keep this tab open.</p><button class="btn" id="cancelExport">Cancel</button></div></div>
 <div class="toast" id="toast" role="status"></div>
-<script src="assets/booth-ux.js"></script>
-<script src="assets/compact.js" data-app="booth"></script>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/compact.js" data-app="littlelightlit"></script>
 <script src="assets/nav.js"></script>
 <script src="assets/sounds.js"></script>
 <script src="assets/recut.js"></script>
@@ -170,8 +171,8 @@ const ease = p => (p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
 const fmt = t => { t = Math.max(0, t || 0); const m = Math.floor(t / 60), s = t - m * 60; return `${m}:${s.toFixed(1).padStart(4, "0")}`; };
 function toast(m, ms = 2800) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); }
 function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); }
-const NS = "booth-photo-editor", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
-const noCount = () => { try { return localStorage.getItem("booth-nocount") === "1"; } catch { return false; } };
+const NS = "littlelightlit", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
+const noCount = () => { try { return localStorage.getItem("littlelightlit-nocount") === "1"; } catch { return false; } };
 const count = k => { if (noCount()) return; if (canCount) fetch(`https://abacus.jasoncameron.dev/hit/${NS}/${k}`, { keepalive: true }).catch(() => {}); };
 
 /* ---------- Model ---------- */
@@ -290,16 +291,16 @@ $("#addMusicBtn").onclick = $("#emptyMusic").onclick = () => { $("#musicIn").val
 fileIn.onchange = () => addFiles([...fileIn.files]);
 $("#musicIn").onchange = () => addFiles([...$("#musicIn").files], true);
 const stage = $("#stage");
-/* drop files anywhere on the page (handled by assets/booth-ux.js) */
+/* drop files anywhere on the page (handled by assets/littlelightlit-ux.js) */
 const isImg = f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|avif|bmp|heic|heif)$/i.test(f.name);
 const isVid = f => f.type.startsWith("video/") || /\.(mp4|m4v|mov|webm|mkv|avi)$/i.test(f.name);
 const isAud = f => f.type.startsWith("audio/") || /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|weba)$/i.test(f.name);
-window.BoothDrop = {
+window.LightLitDrop = {
   accept: f => isImg(f) || isVid(f) || isAud(f), acceptType: t => /^(image|video|audio)\//.test(t),
   label: () => (P.clips.length ? "Drop to add to your video" : "Drop videos, photos or music to start"), hint: "Videos and photos go on the video track; music and sounds go on the audio track.",
   reject: "Try MP4, MOV, WebM, JPG, PNG, MP3 or M4A.",
   open: files => { const a = files.filter(f => isAud(f) && !isVid(f)), v = files.filter(f => !(isAud(f) && !isVid(f))); if (v.length) addFiles(v); if (a.length) addFiles(a, true); },
-  onReject: () => toast("Booth can’t open that file here. Try MP4, MOV, WebM, JPG, PNG, MP3 or M4A."),
+  onReject: () => toast("Little Light Lit can’t open that file here. Try MP4, MOV, WebM, JPG, PNG, MP3 or M4A."),
 };
 function loadEl(kind, url) {
   return new Promise((res, rej) => {
@@ -506,11 +507,11 @@ async function recut(clips) {
     try { ab = await decodedOf(m); } catch { failed++; continue; }
     const sr = ab.sampleRate, s0 = Math.floor(c.in * sr), s1 = Math.min(ab.length, Math.ceil(c.out * sr));
     const chs = [...Array(ab.numberOfChannels).keys()].map(k => ab.getChannelData(k).subarray(s0, s1));
-    const opts = { thresholdDb: BoothRecut.autoThreshold(chs, sr), ...PACE[recutPace] };
-    const cuts = BoothRecut.find(chs, sr, opts); if (!cuts.length) continue;
-    const keep = BoothRecut.keep((s1 - s0) / sr, cuts); if (!keep.length) continue;
+    const opts = { thresholdDb: LightLitRecut.autoThreshold(chs, sr), ...PACE[recutPace] };
+    const cuts = LightLitRecut.find(chs, sr, opts); if (!cuts.length) continue;
+    const keep = LightLitRecut.keep((s1 - s0) / sr, cuts); if (!keep.length) continue;
     const i = P.clips.indexOf(c), parts = keep.map(([a, b], k) => { const n = JSON.parse(JSON.stringify(c)); n.id = k ? uid() : c.id; n.in = c.in + a; n.out = c.in + b; if (k) n.tr = { type: "none", dur: c.tr?.dur || .6 }; return n; });
-    P.clips.splice(i, 1, ...parts); removed += BoothRecut.total(cuts) / (c.speed || 1); pieces += cuts.length;
+    P.clips.splice(i, 1, ...parts); removed += LightLitRecut.total(cuts) / (c.speed || 1); pieces += cuts.length;
   }
   showBusy(false);
   if (!pieces) return toast(failed ? "Couldn’t read the sound in that video." : "No pauses long enough to remove.");
@@ -554,13 +555,13 @@ $("#snapBtn").onclick = () => { draw(T); cv.toBlob(b => { download(b, `frame-${f
 $("#addTextBtn").onclick = () => { commit(); const t = { id: uid(), text: "Your title", start: T, end: T + 3, pos: "bottom", size: 8, color: "#ffffff", box: false, font: "Inter", anim: "fade" }; P.texts.push(t); sel = { type: "text", id: t.id }; renderAll(); setTimeout(() => $("#xText")?.select(), 30); };
 $("#undo").onclick = undo; $("#redo").onclick = redo;
 function addCreditText(line) { commit(); const tot = Math.max(total(), 3), t = { id: uid(), text: line, start: Math.max(0, tot - 3), end: tot, pos: "bottom", size: 4, color: "#ffffff", box: true, font: "Inter", anim: "fade" }; P.texts.push(t); sel = { type: "text", id: t.id }; renderAll(); toast("Credit added to the last 3 seconds"); }
-$("#findMusic").onclick = () => window.BoothSounds.open();
-window.BoothSounds && (window.BoothSounds.onCredit = (line) => { const a = sel?.type === "audio" ? findSel() : null; if (a) a.credit = line; if (P.clips.length) addCreditText(line); else navigator.clipboard?.writeText(line); });
+$("#findMusic").onclick = () => window.LightLitSounds.open();
+window.LightLitSounds && (window.LightLitSounds.onCredit = (line) => { const a = sel?.type === "audio" ? findSel() : null; if (a) a.credit = line; if (P.clips.length) addCreditText(line); else navigator.clipboard?.writeText(line); });
 /* audio handed over from the Audio studio */
 (async () => {
   if (!/from=audio/.test(location.search)) return;
   try {
-    const db = await new Promise((res, rej) => { const r = indexedDB.open("booth", 1); r.onupgradeneeded = () => r.result.createObjectStore("handoff"); r.onsuccess = () => res(r.result); r.onerror = rej; });
+    const db = await new Promise((res, rej) => { const r = indexedDB.open("littlelightlit", 1); r.onupgradeneeded = () => r.result.createObjectStore("handoff"); r.onsuccess = () => res(r.result); r.onerror = rej; });
     const item = await new Promise(res => { const q = db.transaction("handoff").objectStore("handoff").get("audio"); q.onsuccess = () => res(q.result); q.onerror = () => res(null); });
     if (item) { await addFiles([new File([item.blob], item.name, { type: item.blob.type || "audio/wav" })], true); db.transaction("handoff", "readwrite").objectStore("handoff").delete("audio"); toast("Audio from the Audio studio added. Now add your videos or photos."); }
     history.replaceState(null, "", location.pathname);
@@ -646,7 +647,7 @@ pane.addEventListener("click", e => {
   const acts = { split, dup: duplicate, del: remove, freeze: freezeFrame, detach: detachAudio,
     trall: () => { commit(); setTransAll(s.tr.type, s.tr.dur); }, rot: () => { commit(); s.rot = ((s.rot || 0) + 90) % 360; renderPane(); draw(T); },
     flip: () => { commit(); s.flip = !s.flip; draw(T); }, reframe: () => { commit(); Object.assign(s, { zoom: 1, px: 0, py: 0, rot: 0, flip: false }); renderPane(); draw(T); },
-    creditHelp: () => window.BoothSounds.open({ title: (media.get(s.mid)?.name || "").replace(/\.[^.]+$/, "") }),
+    creditHelp: () => window.LightLitSounds.open({ title: (media.get(s.mid)?.name || "").replace(/\.[^.]+$/, "") }),
     creditEnd: () => { if (!s.credit) return toast("Add the credit first, or use the credit helper."); addCreditText(s.credit); },
     recutOne: () => recut([s]), recutAll: () => recut(P.clips.filter(c => M(c)?.kind === "video")),
     fitlen: () => { commit(); s.start = 0; s.len = Math.min(total(), media.get(s.mid).dur - s.trimIn); renderAll(); } };
@@ -705,7 +706,7 @@ async function exportMedia(kind) {
     const ok = exporting && !exporting.cancelled, type = (rec.mimeType || mime || (audioOnly ? "audio/webm" : "video/webm")).split(";")[0]; monitor.gain.value = 1; exporting = null; $("#busy").hidden = true;
     if (!ok) return toast("Export cancelled");
     const ext = type.includes("mp4") ? (audioOnly ? "m4a" : "mp4") : "webm";
-    download(new Blob(chunks, { type }), `booth-${audioOnly ? "audio" : "video"}-${new Date().toISOString().slice(0, 10)}.${ext}`);
+    download(new Blob(chunks, { type }), `littlelightlit-${audioOnly ? "audio" : "video"}-${new Date().toISOString().slice(0, 10)}.${ext}`);
     count(audioOnly ? "video_audio_exports" : "video_exports"); toast(`Saved as ${ext.toUpperCase()}`, 4000);
   };
   exporting = { cancelled: false, kind }; monitor.gain.value = 0; $("#busy").hidden = false; $("#busyBar").style.width = "0";
@@ -726,7 +727,7 @@ function finishExport() {
     if (cancelled) { $("#busy").hidden = true; return toast("Export cancelled"); }
     $("#busyMsg").textContent = "Building GIF"; setTimeout(() => {
       const gw = +$("#gifW").value, gh = Math.round(gw * cv.height / cv.width / 2) * 2; const fr = finishExport.frames;
-      const blob = encodeGif(fr, gw, gh, 10); $("#busy").hidden = true; download(blob, `booth-${new Date().toISOString().slice(0, 10)}.gif`); count("video_gif_exports"); toast(`GIF saved (${Math.round(blob.size / 1024)} KB)`);
+      const blob = encodeGif(fr, gw, gh, 10); $("#busy").hidden = true; download(blob, `littlelightlit-${new Date().toISOString().slice(0, 10)}.gif`); count("video_gif_exports"); toast(`GIF saved (${Math.round(blob.size / 1024)} KB)`);
     }, 30);
     return;
   }
@@ -790,7 +791,7 @@ addEventListener("keydown", e => {
   else if (e.key === "Escape") { sel = null; renderAll(); }
 });
 new ResizeObserver(() => { if (P.clips.length && !drag) renderTimeline(); }).observe(scroll);
-try { if (!sessionStorage.getItem("booth-video-visit")) { sessionStorage.setItem("booth-video-visit", "1"); count("video_visits"); } } catch {}
+try { if (!sessionStorage.getItem("littlelightlit-video-visit")) { sessionStorage.setItem("littlelightlit-video-visit", "1"); count("video_visits"); } } catch {}
 renderAll();
 })();
 </script>

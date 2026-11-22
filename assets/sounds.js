@@ -1,6 +1,6 @@
-/* Booth: "Find music and sounds" panel, shared by the Video and Audio studios.
+/* Little Light Lit: "Find music and sounds" panel, shared by the Video and Audio studios.
    Links out to official trend charts and free music libraries, and builds credit lines.
-   Booth never downloads audio from other websites. */
+   Little Light Lit never downloads audio from other websites. */
 (() => {
   const TREND = [
     ["TikTok Creative Center: trending songs", "https://ads.tiktok.com/business/creativecenter/inspiration/popular/music", "Top songs by country and week. Filter to “approved for business use” if you post for a brand."],
@@ -36,7 +36,7 @@
     dlg.innerHTML = `<div class="dlg">
       <h2 id="sndTitle">Find music and sounds</h2>
       <div class="tip"><strong>Using a trending sound?</strong>
-        <p>Trending songs are copyrighted. TikTok, Instagram Reels and YouTube Shorts license them for use inside their own apps. Export your video from Booth without that song, then add the trending sound in the app when you post. The sound stays credited and linked, and your video won’t be muted or get a copyright claim.</p>
+        <p>Trending songs are copyrighted. TikTok, Instagram Reels and YouTube Shorts license them for use inside their own apps. Export your video from Little Light Lit without that song, then add the trending sound in the app when you post. The sound stays credited and linked, and your video won’t be muted or get a copyright claim.</p>
         <p>Naming the song in your caption or a file’s details is polite, but it doesn’t give you permission. Only a licence does.</p></div>
       <div class="group"><span class="lbl">See what’s trending</span><ul>${TREND.map(link).join("")}</ul>
         <p class="note">Instagram: in the Reels editor, tap Audio. Sounds marked with an upward arrow are trending.</p></div>
@@ -53,10 +53,10 @@
     const upd = () => ($("#cOut").textContent = line() || "Fill in the track and artist to see your credit.");
     ["#cTitle", "#cArtist", "#cLic", "#cLink"].forEach(id => $(id).addEventListener("input", upd)); upd();
     $("#cCopy").onclick = async () => { const t = line(); if (!t) return; try { await navigator.clipboard.writeText(t); $("#cCopy").textContent = "Copied"; setTimeout(() => ($("#cCopy").textContent = "Copy for your caption"), 1500); } catch {} };
-    $("#cUse").onclick = () => { const t = line(); if (t && window.BoothSounds.onCredit) { window.BoothSounds.onCredit(t, { title: $("#cTitle").value.trim(), artist: $("#cArtist").value.trim(), licence: $("#cLic").value, link: $("#cLink").value.trim() }); dlg.close(); } };
+    $("#cUse").onclick = () => { const t = line(); if (t && window.LightLitSounds.onCredit) { window.LightLitSounds.onCredit(t, { title: $("#cTitle").value.trim(), artist: $("#cArtist").value.trim(), licence: $("#cLic").value, link: $("#cLink").value.trim() }); dlg.close(); } };
     $("#sndClose").onclick = () => dlg.close();
   }
-  window.BoothSounds = {
+  window.LightLitSounds = {
     onCredit: null,
     open(prefill = {}) { if (!dlg) build(); const $ = s => dlg.querySelector(s); if (prefill.title != null) $("#cTitle").value = prefill.title; if (prefill.artist != null) $("#cArtist").value = prefill.artist; $("#cTitle").dispatchEvent(new Event("input")); $("#cUse").hidden = !this.onCredit; dlg.showModal(); },
   };

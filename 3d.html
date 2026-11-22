@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* one-time move of settings and drafts saved under the old name (Booth) */try{for(let i=localStorage.length;i--;){const k=localStorage.key(i);if(k&&/^booth/.test(k)){const n=k.replace(/^booth/,"littlelightlit");if(localStorage.getItem(n)===null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k)}}}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Booth 3D: simple 3D model editor in your browser</title>
+<title>Little Light Lit 3D: simple 3D model editor in your browser</title>
 <meta name="description" content="Build and edit simple 3D models from shapes, open GLB, OBJ, STL and PLY files, and export for 3D printing or the web. Free and private.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><path d='M16 7l8 4.5v9L16 25l-8-4.5v-9z' fill='none' stroke='white' stroke-width='2.2' stroke-linejoin='round'/><path d='M8 11.5l8 4.5 8-4.5M16 16v9' fill='none' stroke='white' stroke-width='2'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/booth.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
 .work{display:grid;grid-template-columns:1fr var(--side);min-height:0}
@@ -45,7 +46,7 @@
 <a class="skip" href="#side">Skip to the controls</a>
 <div class="app">
   <header class="top">
-    <a class="brand" href="./" aria-label="Booth home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Booth</span></a>
+    <a class="brand" href="./" aria-label="Little Light Lit home"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><rect x="7" y="7" width="8" height="8" rx="1.5" fill="#fff"/><rect x="17" y="7" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="7" y="17" width="8" height="8" rx="1.5" fill="#fff" opacity=".7"/><rect x="17" y="17" width="8" height="8" rx="1.5" fill="#fff"/></svg><span>Little Light Lit</span></a>
     <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="360.html">360°</a><a href="3d.html" aria-current="page">3D</a></nav>
     <span class="spacer"></span>
     <button class="ibtn" id="undo" disabled aria-label="Undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
@@ -95,7 +96,7 @@
 <dialog id="exportDlg" aria-labelledby="exTitle"><div class="dlg">
   <h2 id="exTitle">Export</h2>
   <div class="group">
-    <button class="btn block primary" data-primary data-ex="glb">GLB: for the web, AR, Blender and Booth’s shop</button>
+    <button class="btn block primary" data-primary data-ex="glb">GLB: for the web, AR, Blender and Little Light Lit’s shop</button>
     <button class="btn block" data-ex="stl">STL: for 3D printing</button>
     <button class="btn block" data-ex="obj">OBJ: for most 3D apps</button>
     <button class="btn block" data-ex="usdz">USDZ: view in AR on iPhone and iPad</button>
@@ -107,8 +108,8 @@
   <div style="display:flex;justify-content:flex-end"><button class="btn" id="exClose">Close</button></div>
 </div></dialog>
 <div class="toast" id="toast" role="status"></div>
-<script src="assets/booth-ux.js"></script>
-<script src="assets/compact.js" data-app="booth"></script>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/compact.js" data-app="littlelightlit"></script>
 <script src="assets/nav.js"></script>
 
 <script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/addons/" } }</script>
@@ -132,8 +133,8 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function toast(m, ms = 2800) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); }
-const NS = "booth-photo-editor", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
-const noCount = () => { try { return localStorage.getItem("booth-nocount") === "1"; } catch { return false; } };
+const NS = "littlelightlit", canCount = !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
+const noCount = () => { try { return localStorage.getItem("littlelightlit-nocount") === "1"; } catch { return false; } };
 const count = k => { if (noCount()) return; if (canCount) fetch(`https://abacus.jasoncameron.dev/hit/${NS}/${k}`, { keepalive: true }).catch(() => {}); };
 
 /* ---------- Scene ---------- */
@@ -152,7 +153,7 @@ const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(80, 140,
 Object.assign(sun.shadow.camera, { left: -200, right: 200, top: 200, bottom: -200, near: 1, far: 600 }); scene.add(sun);
 const grid = new THREE.GridHelper(400, 40, dark ? 0x5a6470 : 0x9aa4ae, dark ? 0x353b42 : 0xd3d8dd); scene.add(grid);
 const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({ opacity: .18 })); shadowFloor.rotation.x = -Math.PI / 2; shadowFloor.receiveShadow = true; scene.add(shadowFloor);
-const world = new THREE.Group(); world.name = "Booth scene"; scene.add(world);
+const world = new THREE.Group(); world.name = "Little Light Lit scene"; scene.add(world);
 const tc = new TransformControls(camera, cvs); tc.setSize(.9); scene.add(tc.getHelper ? tc.getHelper() : tc);
 const box = new THREE.BoxHelper(undefined, 0xe0412b); box.visible = false; scene.add(box);
 tc.addEventListener("dragging-changed", e => (orbit.enabled = !e.value));
@@ -253,7 +254,7 @@ let font = null;
 async function getFont() { if (!font) font = await new FontLoader().loadAsync("./vendor/three/fonts/helvetiker_bold.typeface.json"); return font; }
 function textGeo(f, u) { const g = new TextGeometry(u.text || " ", { font: f, size: u.tsize, depth: u.depth, curveSegments: 8, bevelEnabled: u.depth > 1.5, bevelThickness: Math.min(.8, u.depth * .2), bevelSize: Math.min(.5, u.tsize * .03), bevelSegments: 2 }); g.center(); return g; }
 async function addText() {
-  const f = await getFont(), u = { kind: "text", text: "Booth", tsize: 14, depth: 4 };
+  const f = await getFont(), u = { kind: "text", text: "Little Light Lit", tsize: 14, depth: 4 };
   const m = new THREE.Mesh(textGeo(f, u), newMaterial(PALETTE[ci++ % PALETTE.length])); m.name = uniqueName("Text"); Object.assign(m.userData, u);
   prep(m); world.add(m); dropToGround(m); spread(m); push({ t: "add", o: m }); select(m); count("d3_shapes");
 }
@@ -301,9 +302,9 @@ const fileIn = $("#fileIn");
 $("#importBtn").onclick = $("#emptyImport").onclick = () => { fileIn.value = ""; fileIn.click(); };
 fileIn.onchange = () => [...fileIn.files].forEach(load);
 const stage = $("#stage");
-/* drop files anywhere on the page (handled by assets/booth-ux.js) */
+/* drop files anywhere on the page (handled by assets/littlelightlit-ux.js) */
 const isModel = f => /\.(glb|gltf|obj|stl|ply)$/i.test(f.name), isPic = f => f.type.startsWith("image/");
-window.BoothDrop = {
+window.LightLitDrop = {
   accept: f => isModel(f) || (isPic(f) && !!sel), acceptType: t => !t || /model|octet-stream|sla|image\//.test(t),
   label: () => (sel ? "Drop a model to add it, or a picture to put on the selected object" : "Drop 3D models to add them"), hint: "GLB, glTF, OBJ, STL or PLY.", reject: "3D models only: GLB, glTF, OBJ, STL or PLY.",
   open: files => { const pics = files.filter(isPic); if (pics.length && sel) { const dt = new DataTransfer(); dt.items.add(pics[0]); $("#texIn").files = dt.files; $("#texIn").dispatchEvent(new Event("change")); } files.filter(isModel).forEach(load); },
@@ -315,7 +316,7 @@ async function load(f) {
     if (ext === "glb" || ext === "gltf") { const g = await new GLTFLoader().parseAsync(ext === "glb" ? buf : new TextDecoder().decode(buf), ""); o = g.scene; }
     else if (ext === "obj") { o = new OBJLoader().parse(new TextDecoder().decode(buf)); o.traverse(c => { if (c.isMesh) c.material = newMaterial("#b8bec6"); }); }
     else if (ext === "stl" || ext === "ply") { const geo = (ext === "stl" ? new STLLoader() : new PLYLoader()).parse(buf); geo.computeVertexNormals(); o = new THREE.Mesh(geo, geo.hasAttribute("color") ? new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .5 }) : newMaterial("#b8bec6")); if (ext === "ply") o.rotation.x = -Math.PI / 2; }
-    else return toast(`Booth opens GLB, glTF, OBJ, STL and PLY files. “${f.name}” isn’t one of those.`, 4500);
+    else return toast(`Little Light Lit opens GLB, glTF, OBJ, STL and PLY files. “${f.name}” isn’t one of those.`, 4500);
   } catch (err) { console.error(err); return toast(`Couldn’t open ${f.name}. ${ext === "gltf" ? "glTF files with separate textures need to be saved as a single GLB." : "The file may be damaged."}`, 5000); }
   const grp = new THREE.Group(); grp.add(o); grp.name = uniqueName(f.name.replace(/\.[^.]+$/, "")); grp.userData.kind = "model"; prep(grp);
   const b = new THREE.Box3().setFromObject(grp), size = b.getSize(new THREE.Vector3()), max = Math.max(size.x, size.y, size.z);
@@ -422,8 +423,8 @@ const dlg = $("#exportDlg");
 $("#exportBtn").onclick = () => { if (!world.children.length) return toast("Add a shape or open a model first."); $("#exOnly").value = sel ? "sel" : "all"; $("#exOnly").disabled = !sel; dlg.showModal(); };
 $("#exClose").onclick = () => dlg.close();
 function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
-function exportRoot() { const only = $("#exOnly").value === "sel" && sel; const root = new THREE.Group(); root.name = only ? sel.name : "Booth model"; (only ? [sel] : world.children.filter(o => o.visible)).forEach(o => root.add(o.clone(true))); root.updateMatrixWorld(true); return root; }
-const fname = () => ($("#exOnly").value === "sel" && sel ? sel.name : "booth-model").replace(/[\\/:*?"<>|]+/g, "-");
+function exportRoot() { const only = $("#exOnly").value === "sel" && sel; const root = new THREE.Group(); root.name = only ? sel.name : "Little Light Lit model"; (only ? [sel] : world.children.filter(o => o.visible)).forEach(o => root.add(o.clone(true))); root.updateMatrixWorld(true); return root; }
+const fname = () => ($("#exOnly").value === "sel" && sel ? sel.name : "littlelightlit-model").replace(/[\\/:*?"<>|]+/g, "-");
 dlg.addEventListener("click", async e => {
   const b = e.target.closest("[data-ex]"); if (!b) return; const k = b.dataset.ex;
   try {
@@ -462,7 +463,7 @@ addEventListener("keydown", e => {
   else if (k === "w") setMode("translate"); else if (k === "e") setMode("rotate"); else if (k === "r") setMode("scale");
   else if (k === "f") frame(); else if (k === "delete" || k === "backspace") { if (sel) { e.preventDefault(); remove(); } } else if (k === "escape") select(null);
 });
-try { if (!sessionStorage.getItem("booth-3d-visit")) { sessionStorage.setItem("booth-3d-visit", "1"); count("d3_visits"); } } catch {}
+try { if (!sessionStorage.getItem("littlelightlit-3d-visit")) { sessionStorage.setItem("littlelightlit-3d-visit", "1"); count("d3_visits"); } } catch {}
 resize(); refresh();
 </script>
 </body>

@@ -1,4 +1,4 @@
-/* Booth Lessons: the student player. It runs inside every exported lesson and inside the teacher's preview.
+/* Little Light Lit Lessons: the student player. It runs inside every exported lesson and inside the teacher's preview.
    Modes: "standalone" (students hand in a file, code or email), "scorm" (reports to Moodle, Canvas and other
    SCORM 1.2 platforms), and "sls" (reports the score to Singapore's Student Learning Space through xAPI). */
 (() => {
@@ -49,7 +49,7 @@
     Bridge.start = () => init(); Bridge.answer = () => sendScore(score()); Bridge.end = r => sendScore(r.score.correct);
   }
   /* ---------- saving progress on this device ---------- */
-  const KEY = `booth-lesson-${L.id}`;
+  const KEY = `littlelightlit-lesson-${L.id}`; try { const old = `booth-lesson-${L.id}`, v = localStorage.getItem(old); if (v !== null && localStorage.getItem(KEY) === null) localStorage.setItem(KEY, v); if (v !== null) localStorage.removeItem(old); } catch {} // keep progress saved before the rename;
   const store = { get() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch { return null; } }, set() { if (window.LESSON_PREVIEW) return; try { localStorage.setItem(KEY, JSON.stringify({ ans, furthest, student, done: finished, clip: curClip, path, seen: [...seen] })); } catch {} } };
   /* ---------- video adapters ---------- */
   function fileAdapter(src) {
@@ -158,7 +158,7 @@
   function response() {
     const qs = Q.filter(q => q.type !== "jump").map(q => ({ id: q.id, type: q.type, t: Math.round(q.t), prompt: q.prompt || q.text || "", answer: ans[q.id]?.answer ?? null, correct: (q.type === "mc" || (q.type === "branch" && q.choices.some(c => c.ok))) ? !!ans[q.id]?.correct : null, tries: ans[q.id]?.tries || 0 }));
     const d = V.dur() || 1, wat = clips ? Math.round(Object.keys(durBy).reduce((n, k) => n + (furthestBy[k] || 0), 0) / Math.max(1, Object.values(durBy).reduce((n, x) => n + (x || 0), 0)) * 100) : Math.round(furthest / d * 100);
-    const r = { kind: "booth-lesson-response", v: 1, lesson: { id: L.id, title: L.title }, student: { name: student.name, cls: student.cls }, startedAt: started, finishedAt: new Date().toISOString(), watched: Math.min(100, wat), score: { correct: score(), gradable: gradable().length }, answers: qs };
+    const r = { kind: "littlelightlit-lesson-response", v: 1, lesson: { id: L.id, title: L.title }, student: { name: student.name, cls: student.cls }, startedAt: started, finishedAt: new Date().toISOString(), watched: Math.min(100, wat), score: { correct: score(), gradable: gradable().length }, answers: qs };
     if (clips && clips.length > 1 || path.some(x => x.startsWith("→"))) { r.path = (endSnap || { path }).path.slice(); r.ending = endSnap ? endSnap.ending : cName(curClip); }
     r.check = sum(JSON.stringify([r.lesson.id, r.student, r.score, r.answers]) + L.id); return r;
   }
@@ -177,7 +177,7 @@
     const saveFile = r => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(r, null, 1)], { type: "application/json" })); a.download = `${(L.title || "lesson").replace(/[^\w]+/g, "-")}-${student.name.replace(/[^\w]+/g, "-")}.json`; a.click(); };
     $("#dl").onclick = () => { const r = ready(); if (!r) return; saveFile(r); $("#fb").textContent = t("saved"); };
     $("#copy").onclick = async () => { const r = ready(); if (!r) return; const code = toCode(r); try { await navigator.clipboard.writeText(code); $("#fb").textContent = t("copied"); } catch { prompt(t("copy"), code); } };
-    $("#mail") && ($("#mail").onclick = () => { const r = ready(); if (!r) return; const code = toCode(r); let body = `${summary(r)}\n\nAnswers code (for the teacher’s Booth dashboard):\n${code}`; if (body.length > 1800) { body = `${summary(r)}\n\nThe full answers file has been downloaded. Please attach it to this email.`; saveFile(r); } window.LESSON_MAILTO = `mailto:${encodeURIComponent(L.email)}?subject=${encodeURIComponent(`${L.title}: ${student.name}`)}&body=${encodeURIComponent(body.slice(0, 1900))}`; location.href = window.LESSON_MAILTO; $("#fb").textContent = t("emailed"); });
+    $("#mail") && ($("#mail").onclick = () => { const r = ready(); if (!r) return; const code = toCode(r); let body = `${summary(r)}\n\nAnswers code (for the teacher’s Little Light Lit dashboard):\n${code}`; if (body.length > 1800) { body = `${summary(r)}\n\nThe full answers file has been downloaded. Please attach it to this email.`; saveFile(r); } window.LESSON_MAILTO = `mailto:${encodeURIComponent(L.email)}?subject=${encodeURIComponent(`${L.title}: ${student.name}`)}&body=${encodeURIComponent(body.slice(0, 1900))}`; location.href = window.LESSON_MAILTO; $("#fb").textContent = t("emailed"); });
     $("#send") && ($("#send").onclick = async () => { const r = ready(); if (!r) return; $("#fb").textContent = t("sending"); try { await fetch(L.sheet, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(r) }); $("#fb").textContent = t("sent"); } catch { $("#fb").textContent = t("fail"); } });
   }
   /* ---------- after the end: close, watch again or start over ---------- */
