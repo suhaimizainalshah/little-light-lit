@@ -394,6 +394,15 @@ a.brand:hover{background:var(--soft)}
         <p class="hint">Removes the background using AI that runs on this device.</p>
         <button class="btn primary" id="bgRemove">Remove background</button>
         <div class="bgbusy" id="bgBusy" hidden><div class="progress"><i id="bgBar"></i></div><p class="note" id="bgMsg"></p></div>
+        <div class="group" id="keyGroup"><span class="lbl">Or pick a colour to make see-through</span>
+          <p class="note">Best for logos, products and screenshots on a plain or green background.</p>
+          <div class="row2"><button class="btn" id="keyPick" aria-pressed="false">Pick a colour from the photo</button><div class="field" style="margin:0"><div style="display:flex;gap:.4rem;align-items:center"><span id="keySw" style="width:34px;height:34px;border-radius:8px;border:2px solid var(--line);flex-shrink:0;background:repeating-conic-gradient(#ccc 0 25%,#fff 0 50%) 0 0/12px 12px"></span><input type="text" id="keyHex" placeholder="#00FF00" maxlength="7" aria-label="Colour to remove, as a hex code" style="min-width:0"></div></div></div>
+          <div class="chips" id="keyMode"><button class="chip" data-km="flood" aria-pressed="true">Touching areas only</button><button class="chip" data-km="all" aria-pressed="false">Everywhere in the photo</button></div>
+          <div class="field"><label for="keyTol">How similar colours must be <span id="keyTolV" style="float:right;color:var(--muted)">25</span></label><input type="range" id="keyTol" min="0" max="100" value="25"></div>
+          <div class="field"><label for="keySoft">Soft edges <span id="keySoftV" style="float:right;color:var(--muted)">20</span></label><input type="range" id="keySoft" min="0" max="100" value="20"></div>
+          <p class="note" id="keyNote" aria-live="polite">Choose “Pick a colour”, then click the colour in the photo. Click again to remove more.</p>
+          <div class="row2" id="keyBtns" hidden><button class="btn" id="keyCancel">Cancel</button><button class="btn primary" id="keyApply">Apply</button></div>
+        </div>
         <div class="group"><span class="lbl">Fill behind the photo</span>
           <div class="swatches" id="bgSwatches"></div>
           <p class="note">Shows wherever the photo is see-through, such as after removing the background.</p>
@@ -805,7 +814,7 @@ addEventListener("paste", e => { const it = [...(e.clipboardData?.items || [])].
 
 /* ---------- Tools ---------- */
 const side = $("#side");
-function selectTool(name) {
+function selectTool(name) { if (key && name !== "background") keyEnd(true);
   if (tool === "crop" && name !== "crop") endCrop(false);
   tool = name;
   $$(".tool").forEach(b => b.setAttribute("aria-selected", b.dataset.tool === name));
@@ -1065,6 +1074,48 @@ async function removeBg() {
   } finally { bgBusy = false; btns.forEach(b => (b.disabled = false)); setTimeout(() => { if (!bgBusy) busy.hidden = true; }, 6000); }
 }
 $("#bgRemove").onclick = removeBg;
+
+/* ---------- Pick a colour to make see-through (colour keying) ---------- */
+let key = null; // { src: canvas before keying, seeds: [{x, y, rgb}], picking }
+const hex2rgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(h.trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const rgb2hex = ([r, g, b]) => "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("").toUpperCase();
+function keyStart() { if (!key) { commit(); key = { src: canvas(S.base.width, S.base.height), seeds: [], picking: false }; key.src.getContext("2d").drawImage(S.base, 0, 0); } $("#keyBtns").hidden = false; }
+function setPicking(on) { if (on) keyStart(); if (key) key.picking = on; $("#keyPick").setAttribute("aria-pressed", on); $("#keyPick").textContent = on ? "Click a colour in the photo…" : "Pick a colour from the photo"; view.style.cursor = on ? "crosshair" : ""; }
+// colour distance (0–1), weighted towards how eyes see differences
+const cdist = (r, g, b, k) => Math.sqrt(2 * (r - k[0]) ** 2 + 4 * (g - k[1]) ** 2 + 3 * (b - k[2]) ** 2) / 765;
+let keyRaf = 0;
+function keyRun() {
+  if (!key) return; cancelAnimationFrame(keyRaf); keyRaf = requestAnimationFrame(() => {
+    const W = key.src.width, H = key.src.height, sx = key.src.getContext("2d"), src = sx.getImageData(0, 0, W, H), p = src.data, out = new ImageData(new Uint8ClampedArray(p), W, H), o = out.data;
+    const tol = +$("#keyTol").value / 100 * .45, soft = +$("#keySoft").value / 100 * .25 + .001, mode = $("#keyMode [aria-pressed=true]").dataset.km;
+    const alphaFor = d => d <= tol ? 0 : d >= tol + soft ? 1 : (d - tol) / soft;
+    for (const sd of key.seeds) {
+      const k = sd.rgb;
+      if (mode === "all" || sd.x == null) { for (let i = 0; i < p.length; i += 4) { const a = alphaFor(cdist(p[i], p[i + 1], p[i + 2], k)); if (a < 1) o[i + 3] = Math.min(o[i + 3], Math.round(p[i + 3] * a)); } }
+      else { // flood outwards from the clicked point through similar colours
+        const seen = new Uint8Array(W * H), q = new Int32Array(W * H), lim = tol + soft; let h = 0, t = 0; const st = sd.y * W + sd.x; q[t++] = st; seen[st] = 1;
+        while (h < t) { const n = q[h++], i = n * 4, d = cdist(p[i], p[i + 1], p[i + 2], k); if (d > lim) continue; const a = alphaFor(d); o[i + 3] = Math.min(o[i + 3], Math.round(p[i + 3] * a)); const x = n % W, y = (n - x) / W;
+          if (x > 0 && !seen[n - 1]) { seen[n - 1] = 1; q[t++] = n - 1; } if (x < W - 1 && !seen[n + 1]) { seen[n + 1] = 1; q[t++] = n + 1; } if (y > 0 && !seen[n - W]) { seen[n - W] = 1; q[t++] = n - W; } if (y < H - 1 && !seen[n + W]) { seen[n + W] = 1; q[t++] = n + W; } }
+      }
+    }
+    const c = canvas(W, H); c.getContext("2d").putImageData(out, 0, 0); S.base = c; pcache = { key: "", c: null }; fitPreview(); render();
+    let clear = 0; for (let i = 3; i < o.length; i += 4) if (o[i] < 128) clear++;
+    $("#keyNote").textContent = key.seeds.length ? `${Math.round(clear / (W * H) * 100)}% of the photo is now see-through. Adjust the sliders, click again to remove more, then Apply.` : "Click the colour in the photo to remove.";
+  });
+}
+function keyPickAt(e) {
+  const pt = canvasPoint(e), x = Math.floor(pt.x * key.src.width / view.width), y = Math.floor(pt.y * key.src.height / view.height); if (x < 0 || y < 0 || x >= key.src.width || y >= key.src.height) return;
+  const d = key.src.getContext("2d").getImageData(x, y, 1, 1).data, rgb = [d[0], d[1], d[2]]; key.seeds.push({ x, y, rgb });
+  $("#keyHex").value = rgb2hex(rgb); $("#keySw").style.background = rgb2hex(rgb); keyRun();
+}
+view.addEventListener("pointerdown", e => { if (!key?.picking || tool !== "background") return; e.preventDefault(); e.stopImmediatePropagation(); keyPickAt(e); }, true);
+$("#keyPick").onclick = () => setPicking(!key?.picking);
+$("#keyHex").addEventListener("change", () => { const rgb = hex2rgb($("#keyHex").value); if (!rgb) return toast("Type a colour like #00FF00."); keyStart(); key.seeds = key.seeds.filter(sd => sd.x != null); key.seeds.push({ x: null, y: null, rgb }); $("#keySw").style.background = rgb2hex(rgb); keyRun(); });
+$("#keyMode").onclick = e => { const b = e.target.closest("[data-km]"); if (!b) return; $$("#keyMode .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); keyRun(); };
+["#keyTol", "#keySoft"].forEach(id => $(id).addEventListener("input", () => { $(id + "V").textContent = $(id).value; keyRun(); }));
+function keyEnd(apply) { if (!key) return; cancelAnimationFrame(keyRaf); if (!apply) { S.base = key.src; hist.pop(); syncHistory(); pcache = { key: "", c: null }; fitPreview(); render(); } setPicking(false); key = null; $("#keyBtns").hidden = true; $("#keyNote").textContent = "Choose “Pick a colour”, then click the colour in the photo. Click again to remove more."; if (apply) { toast("Colour removed. Pick a fill colour below, or keep it see-through."); count("colourkey"); } }
+$("#keyApply").onclick = () => keyEnd(true); $("#keyCancel").onclick = () => keyEnd(false);
+addEventListener("keydown", e => { if (e.key === "Escape" && key?.picking) setPicking(false); });
 
 /* ---------- Resize ---------- */
 let lockRatio = true;
