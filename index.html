@@ -91,6 +91,7 @@ button{cursor:pointer}
 .h[data-h=w]{left:0;top:50%;cursor:ew-resize}.h[data-h=e]{left:100%;top:50%;cursor:ew-resize}
 .crop.locked .h[data-h=n],.crop.locked .h[data-h=s],.crop.locked .h[data-h=e],.crop.locked .h[data-h=w]{display:none}
 .guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#fsOut{display:grid;gap:.35rem;margin-top:.5rem}#fsOut .stat{display:flex;justify-content:space-between;gap:.5rem;background:var(--soft);border-radius:8px;padding:.5rem .7rem;font-size:.88rem}#fsOut .stat b{font-variant-numeric:tabular-nums}
 .crop-size{position:absolute;left:8px;top:8px;background:rgba(10,12,14,.82);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:.4rem .6rem;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}.crop.tiny .crop-size{top:auto;bottom:calc(100% + 6px);left:0}
 
 /* Empty state */
@@ -425,6 +426,14 @@ a.brand:hover{background:var(--soft)}
           </div>
         </div>
         <button class="btn primary" id="rApply">Apply size</button>
+        <div class="group" id="fsGroup"><span class="lbl">Or by file size</span>
+          <p class="note">For forms and uploads with a size limit, such as “under 500 KB”.</p>
+          <div class="row2"><div class="field" style="margin:0"><label for="fsN">Under</label><input type="number" id="fsN" min="1" step="any" value="500"></div><div class="field" style="margin:0"><label for="fsU">Unit</label><select id="fsU"><option selected>KB</option><option>MB</option></select></div></div>
+          <div class="chips" id="fsQuick"><button class="chip" data-fs="100">100 KB</button><button class="chip" data-fs="200">200 KB</button><button class="chip" data-fs="500">500 KB</button><button class="chip" data-fs="1000">1 MB</button><button class="chip" data-fs="2000">2 MB</button></div>
+          <div class="chips" id="fsFmt"><button class="chip" data-ff="image/jpeg" aria-pressed="true">JPG</button><button class="chip" data-ff="image/webp" aria-pressed="false">WebP</button><button class="chip" data-ff="image/png" aria-pressed="false">PNG</button></div>
+          <button class="btn primary" id="fsGo">Make it this size</button>
+          <div id="fsOut" aria-live="polite"></div>
+        </div>
       </section>
 
       <!-- PASSPORT -->
@@ -503,7 +512,7 @@ a.brand:hover{background:var(--soft)}
           </div>
         </div>
         <div class="slider" id="bQWrap"><label for="bQ">Quality</label><output id="bQOut">80%</output><input type="range" id="bQ" min="30" max="100" value="80"></div>
-        <div class="field"><label for="bLimit">Keep each file under</label><select id="bLimit"><option value="0">No limit</option><option value="100">100 KB</option><option value="200">200 KB</option><option value="500">500 KB</option><option value="1000">1 MB</option><option value="2000">2 MB</option></select></div>
+        <div class="field"><label for="bLimit">Keep each file under</label><select id="bLimit"><option value="0">No limit</option><option value="50">50 KB</option><option value="100">100 KB</option><option value="200">200 KB</option><option value="300">300 KB</option><option value="500">500 KB</option><option value="1000">1 MB</option><option value="2000">2 MB</option><option value="5000">5 MB</option><option value="custom">Custom…</option></select><div class="row2" id="bLimitCustom" hidden style="margin-top:.4rem"><input type="number" id="bLimitN" min="1" step="any" placeholder="750" aria-label="Size limit"><select id="bLimitU" aria-label="Unit"><option>KB</option><option>MB</option></select></div></div>
         <label class="check" style="display:flex;gap:.55rem;align-items:center;font-weight:600"><input type="checkbox" id="bSuffix" style="width:18px;height:18px;accent-color:var(--accent)">Add “-small” to file names</label>
         <p class="note">Saving also removes hidden camera and location data from each photo.</p>
       </div>
@@ -533,7 +542,7 @@ a.brand:hover{background:var(--soft)}
     <div class="slider" id="exQualityWrap"><label for="exQuality">Quality</label><output id="exQualityOut">90%</output><input type="range" id="exQuality" min="30" max="100" value="90"></div>
     <div class="row2">
       <div class="field"><label for="exScale">Size</label><select id="exScale"><option value="1">Full size</option><option value="0.75">75%</option><option value="0.5">50%</option><option value="0.25">25%</option></select></div>
-      <div class="field"><label for="exLimit">Keep file under</label><select id="exLimit"><option value="0">No limit</option><option value="100">100 KB</option><option value="200">200 KB</option><option value="240">240 KB</option><option value="500">500 KB</option><option value="1000">1 MB</option><option value="2000">2 MB</option></select></div>
+      <div class="field"><label for="exLimit">Keep file under</label><select id="exLimit"><option value="0">No limit</option><option value="50">50 KB</option><option value="100">100 KB</option><option value="200">200 KB</option><option value="300">300 KB</option><option value="500">500 KB</option><option value="1000">1 MB</option><option value="2000">2 MB</option><option value="5000">5 MB</option><option value="custom">Custom…</option></select><div class="row2" id="exLimitCustom" hidden style="margin-top:.4rem"><input type="number" id="exLimitN" min="1" step="any" placeholder="750" aria-label="Size limit"><select id="exLimitU" aria-label="Unit"><option>KB</option><option>MB</option></select></div></div>
     </div>
     <div class="field"><label for="exName">File name</label><input type="text" id="exName" autocomplete="off"></div>
     <div class="est"><span id="exDims">–</span><span>File size <b id="exSize">–</b></span></div>
@@ -566,7 +575,7 @@ const COUNTER = { on: true, ns: "booth-photo-editor", keys: { visits: "Photo: vi
   design_visits: "Design: visits", design_templates: "Design: templates used", design_exports: "Design: designs downloaded",
   animate_visits: "Animate: visits", animate_exports: "Animate: videos exported",
   lesson_visits: "Lessons: visits", lesson_exports_student: "Lessons: student lessons made", lesson_exports_scorm: "Lessons: SCORM packages", lesson_exports_sls: "Lessons: SLS packages", lesson_exports_embedURL: "Lessons: embed codes copied", lesson_exports_embedHTML: "Lessons: lessons copied for Google Sites",
-  copies: "Photo: images copied", shares: "Photo: images shared" } };
+  copies: "Photo: images copied", shares: "Photo: images shared", size_fit_runs: "Photo: file-size fits made", size_fits: "Photo: file-size fits downloaded" } };
 const canCount = COUNTER.on && !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
 const noCount = () => { try { return localStorage.getItem("booth-nocount") === "1"; } catch { return false; } };
 function count(key) { if (noCount()) return; if (!canCount) return; try { fetch(`https://abacus.jasoncameron.dev/hit/${COUNTER.ns}/${key}`, { keepalive: true }).catch(() => {}); } catch {} }
@@ -615,7 +624,7 @@ function resample(src, w, h) {
 function toast(msg, ms = 2800) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); }
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const hex = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
-const kb = n => n < 1024 * 1024 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1) + " MB";
+const kb = n => n < 1e6 ? Math.max(1, Math.round(n / 1000)) + " KB" : (n / 1e6).toFixed(n < 1e7 ? 2 : 1) + " MB"; // 1 MB = 1,000 KB, matching the size limits
 const hasAlpha = c => { const k = Math.min(1, 256 / Math.max(c.width, c.height)), s = resample(c, c.width * k, c.height * k); const d = s.getContext("2d").getImageData(0, 0, s.width, s.height).data; for (let i = 3; i < d.length; i += 16) if (d[i] < 250) return true; return false; };
 
 /* ---------- Filters ---------- */
@@ -1085,6 +1094,21 @@ async function removeBg() {
 }
 $("#bgRemove").onclick = removeBg;
 
+/* ---------- Resize by file size ---------- */
+let fsFmt = "image/jpeg", fsBlob = null;
+$("#fsFmt").onclick = e => { const b = e.target.closest("[data-ff]"); if (!b) return; fsFmt = b.dataset.ff; $$("#fsFmt .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); $("#fsOut").innerHTML = fsFmt === "image/png" ? `<p class="note">PNG can only shrink by making the image smaller, so it may lose more detail. JPG or WebP keep more.</p>` : ""; };
+$("#fsQuick").onclick = e => { const b = e.target.closest("[data-fs]"); if (!b) return; const v = +b.dataset.fs; if (v >= 1000) { $("#fsN").value = v / 1000; $("#fsU").value = "MB"; } else { $("#fsN").value = v; $("#fsU").value = "KB"; } };
+$("#fsGo").onclick = async () => {
+  const n = +$("#fsN").value; if (!(n > 0)) return toast("Type a size, such as 500 KB.");
+  const limit = Math.round(n * ($("#fsU").value === "MB" ? 1e6 : 1e3)), out = $("#fsOut"); out.innerHTML = `<p class="note">Working…</p>`;
+  const r = await fitToSize(exportCanvas(), fsFmt, limit, .92); fsBlob = r.b; const ok = r.b.size <= limit, ext = { "image/jpeg": "jpg", "image/webp": "webp", "image/png": "png" }[fsFmt];
+  out.innerHTML = `<div class="stat"><span>File size</span><b>${kb(r.b.size)}</b></div><div class="stat"><span>Pixels</span><b>${r.c.width} × ${r.c.height}</b></div>${r.q ? `<div class="stat"><span>Quality</span><b>${Math.round(r.q * 100)}%</b></div>` : ""}
+    <p class="note" style="color:${ok ? "inherit" : "var(--danger,#C2362B)"}">${ok ? `Fits under ${n} ${$("#fsU").value}.` : r.note}${fsFmt === "image/jpeg" && hasAlpha(S.base) && !S.bg ? " JPG has no see-through areas, so they become white." : ""}</p>
+    <button class="btn primary" id="fsDl">Download ${ext.toUpperCase()}</button>`;
+  $("#fsDl").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(fsBlob); a.download = `${fileName || "photo"}-${Math.round(fsBlob.size / 1000)}KB.${ext}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Saved to your downloads"); count("size_fits"); };
+  count("size_fit_runs");
+};
+
 /* ---------- Pick a colour to make see-through (colour keying) ---------- */
 let key = null; // { src: canvas before keying, seeds: [{x, y, rgb}], picking }
 const hex2rgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(h.trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
@@ -1202,7 +1226,7 @@ const FORMATS = [["image/png", "PNG", "png"], ["image/jpeg", "JPG", "jpg"], ["im
 let exFmt = "image/png", exBlob = null, exTimer;
 $("#exFormats").innerHTML = FORMATS.map(([m, n]) => `<button type="button" class="chip" data-m="${m}" aria-pressed="${m === exFmt}">${n}</button>`).join("");
 $("#exFormats").onclick = e => { const b = e.target.closest(".chip"); if (!b) return; exFmt = b.dataset.m; $$("#exFormats .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); syncExport(); };
-["#exQuality", "#exScale", "#exLimit"].forEach(id => $(id).addEventListener("input", syncExport));
+["#exQuality", "#exScale", "#exLimit", "#exLimitN", "#exLimitU"].forEach(id => $(id).addEventListener("input", () => { $("#exLimitCustom").hidden = $("#exLimit").value !== "custom"; syncExport(); }));
 function openExport() {
   if (!S.base) return; if (tool === "crop") applyCrop();
   $("#exName").value = fileName + "-edited";
@@ -1218,15 +1242,27 @@ function exportCanvas() {
   return compose(src, w, h, { bg });
 }
 const toBlob = (c, type, q) => new Promise(r => c.toBlob(r, type, q));
-async function makeBlob() {
-  let c = exportCanvas(); const lossy = exFmt !== "image/png", limit = +$("#exLimit").value * 1024;
-  let q = +$("#exQuality").value / 100, b = await toBlob(c, exFmt, lossy ? q : undefined);
-  if (limit && b.size > limit) {
-    if (lossy) { let lo = .3, hi = q, best = null; for (let i = 0; i < 7; i++) { const m = (lo + hi) / 2, t = await toBlob(c, exFmt, m); if (t.size <= limit) { best = t; lo = m; } else hi = m; } if (best) return { b: best, c, note: "Quality lowered to fit the size limit." }; }
-    for (let i = 0; i < 8 && b.size > limit; i++) { c = resample(c, c.width * .85, c.height * .85); b = await toBlob(c, exFmt, lossy ? .7 : undefined); }
-    return { b, c, note: b.size <= limit ? "Image made smaller to fit the size limit." : "Couldn’t reach that size limit. Try JPG." };
+// Fit an image under a byte limit: highest quality that fits; shrink pixels only when quality alone isn't enough
+async function fitToSize(c, type, limit, startQ = .92) {
+  const lossy = type !== "image/png"; let b = await toBlob(c, type, lossy ? startQ : undefined);
+  if (!limit || b.size <= limit) return { b, c, q: lossy ? startQ : null, note: "" };
+  // highest quality between `floor` and the starting quality that fits
+  const bestQ = async (cc, floor) => { if ((await toBlob(cc, type, floor)).size > limit) return null; let lo = floor, hi = startQ, best = null, bq = floor; for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2, t = await toBlob(cc, type, m); if (t.size <= limit) { best = t; bq = m; lo = m; } else hi = m; } return { b: best || await toBlob(cc, type, floor), q: best ? bq : floor }; };
+  const W0 = c.width, done = (r, cc) => ({ b: r.b, c: cc, q: r.q, note: cc.width < W0 ? `Made smaller (${cc.width} × ${cc.height}) at ${Math.round(r.q * 100)}% quality to fit.` : `Quality set to ${Math.round(r.q * 100)}% to fit.` });
+  if (lossy) {
+    // keep quality at 60% or more, shrinking pixels first: a slightly smaller sharp photo looks better than a blocky full-size one
+    let cc = c; for (let i = 0; i < 30 && cc.width >= 320; i++) { const r = await bestQ(cc, .6); if (r) return done(r, cc); cc = resample(cc, Math.max(16, Math.round(cc.width * .88)), Math.max(16, Math.round(cc.height * .88))); }
+    for (let i = 0; i < 30 && cc.width >= 16; i++) { const r = await bestQ(cc, .3); if (r) return done(r, cc); cc = resample(cc, Math.max(16, Math.round(cc.width * .85)), Math.max(16, Math.round(cc.height * .85))); }
+    return { b: await toBlob(cc, type, .3), c: cc, q: .3, note: "Couldn’t reach that size. Try a larger limit." };
   }
-  return { b, c };
+  let cc = c; for (let i = 0; i < 40 && cc.width > 16; i++) { cc = resample(cc, Math.max(16, Math.round(cc.width * .88)), Math.max(16, Math.round(cc.height * .88))); b = await toBlob(cc, type); if (b.size <= limit) return { b, c: cc, q: null, note: `Made smaller (${cc.width} × ${cc.height}) to fit.` }; }
+  return { b, c: cc, q: null, note: "Couldn’t reach that size as PNG. Try JPG or WebP, which make much smaller files." };
+}
+// "1 MB" = 1,000,000 bytes, so the file fits however a device or form counts
+const limitBytes = (sel, num, unit) => { const v = $(sel).value; if (v !== "custom") return +v * 1000; const n = +$(num).value; return n > 0 ? Math.round(n * ($(unit).value === "MB" ? 1e6 : 1e3)) : 0; };
+async function makeBlob() {
+  const r = await fitToSize(exportCanvas(), exFmt, limitBytes("#exLimit", "#exLimitN", "#exLimitU"), +$("#exQuality").value / 100);
+  return { b: r.b, c: r.c, note: r.note };
 }
 function syncExport() {
   const lossy = exFmt !== "image/png"; $("#exQualityWrap").hidden = !lossy; $("#exQualityOut").textContent = $("#exQuality").value + "%";
@@ -1298,12 +1334,7 @@ async function processOne(it) {
   if (type === "image/jpeg") { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); }
   x.imageSmoothingQuality = "high";
   const src = (img.width > c.width * 2) ? resample(img, c.width, c.height) : img; x.drawImage(src, 0, 0, c.width, c.height); img.close && img.close();
-  const limit = +$("#bLimit").value * 1024, q = +$("#bQ").value / 100;
-  let b = await toBlob(c, type, lossy ? q : undefined);
-  if (limit && b.size > limit) {
-    if (lossy) { let lo = .3, hi = q, best = null; for (let i = 0; i < 7; i++) { const m = (lo + hi) / 2, t = await toBlob(c, type, m); if (t.size <= limit) { best = t; lo = m; } else hi = m; } if (best) b = best; }
-    for (let i = 0; i < 8 && b.size > limit; i++) { c = resample(c, c.width * .85, c.height * .85); b = await toBlob(c, type, lossy ? .7 : undefined); }
-  }
+  const fit = await fitToSize(c, type, limitBytes("#bLimit", "#bLimitN", "#bLimitU"), +$("#bQ").value / 100); let b = fit.b; c = fit.c;
   it.kept = false;
   if (b.size >= it.size && type === it.file.type && c.width === it.w && c.height === it.h) { b = it.file; it.kept = true; }
   it.out = b; it.ow = c.width; it.oh = c.height; it.ext = extFor(type); it.status = "done";
@@ -1354,6 +1385,7 @@ bChips("#bMode", "mode", () => {
   $("#bSizeNote").textContent = { none: "Photos keep their original size.", long: "Photos smaller than this are left as they are.", width: "Height adjusts to keep proportions.", pct: "Height and width both change by this amount." }[m];
 });
 bChips("#bFmt", "fmt", () => { $("#bQWrap").hidden = B.fmt === "image/png"; });
+["#bLimitN", "#bLimitU"].forEach(id => $(id).addEventListener("input", scheduleBatch)); $("#bLimit").addEventListener("input", () => { $("#bLimitCustom").hidden = $("#bLimit").value !== "custom"; });
 ["#bVal", "#bLimit", "#bQ"].forEach(id => $(id).addEventListener("input", () => { $("#bQOut").textContent = $("#bQ").value + "%"; scheduleBatch(); }));
 $("#bSuffix").addEventListener("change", renderBatch);
 
