@@ -171,3 +171,10 @@ Photos are captured at 1200 × 900 each, so a four-photo strip is about 1,200 ×
 
 ## Pick a colour to make see-through (Photo)
 In **Background**, besides the on-device AI remover, choose **Pick a colour from the photo** and click a colour (or type a hex code) to make it transparent. **Touching areas only** removes just the connected area you clicked, so the same colour elsewhere (such as white text inside a logo) is kept; **Everywhere in the photo** removes every matching pixel. Adjust **how similar** colours must be and **soft edges**, click again to remove more colours, then **Apply** or **Cancel**. The preview shows a checkerboard where the photo is see-through, and Undo works as usual. Save as PNG or WebP to keep the transparency.
+
+## What the counters record (and don’t)
+- **Recorded:** anonymous totals only. Each visit (once per browser session) or action, such as a download, share, copy or export, adds 1 to a named total like “Photo booth: strips shared”. Nothing else is sent: no file names, no file contents, no text you type, no page addresses, and no identifiers.
+- **Never recorded:** your files, photos, documents or answers. Lessons and flipbooks you share with others contain no counters at all, so students and readers are never counted.
+- **How it’s sent:** each count is a small web request to the free Abacus counting service. Like any website, that service can see the visitor’s IP address and browser type while handling the request; the app itself stores no personal data and sets no cookies. Only `sessionStorage` is used, to avoid counting the same visit twice in one session.
+- **Opting out:** nothing is counted for browsers that send *Do Not Track* or *Global Privacy Control*. The owner can also stop counting their own visits with the switch on the `#stats` page.
+- **For site owners:** mention the counter in your site’s privacy notice. To keep counts entirely on infrastructure you control, replace the Abacus address with your own counter, or switch counting off with `COUNTER.on = false`.
