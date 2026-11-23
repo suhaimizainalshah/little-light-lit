@@ -51,6 +51,7 @@
 .busy>div{background:var(--panel);border-radius:16px;padding:1.3rem;width:min(420px,92vw);display:grid;gap:.8rem}
 .mychars{display:flex;flex-wrap:wrap;gap:.35rem}
 @media (max-width:720px){.work{grid-template-columns:1fr;grid-template-rows:minmax(300px,50vh) auto}.side{border-left:0;border-top:1px solid var(--line)}}
+.manage{margin-top:.5rem}.manage summary{cursor:pointer;font-weight:600;font-size:.88rem}.manage .row3{display:flex;gap:.4rem;align-items:center;margin-top:.4rem}.manage .mc-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -361,7 +362,8 @@ function renderPane() {
       <div class="addrow"><button class="btn" data-add="text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg>Text</button><button class="btn" data-add="char"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>Character</button><button class="btn" data-add="prop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3 11v3h6v-3a6 6 0 0 0-3-11zM9 21h6"/></svg>Prop</button><button class="btn" data-add="image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>Photo</button></div>
       <button class="btn" data-add="svg" style="width:100%;margin-top:.4rem">Import an illustration (SVG): the hand draws its real lines</button>
       <p class="note">Free illustration sets you can use: Open Peeps (hand-drawn people, free for any use), Humaaans and unDraw. Download as SVG, then import.</p>
-      ${P.myChars.length ? `<div class="group"><span class="lbl">My characters</span><div class="mychars">${P.myChars.map((c, i) => `<button class="chip" data-mychar="${i}">${esc(c.name)}</button>`).join("")}</div></div>` : ""}
+      ${P.myChars.length ? `<div class="group"><span class="lbl">My characters</span><div class="mychars">${P.myChars.map((c, i) => `<button class="chip" data-mychar="${i}" title="Add ${esc(c.name)} to this scene">${esc(c.name)}</button>`).join("")}</div>
+        <details class="manage"><summary>Manage my characters</summary>${P.myChars.map((c, i) => `<div class="row3"><span class="mc-name">${esc(c.name)}</span><button class="btn" data-myren="${i}" aria-label="Rename ${esc(c.name)}">Rename</button><button class="btn danger" data-mydel="${i}" aria-label="Delete ${esc(c.name)}">Delete</button></div>`).join("")}<p class="note">Saved in this browser only.</p></details></div>` : ""}
       ${sc.items.length ? `<div class="group"><span class="lbl">In this scene, in drawing order</span><div class="items">${sc.items.map(i => `<button class="item" data-pick="${i.id}"><span>${esc(label(i))}</span><small>${(i.start || 0).toFixed(1)} s</small></button>`).join("")}</div></div>` : ""}
       ${sec("style", "Scene style", `<div class="chips">${chip("style", "whiteboard", sc.style, "Whiteboard drawing")}${chip("style", "cartoon", sc.style, "Cartoon")}</div><p class="note">Whiteboard scenes are sketched in line by a hand, then coloured in. Cartoon scenes animate in full colour.</p>`)}
       ${sec("bg", "Background", `<div class="chips">${A.BGS.map(([v, l]) => chip("bg", v, sc.bg, l)).join("")}</div>${sc.bg === "plain" ? `<div class="field"><label for="sColor">Colour</label><input type="color" id="sColor" value="${sc.color}"></div>` : ""}`)}
@@ -405,6 +407,8 @@ $("#pane").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return; const it = item(), sc = scene(), d = b.dataset;
   if (d.add) { if (d.add === "text") addText(); if (d.add === "char") addChar(); if (d.add === "prop") addProp(); if (d.add === "image") $("#imgIn").click(); if (d.add === "svg") $("#svgIn").click(); return; }
   if (d.mychar != null) return addChar(P.myChars[+d.mychar].look);
+  if (d.myren != null) { const c = P.myChars[+d.myren]; const n = prompt("Rename this character", c.name); if (!n || !n.trim()) return; c.name = n.trim().slice(0, 30); saveMyChars(); renderAll(); return toast("Renamed"); }
+  if (d.mydel != null) { const i = +d.mydel, c = P.myChars[i]; if (!confirm(`Delete “${c.name}” from My characters? Copies already placed in scenes stay.`)) return; P.myChars.splice(i, 1); saveMyChars(); renderAll(); return toast(`${c.name} deleted`); }
   if (d.pick) { sel = d.pick; const p = item(); T = (p.start || 0) + (p.animDur || 2); renderPane(); draw(); updateTime(); return; }
   const set = fn => { commit(); fn(); renderPane(); draw(); renderScenes(); };
   if (d.style) return set(() => { sc.style = d.style; if (d.style === "whiteboard" && !["whiteboard", "chalkboard", "paper", "plain"].includes(sc.bg)) sc.bg = "whiteboard"; if (d.style === "cartoon" && sc.bg === "whiteboard") sc.bg = "park"; });

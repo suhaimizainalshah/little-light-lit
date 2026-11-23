@@ -74,7 +74,7 @@
         <h1>Turn any video into a lesson</h1>
         <p>Add questions, polls and notes at the right moments. The video pauses for each one, students answer, and you see who understood what. No student accounts, and answers stay with you and your students.</p>
         <div class="row" style="justify-content:center"><button class="btn primary" id="pickVideo">Use a video file</button><button class="btn" id="useYT">Use a YouTube video</button></div>
-        <div class="row" style="justify-content:center" id="draftRow" hidden><button class="btn primary" id="openDraft">Carry on with your last lesson</button></div>
+        <div class="row" style="justify-content:center" id="draftRow" hidden><button class="btn primary" id="openDraft">Carry on with your last lesson</button><button class="btn" id="discardDraft" title="Remove the saved draft from this browser">Discard draft</button></div>
         <div class="row" style="justify-content:center"><button class="btn" id="openResults">See class results</button><button class="btn" id="openLesson">Open a saved lesson</button></div>
         <p class="note">A video file makes a lesson that works offline. A YouTube lesson is a tiny file, but students need internet.</p>
       </div></div>
@@ -415,7 +415,8 @@ function openLesson(lesson) { L = lesson; sel = null; hist = []; fut = []; syncH
         const missing = keep.clips.filter(c => !CF.get(c.id)); if (missing.length) toast(`Still missing: ${missing.map(c => c.file).join(", ")}`, 6000); if (keep.clips[0] && CF.get(keep.clips[0].id)) { showClip(keep.clips[0].id); begin(); } };
       $("#vidIn").click(); }
 }
-try { const dr = JSON.parse(localStorage.getItem("littlelightlit-lesson-draft") || "null"); if (dr?.lesson) { $("#draftRow").hidden = false; $("#openDraft").textContent = `Carry on with “${dr.lesson.title}”`; $("#openDraft").onclick = () => openLesson(dr.lesson); } } catch {}
+try { const dr = JSON.parse(localStorage.getItem("littlelightlit-lesson-draft") || "null"); if (dr?.lesson) { $("#draftRow").hidden = false; $("#openDraft").textContent = `Carry on with “${dr.lesson.title}”`; $("#openDraft").onclick = () => openLesson(dr.lesson);
+  $("#discardDraft").onclick = () => { if (!confirm(`Discard the draft “${dr.lesson.title}”? It will be removed from this browser. Save the lesson file first if you want to keep it.`)) return; try { localStorage.removeItem("littlelightlit-lesson-draft"); } catch {} $("#draftRow").hidden = true; toast("Draft discarded"); }; } } catch {}
 
 /* ---------- Results dashboard ---------- */
 const R = [];
