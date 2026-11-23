@@ -60,3 +60,27 @@
   const orig = HTMLDialogElement.prototype.showModal;
   HTMLDialogElement.prototype.showModal = function () { orig.call(this); const auto = this.querySelector("[autofocus]"); if (!auto) setTimeout(() => primaryOf(this)?.focus({ preventScroll: true }), 0); };
 })();
+
+/* ---------- What is this file really? ----------
+   Reads a file's first bytes to find its real format, whatever its name says, so a program or web page renamed
+   as a photo is refused. Exact for the formats Little Light Lit opens; no model or download needed. */
+window.LightLitSniff = async function (f) {
+  try {
+    const u = new Uint8Array(await f.slice(0, 4096).arrayBuffer()), t = new TextDecoder("latin1").decode(u), at = (o, ...b) => b.every((x, i) => u[o + i] === x);
+    if (at(0, 0xFF, 0xD8, 0xFF)) return "jpeg"; if (at(0, 0x89, 0x50, 0x4E, 0x47)) return "png"; if (t.startsWith("GIF8")) return "gif";
+    if (t.startsWith("RIFF") && t.slice(8, 12) === "WEBP") return "webp"; if (t.startsWith("BM")) return "bmp";
+    if (t.slice(4, 8) === "ftyp") return /^(heic|heix|mif1|msf1)/.test(t.slice(8, 12)) ? "heic" : /^avif/.test(t.slice(8, 12)) ? "avif" : "video";
+    if (t.startsWith("MZ") || at(0, 0x7F, 0x45, 0x4C, 0x46) || at(0, 0xCF, 0xFA, 0xED, 0xFE) || t.startsWith("#!")) return "program";
+    if (/^\s*<svg/i.test(t)) return "svg"; if (/^\s*(<!doctype html|<html|<script)/i.test(t)) return "html";
+    if (t.slice(0, 1024).includes("%PDF-")) return "pdf"; if (at(0, 0x50, 0x4B, 0x03, 0x04)) return "zip";
+  } catch {}
+  return "unknown";
+};
+window.LightLitPhotoKinds = new Set(["jpeg", "png", "gif", "webp", "bmp", "avif"]);
+window.LightLitWhyNot = function (name, kind) {
+  if (kind === "program" || kind === "html") return `“${name}” isn’t a photo: it looks like ${kind === "program" ? "a program" : "a web page"}, so it wasn’t opened. Files that hide what they are can be harmful.`;
+  if (kind === "heic") return `“${name}” is a HEIC photo, which this browser may not open. Export it as JPEG first.`;
+  if (kind === "pdf") return `“${name}” is a PDF, not a photo. Open PDFs in If Leaves Weave.`;
+  return `“${name}” isn’t a photo. Open a JPG, PNG, WebP or GIF.`;
+};
+
