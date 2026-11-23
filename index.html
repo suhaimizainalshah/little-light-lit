@@ -92,6 +92,7 @@ button{cursor:pointer}
 .h[data-h=w]{left:0;top:50%;cursor:ew-resize}.h[data-h=e]{left:100%;top:50%;cursor:ew-resize}
 .crop.locked .h[data-h=n],.crop.locked .h[data-h=s],.crop.locked .h[data-h=e],.crop.locked .h[data-h=w]{display:none}
 .guide{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.pp-sum{font-weight:700;margin:.6rem 0 .3rem}.pp-sum.good{color:#2F7D4F}.pp-sum.warn{color:#B86E00}.pp-list{list-style:none;padding:0;margin:0;display:grid;gap:.4rem;font-size:.88rem}.pp-list li{display:flex;gap:.5rem;align-items:flex-start}.pp-list li>span:first-child{flex-shrink:0;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-weight:800;font-size:.75rem;color:#fff}.pp-ok{background:#2F7D4F}.pp-bad{background:#B86E00}.pp-info{background:#57616C}
 #fsOut{display:grid;gap:.35rem;margin-top:.5rem}#fsOut .stat{display:flex;justify-content:space-between;gap:.5rem;background:var(--soft);border-radius:8px;padding:.5rem .7rem;font-size:.88rem}#fsOut .stat b{font-variant-numeric:tabular-nums}
 .crop-size{position:absolute;left:8px;top:8px;background:rgba(10,12,14,.82);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:.4rem .6rem;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}.crop.tiny .crop-size{top:auto;bottom:calc(100% + 6px);left:0}
 
@@ -451,11 +452,17 @@ a.brand:hover{background:var(--soft)}
           </div></li>
           <li id="ps2"><h3>Line up the face</h3><div class="body">
             <p class="note">Fit the head between the guide lines, eyes level.</p>
-            <button class="btn" id="ppFrame">Frame the face</button>
+            <div class="row2"><button class="btn primary" id="ppAuto">Frame it for me</button><button class="btn" id="ppFrame">Frame by hand</button></div>
+            <p class="note" id="ppAutoNote"></p>
           </div></li>
           <li id="ps3"><h3>Make the background plain</h3><div class="body">
             <button class="btn" id="ppBg">Remove background and use white</button>
             <div class="swatches" id="ppSwatches"></div>
+          </div></li>
+          <li id="ps35"><h3>Check the photo</h3><div class="body">
+            <p class="note">Checks the face, size, position, background and lighting against the rules for this photo type, on this device.</p>
+            <button class="btn" id="ppCheck">Check the photo</button>
+            <div id="ppResults" aria-live="polite"></div>
           </div></li>
           <li id="ps4"><h3>Save</h3><div class="body">
             <button class="btn primary" id="ppSingle">Save one photo</button>
@@ -576,7 +583,7 @@ const COUNTER = { on: true, ns: "littlelightlit", keys: { visits: "Photo: visits
   design_visits: "Design: visits", design_templates: "Design: templates used", design_exports: "Design: designs downloaded",
   animate_visits: "Animate: visits", animate_exports: "Animate: videos exported",
   lesson_visits: "Lessons: visits", lesson_exports_student: "Lessons: student lessons made", lesson_exports_scorm: "Lessons: SCORM packages", lesson_exports_sls: "Lessons: SLS packages", lesson_exports_embedURL: "Lessons: embed codes copied", lesson_exports_embedHTML: "Lessons: lessons copied for Google Sites",
-  copies: "Photo: images copied", shares: "Photo: images shared", size_fit_runs: "Photo: file-size fits made", size_fits: "Photo: file-size fits downloaded" } };
+  copies: "Photo: images copied", shares: "Photo: images shared", size_fit_runs: "Photo: file-size fits made", size_fits: "Photo: file-size fits downloaded", pp_check: "Passport: photos checked", pp_autoframe: "Passport: faces framed automatically" } };
 const canCount = COUNTER.on && !navigator.globalPrivacyControl && navigator.doNotTrack !== "1" && /^https?:/.test(location.protocol);
 const noCount = () => { try { return localStorage.getItem("littlelightlit-nocount") === "1"; } catch { return false; } };
 function count(key) { if (noCount()) return; if (!canCount) return; try { fetch(`https://abacus.jasoncameron.dev/hit/${COUNTER.ns}/${key}`, { keepalive: true }).catch(() => {}); } catch {} }
@@ -789,6 +796,7 @@ async function decode(file) {
 }
 async function loadFile(file) {
   if (!file || !/^image\//.test(file.type)) return toast("That file isn’t a photo. Open a JPG, PNG, WebP or GIF.");
+  aiSteps.clear(); srcLabel = await readSourceLabel(file);
   let img; try { img = await decode(file); } catch { return toast("This photo format can’t be opened here. Save it as JPG or PNG and try again."); }
   const w = img.width || img.naturalWidth, h = img.height || img.naturalHeight, k = Math.min(1, MAX_DIM / Math.max(w, h));
   const c = canvas(w * k, h * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
@@ -1088,7 +1096,7 @@ async function removeBg() {
     c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
     commit(); S.base = c; fitPreview(); render();
     bar.style.width = "100%"; msg.textContent = "Background removed. Pick a fill colour or keep it see-through.";
-    toast("Background removed"); count("bgremove"); return true;
+    aiSteps.add("background removal (on-device AI)"); toast("Background removed"); count("bgremove"); return true;
   } catch (err) {
     console.error(err);
     msg.textContent = "Couldn’t remove the background. Check your internet connection (the AI model downloads once), then try again.";
@@ -1108,7 +1116,7 @@ $("#fsGo").onclick = async () => {
   out.innerHTML = `<div class="stat"><span>File size</span><b>${kb(r.b.size)}</b></div><div class="stat"><span>Pixels</span><b>${r.c.width} × ${r.c.height}</b></div>${r.q ? `<div class="stat"><span>Quality</span><b>${Math.round(r.q * 100)}%</b></div>` : ""}
     <p class="note" style="color:${ok ? "inherit" : "var(--danger,#C2362B)"}">${ok ? `Fits under ${n} ${$("#fsU").value}.` : r.note}${fsFmt === "image/jpeg" && hasAlpha(S.base) && !S.bg ? " JPG has no see-through areas, so they become white." : ""}</p>
     <button class="btn primary" id="fsDl">Download ${ext.toUpperCase()}</button>`;
-  $("#fsDl").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(fsBlob); a.download = `${fileName || "photo"}-${Math.round(fsBlob.size / 1000)}KB.${ext}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Saved to your downloads"); count("size_fits"); };
+  $("#fsDl").onclick = () => { download(fsBlob, `${fileName || "photo"}-${Math.round(fsBlob.size / 1000)}KB.${ext}`); toast("Saved to your downloads"); count("size_fits"); };
   count("size_fit_runs");
 };
 
@@ -1201,6 +1209,67 @@ function syncPassport() {
 }
 ["#ppType", "#ppW", "#ppH", "#ppSheet"].forEach(id => $(id).addEventListener("input", () => { if (id === "#ppType") ppDone.delete(2); syncPassport(); }));
 $("#ppFrame").onclick = () => { const p = curPP(); selectTool("crop"); startCrop(p); };
+/* ---------- Passport photo checker and auto-framing (face landmarks, on this device) ---------- */
+let faceReady = null; const ppEsc = t => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function loadFace() { return faceReady ||= new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "vendor/faceapi/face-api.js"; sc.onload = async () => { try { await faceapi.nets.tinyFaceDetector.loadFromUri("vendor/faceapi"); await faceapi.nets.faceLandmark68Net.loadFromUri("vendor/faceapi"); res(faceapi); } catch (e) { faceReady = null; rej(e); } }; sc.onerror = () => { faceReady = null; rej(new Error("load")); }; document.head.appendChild(sc); }); }
+async function measureFace() {
+  const W = S.base.width, H = S.base.height, k = Math.min(1, 1024 / Math.max(W, H)), c = canvas(Math.round(W * k), Math.round(H * k)), x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(S.base, 0, 0, c.width, c.height);
+  // the detector's accuracy depends on its working size (close-ups suit small sizes, group photos larger ones), so run several and combine
+  const fa = await loadFace(), sizes = [224, 320, 416, 512], iou = (a2, b2) => { const x0 = Math.max(a2.x, b2.x), y0 = Math.max(a2.y, b2.y), x1 = Math.min(a2.x + a2.width, b2.x + b2.width), y1 = Math.min(a2.y + a2.height, b2.y + b2.height), i = Math.max(0, x1 - x0) * Math.max(0, y1 - y0); return i / (a2.width * a2.height + b2.width * b2.height - i || 1); };
+  const clusters = [];
+  for (const size of sizes) { const found = await fa.detectAllFaces(c, new fa.TinyFaceDetectorOptions({ inputSize: size, scoreThreshold: .5 })); for (const d0 of found) { const cl = clusters.find(k2 => iou(k2.box, d0.box) > .3); if (cl) { cl.hits.add(size); if (d0.score > cl.score) { cl.score = d0.score; cl.box = d0.box; cl.size = size; } } else clusters.push({ box: d0.box, score: d0.score, size, hits: new Set([size]) }); } }
+  const faces = clusters.filter(k2 => k2.hits.size >= 2 || k2.score >= .75);
+  if (faces.length !== 1) return { faces: faces.length, c };
+  const best = faces[0], withLm = await fa.detectAllFaces(c, new fa.TinyFaceDetectorOptions({ inputSize: best.size, scoreThreshold: .3 })).withFaceLandmarks();
+  const dets = [withLm.sort((p1, p2) => iou(p2.detection.box, best.box) - iou(p1.detection.box, best.box))[0]].filter(Boolean);
+  if (!dets.length) return { faces: 0, c };
+  const P = dets[0].landmarks.positions.map(p => ({ x: p.x / c.width, y: p.y / c.height })), d = (a, b) => Math.hypot((a.x - b.x) * c.width, (a.y - b.y) * c.height);
+  const chin = P[8].y, brow = Math.min(...P.slice(17, 27).map(p => p.y)), crown = brow - .8 * (chin - brow), cx = (P[0].x + P[16].x) / 2;
+  const eye = (i) => ({ x: P.slice(i, i + 6).reduce((s2, p) => s2 + p.x, 0) / 6, y: P.slice(i, i + 6).reduce((s2, p) => s2 + p.y, 0) / 6 }), eL = eye(36), eR = eye(42);
+  const ear = i => (d(P[i + 1], P[i + 5]) + d(P[i + 2], P[i + 4])) / (2 * d(P[i], P[i + 3]) || 1);
+  const box = dets[0].detection.box, img = x.getImageData(0, 0, c.width, c.height).data, lum = (px, py) => { const o = (py * c.width + px) * 4; return .2126 * img[o] + .7152 * img[o + 1] + .0722 * img[o + 2]; };
+  // background: a border strip, avoiding the head and shoulders
+  const bx0 = box.x - box.width * .35, bx1 = box.x + box.width * 1.35, bg = []; for (let py = 0; py < c.height; py += 3) for (let px = 0; px < c.width; px += 3) { const edge = py < c.height * .1 || px < c.width * .08 || px > c.width * .92; if (edge && !(px > bx0 && px < bx1 && py > box.y - box.height * .3)) bg.push(lum(px, py)); }
+  const mean = a => a.reduce((s2, v) => s2 + v, 0) / (a.length || 1), sd = a => { const m = mean(a); return Math.sqrt(mean(a.map(v => (v - m) ** 2))); };
+  const half = side => { const a = []; for (let py = Math.round(box.y + box.height * .3); py < box.y + box.height * .8; py += 2) for (let px = Math.round(box.x + (side ? box.width * .55 : box.width * .1)); px < box.x + (side ? box.width * .9 : box.width * .45); px += 2) a.push(lum(px, py)); return mean(a); };
+  return { faces: 1, crown, chin, cx, head: chin - crown, tilt: Math.atan2((eR.y - eL.y) * c.height, (eR.x - eL.x) * c.width) * 180 / Math.PI, earL: ear(36), earR: ear(42), mouth: d(P[62], P[66]) / ((chin - crown) * c.height), bgMean: mean(bg), bgSd: sd(bg), light: Math.abs(half(0) - half(1)), W, H };
+}
+$("#ppAuto").onclick = async () => {
+  const p = curPP(), note = $("#ppAutoNote"); note.textContent = "Finding the face…";
+  try { const m = await measureFace();
+    if (m.faces !== 1) { note.textContent = m.faces ? `${m.faces} faces found. Use a photo with only one person, or frame by hand.` : "No face found. Try a clearer, front-facing photo, or frame by hand."; return; }
+    const target = (p.headMin + p.headMax) / 2, chH = m.head * m.H / target, chW = chH * p.w / p.h, top = m.crown * m.H - p.top * chH, left = m.cx * m.W - chW / 2;
+    selectTool("crop"); startCrop(p); const fits = top >= 0 && left >= 0 && left + chW <= m.W && top + chH <= m.H;
+    cr = { x: clamp(left / m.W, 0, 1), y: clamp(top / m.H, 0, 1), w: Math.min(chW / m.W, 1), h: Math.min(chH / m.H, 1) }; if (cr.x + cr.w > 1) cr.x = 1 - cr.w; if (cr.y + cr.h > 1) cr.y = 1 - cr.h; placeCrop();
+    note.textContent = fits ? "Framed to the rules for this photo type. Check the guide lines, then choose Apply." : "Framed as closely as the photo allows: the head is near an edge, so some space is missing. A photo taken from a little further away works better.";
+    count("pp_autoframe");
+  } catch (e) { console.error(e); note.textContent = "The face finder couldn’t load. Frame by hand instead."; }
+};
+$("#ppCheck").onclick = async () => {
+  const p = curPP(), out = $("#ppResults"); out.innerHTML = `<p class="note">Checking…</p>`;
+  try { const m = await measureFace(); const R = [], ok = (pass, good, bad) => R.push([pass, pass ? good : bad]);
+    if (m.faces !== 1) R.push([false, m.faces ? `${m.faces} faces found: the photo must show only one person.` : "No face found: use a clear, front-facing photo with the whole face visible."]);
+    else {
+      const framed = Math.abs(m.W / m.H - p.w / p.h) < .03;
+      if (!framed) R.push([null, "Not framed to this photo size yet: choose Frame it for me first, then check again."]);
+      else { const hr = m.head;
+        ok(hr >= p.headMin - .03 && hr <= p.headMax + .03, `Head size looks right (about ${Math.round(hr * 100)}% of the height).`, `Head size looks ${hr < p.headMin ? "too small" : "too large"} (about ${Math.round(hr * 100)}%; the rule is ${Math.round(p.headMin * 100)}–${Math.round(p.headMax * 100)}%).`);
+        ok(m.crown > .01, "There is space above the head.", "The top of the head looks cut off or too close to the edge.");
+        ok(Math.abs(m.cx - .5) < .06, "The face is centred.", "The face looks off-centre.");
+        ok(m.W >= mmPx(p.w) * .9, "Enough detail to print clearly.", `The photo may be too small to print sharply (${m.W} pixels wide; about ${mmPx(p.w)} is ideal).`); }
+      ok(Math.abs(m.tilt) < 4, "Eyes are level.", `The head looks tilted (about ${Math.abs(Math.round(m.tilt))}°): keep the eyes level.`);
+      ok(m.earL > .17 && m.earR > .17, "Eyes look open.", "The eyes may be closed or half-closed.");
+      ok(m.mouth < .03, "Mouth looks closed.", "The mouth may be open: most rules need a neutral expression with the mouth closed.");
+      ok(m.bgMean > 175 && m.bgSd < 22, "The background looks plain and light.", m.bgMean <= 175 ? "The background looks too dark: use Remove background and use white." : "The background doesn’t look plain: use Remove background and use white.");
+      ok(m.light < 28, "Lighting on the face looks even.", "One side of the face looks darker: face a window or light, and avoid shadows.");
+    }
+    const icon = v => v === true ? `<span class="pp-ok" aria-label="Looks fine">✓</span>` : v === false ? `<span class="pp-bad" aria-label="Worth checking">!</span>` : `<span class="pp-info" aria-label="Note">i</span>`;
+    const bad = R.filter(r => r[0] === false).length;
+    out.innerHTML = `<p class="pp-sum ${bad ? "warn" : "good"}">${bad ? `${bad} thing${bad > 1 ? "s" : ""} worth checking` : "Looks good against these checks"}</p><ul class="pp-list">${R.map(([v, t]) => `<li>${icon(v)}<span>${ppEsc(t)}</span></li>`).join("")}</ul><p class="note">A guide only: measurements are estimates, and the authority that issues the passport or ID makes the final decision. The photo never leaves this device.</p>`;
+    count("pp_check");
+  } catch (e) { console.error(e); out.innerHTML = `<p class="note">The checker couldn’t load on this device. Check the photo against the official rules by eye.</p>`; }
+};
+
 $("#ppBg").onclick = async () => { const ok = await removeBg(); if (ok) { S.bg = curPP().bgc; syncSwatches(); render(); ppDone.add(3); syncPassport(); } };
 $$("#ppSwatches .sw").forEach(b => b.addEventListener("click", () => { ppDone.add(3); syncPassport(); }));
 function passportCanvas() {
@@ -1210,7 +1279,32 @@ function passportCanvas() {
   const sized = resample(crop, W, H);
   return compose(sized, W, H, { bg: S.bg || "#FFFFFF" });
 }
-function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+/* ---------- Honest labels: IPTC "digital source type" written into saved files (read by AI Asli and other tools) ----------
+   Rules: never remove an AI label that came with the photo; describe what Little Light Lit itself did accurately
+   (its AI background removal cuts out, it doesn't create, so it is "algorithmically enhanced", not "AI-generated"). */
+const DST = "http://cv.iptc.org/newscodes/digitalsourcetype/", LABEL_RANK = { trainedAlgorithmicMedia: 6, compositeWithTrainedAlgorithmicMedia: 5, compositeSynthetic: 5, algorithmicMedia: 5, composite: 3, algorithmicallyEnhanced: 2, humanEdits: 1, minorHumanEdits: 1, digitalCapture: 0, computationalCapture: 0 };
+let srcLabel = null; const aiSteps = new Set();
+async function readSourceLabel(file) { try { const t = new TextDecoder("latin1").decode(new Uint8Array(await file.slice(0, 4e6).arrayBuffer())); const m = t.match(/digitalsourcetype\/([A-Za-z]+)/); if (m && LABEL_RANK[m[1]] != null) return m[1]; if (/compositeWithTrainedAlgorithmicMedia/.test(t)) return "compositeWithTrainedAlgorithmicMedia"; if (/trainedAlgorithmicMedia/.test(t)) return "trainedAlgorithmicMedia"; } catch {} return null; }
+function currentLabel() { const mine = aiSteps.size ? "algorithmicallyEnhanced" : "humanEdits"; return srcLabel && LABEL_RANK[srcLabel] > LABEL_RANK[mine] ? srcLabel : mine; }
+function xmpPacket() { const l = currentLabel(), steps = [...aiSteps].join(", "); return `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:lll="https://github.com/suhaimizainalshah/littlelightlit/ns/1.0/" Iptc4xmpExt:DigitalSourceType="${DST}${l}" xmp:CreatorTool="Little Light Lit" lll:AIAssistedSteps="${steps || "none"}"${srcLabel ? ` lll:OriginalSourceType="${DST}${srcLabel}"` : ""}/></rdf:RDF></x:xmpmeta><?xpacket end="w"?>`; }
+async function labelBlob(blob) {
+  try {
+    const u = new Uint8Array(await blob.arrayBuffer()), enc = new TextEncoder(), x = enc.encode(xmpPacket());
+    if (blob.type === "image/jpeg" && u[0] === 0xFF && u[1] === 0xD8) {
+      const head = enc.encode("http://ns.adobe.com/xap/1.0/\0"), len = 2 + head.length + x.length; if (len > 65535) return blob;
+      let at = 2; if (u[2] === 0xFF && u[3] === 0xE0) at = 4 + ((u[4] << 8) | u[5]); // keep JFIF first
+      const seg = new Uint8Array(4 + head.length + x.length); seg.set([0xFF, 0xE1, len >> 8, len & 255]); seg.set(head, 4); seg.set(x, 4 + head.length);
+      return new Blob([u.slice(0, at), seg, u.slice(at)], { type: blob.type });
+    }
+    if (blob.type === "image/png" && u[1] === 0x50 && u[2] === 0x4E) {
+      const data = new Uint8Array([...enc.encode("XML:com.adobe.xmp"), 0, 0, 0, 0, 0, ...x]), type = enc.encode("iTXt"), chunk = new Uint8Array(12 + data.length), dv = new DataView(chunk.buffer);
+      dv.setUint32(0, data.length); chunk.set(type, 4); chunk.set(data, 8); dv.setUint32(8 + data.length, crc32(new Uint8Array([...type, ...data])));
+      return new Blob([u.slice(0, 33), chunk, u.slice(33)], { type: blob.type }); // after the IHDR chunk
+    }
+  } catch {}
+  return blob;
+}
+async function download(blob, name) { if (/^image\/(jpeg|png)$/.test(blob?.type)) blob = await labelBlob(blob); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
 $("#ppSingle").onclick = () => { const c = passportCanvas(), p = curPP(); count("passport"); c.toBlob(b => { download(b, `${fileName}-passport-${p.label ? "2x2in" : p.w + "x" + p.h + "mm"}.jpg`); toast("Passport photo saved"); }, "image/jpeg", .95); };
 $("#ppPrint").onclick = () => {
   const ph = passportCanvas(), L = layout(ph.width, ph.height); if (!L.n) return toast("Choose larger paper for this photo size.");
