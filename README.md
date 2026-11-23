@@ -1,6 +1,6 @@
 # Little Light Lit
 
-**Little Light Lit** is a set of free creative studios for photos, photo strips, designs, video, audio, animation, interactive lessons, 360° media and 3D. Everything runs in your browser: there are no accounts, your files are never uploaded, and the studios work offline once loaded (apart from the downloads noted below).
+**Little Light Lit** is a set of free creative studios for photos, photo strips, designs, video, audio, animation, interactive lessons and courses, 360° media and 3D. Everything runs in your browser: there are no accounts, your files are never uploaded, and the studios work offline once loaded (apart from the downloads noted below).
 
 ## The studios at a glance
 
@@ -13,6 +13,7 @@
 | **Audio** | `audio.html` | Record, edit and clean up sound |
 | **Animate** | `animate.html` | Whiteboard and cartoon explainer videos |
 | **Lessons** | `lesson.html` | Interactive video lessons with questions, like Edpuzzle |
+| **Course** | `course.html` | Interactive courses from blocks, with questions, scenes, animations and software simulations |
 | **360°** | `360.html` | 360 photos and videos |
 | **3D** | `3d.html` | Simple 3D models, for printing, AR and pictures |
 
@@ -102,6 +103,44 @@ Each photo is 1200 × 900 pixels, so strips are sharp enough to print. The camer
 - **Sharing and collecting answers:** a student lesson file (answers handed in as a file, a code, an email or to the teacher’s own Google Sheet); a **SCORM 1.2** package for Moodle, Canvas, Blackboard and Brightspace; a **Singapore Student Learning Space (SLS)** package; or an embed code.
 - **Results:** scores, how much each student watched, answers to every question (with weak questions flagged), written answers, paths and endings, and a CSV download.
 
+## Course
+Build interactive, responsive courses from blocks, and export them as a web page or a SCORM package.
+
+### Content and interaction blocks
+- **Content:** headings, text (with **bold**, _italic_, links and lists), images with descriptions and captions, and video (YouTube or a video address).
+- **Interactions:** accordions, tabs (with arrow-key navigation), flashcards, step-by-step processes, timelines, and labelled graphics (click a picture to add numbered labels).
+
+### Questions
+- **Eight types:** multiple choice, multiple response, true or false, fill in the blanks (with accepted alternatives, in any capitalisation), matching, sequencing, sorting into groups, and click the spot on a picture.
+- **Options:** points, custom feedback for right and wrong answers, another try, and shuffled answers.
+- **Drag and drop:** matching, sorting into groups and sequencing use real drag and drop, with a mouse or touch. With a keyboard, press Space on a card to pick it up, then Space on a slot or group to drop it; screen readers hear each step. Matching and sorting can switch to drop-down lists instead, and sequencing also has up and down buttons.
+
+### Interactive scenes
+- **Objects:** buttons, text, shapes and pictures, placed by dragging on a 16:9 stage.
+- **States:** a look for normal, when hovered, after clicking and selected.
+- **Layers:** pop-ups shown or hidden by rules.
+- **Rules in plain language:** “When [object] is [clicked, hovered or shown], and [variable] [is, is more than…] [value], then [show a layer, set a state, set or add to a variable, go to a block, or mark the scene complete].”
+- **Variables:** set in the Course panel, shown in any text with `{{name}}`.
+
+### Animations
+- **Keyframes on a timeline:** move the time slider, then drag an object or edit its position, scale, rotation and opacity to set a keyframe.
+- **Playback:** smooth, steady, slow-down or speed-up easing; looping; playing when scrolled into view; and Play and Replay buttons. It respects the “reduce motion” setting.
+
+### Software simulations
+- **Steps from screenshots** (for example from Lassoft): on each one, drag to mark where to click, or ask the learner to type text.
+- **Three modes:** **Watch** (the steps play with the target highlighted), **Try it** (hints after two wrong clicks) and **Test** (scored on first-time accuracy).
+
+### Narration
+- **For any block:** **Read aloud** uses the device’s own voice (no file, works offline, with a speed setting), or add **recorded** narration (from the microphone) or an **uploaded** audio file.
+- **Transcripts:** every narrated block shows a transcript for learners who can’t listen. For read aloud, it is the block’s own text unless you write your own.
+
+### Course settings and export
+- **Settings:** title, introduction, colour, pass mark and variables. The colour is adjusted automatically in light and dark mode, so text and buttons always stay readable.
+- **Progress and score:** shown at the end of the course, counting questions, scored simulations and scenes that can be completed.
+- **Export:** a **single HTML file** that opens in any browser; a **SCORM 1.2** or **SCORM 2004** package that reports score, completion and pass or fail to Moodle, Canvas, Blackboard and other learning platforms; or a **Singapore Student Learning Space (SLS)** package, which sends the score as SLS expects (upload it as an Integrated Scorable Response question, with maximum marks set to the course’s total points, which the export tells you). SLS packages can’t load YouTube.
+- **Saving:** a draft is kept in the browser as you work (**Carry on** or **Discard draft** on the start screen), and **Save** and **Open** keep course files.
+- **Sample course:** a ready-made course showing every kind of block.
+
 ## 360°
 - **Open** stitched 360 photos and videos, or stitch raw dual-lens files (for example Samsung Gear 360).
 - **Adjust:** level the horizon, set the starting direction, colour controls and a vignette, and hide the tripod with a patch or your logo.
@@ -163,7 +202,8 @@ Bundled in `vendor/` unless noted, and loaded only when needed.
 **About the AGPL library:** while Little Light Lit uses `@imgly/background-removal`, the app as a whole must follow AGPL 3.0 terms, and commercial use needs img.ly’s commercial licence. It is under review for replacement with a permissively licensed, locally bundled alternative.
 
 ## Files
-- **Studio pages:** `index.html`, `photobooth.html`, `design.html`, `video.html`, `audio.html`, `animate.html`, `lesson.html`, `360.html` and `3d.html`.
+- **Studio pages:** `index.html`, `photobooth.html`, `design.html`, `video.html`, `audio.html`, `animate.html`, `lesson.html`, `course.html`, `360.html` and `3d.html`.
+- **Course player:** `assets/course-player.js`, which shows courses in Preview and inside every export.
 - **Shared code, styles and fonts:** `assets/` (`littlelightlit-ux.js`, `nav.js`, `compact.js`, `labels.js`, `lesson-player.js` and others, `littlelightlit.css` and the fonts).
 - **Libraries:** `vendor/`.
 

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Little Light Lit Course: build interactive courses</title>
+<meta name="description" content="Build interactive courses with blocks, questions, scenes, animations and software simulations. Export as HTML or SCORM. Free and private.">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
+<style>
+.ce{display:grid;grid-template-columns:230px minmax(0,1fr);gap:16px;padding:14px;max-width:1240px;margin:0 auto}
+@media (max-width:820px){.ce{grid-template-columns:1fr}.pal{position:static!important;max-height:none!important}}
+.pal{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;display:grid;gap:12px}
+.pal h2{margin:0 0 6px;font-size:.8rem;color:var(--muted,#5b616a);font-weight:700}
+.pal .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pal button{display:grid;justify-items:center;gap:3px;padding:8px 4px;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line,#e3e1db);border-radius:10px;background:var(--panel,#fff);color:inherit;cursor:pointer}
+.pal button:hover{border-color:var(--accent,#c23a22)}.pal button span{font-size:18px;line-height:1}
+.blocks{display:grid;gap:12px;min-width:0}
+.bk{border:1px solid var(--line,#e3e1db);border-radius:14px;background:var(--panel,#fff);padding:12px 14px}
+.bk>header{display:flex;align-items:center;gap:8px;margin-bottom:8px}.bk>header b{flex:1}.bk>header small{color:var(--muted,#5b616a)}
+.bk .ib{border:1px solid var(--line,#e3e1db);background:transparent;border-radius:8px;width:30px;height:30px;cursor:pointer;color:inherit}
+.fld{display:grid;gap:3px;margin:6px 0}.fld>span{font-size:12px;font-weight:650;color:var(--muted,#5b616a)}
+.fld input[type=text],.fld input:not([type]),.fld textarea,.fld select,.fld input[type=number]{font:inherit;padding:7px 9px;border:1px solid var(--line,#e3e1db);border-radius:8px;background:var(--paper,#fff);color:inherit;width:100%}
+.fld textarea{min-height:70px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.items{display:grid;gap:8px}.item{border:1px dashed var(--line,#e3e1db);border-radius:10px;padding:8px 10px;position:relative}.item .x{position:absolute;top:6px;right:6px}
+.small{font-size:12.5px}.mini{padding:4px 10px;font-size:12.5px}
+.stagex{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line,#e3e1db);border-radius:12px;overflow:hidden;background:#f6f5f2;touch-action:none;user-select:none}
+.ob{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:8px;font-weight:650;cursor:move;outline:1px dashed rgba(0,0,0,.25);overflow:hidden;padding:2px 4px;line-height:1.2}
+.ob.sel{outline:3px solid #2453d6}.ob img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.simbox{position:relative;cursor:crosshair;touch-action:none;user-select:none}.simbox img{display:block;width:100%;border-radius:8px;-webkit-user-drag:none;user-select:none;pointer-events:none}.simbox .r{position:absolute;border:3px solid #c23a22;background:rgba(194,58,34,.15);border-radius:4px;pointer-events:none}
+.rule{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border:1px solid var(--line,#e3e1db);border-radius:10px;margin:6px 0;font-size:13px}.rule select,.rule input{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line,#e3e1db);border-radius:7px;background:var(--paper,#fff);color:inherit;max-width:150px}
+.empty-c{border:2px dashed var(--line,#e3e1db);border-radius:16px;padding:28px;text-align:center;color:var(--muted,#5b616a)}
+.ovl{position:fixed;inset:0;z-index:50;background:var(--paper,#fff);overflow:auto}.ovl .bar{position:sticky;top:0;display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line,#e3e1db);background:var(--paper,#fff);z-index:2}
+.tline{display:flex;gap:8px;align-items:center}.tline input[type=range]{flex:1}
+.top #exportBtn{background:#b42e18;border-color:#b42e18;color:#fff}
+.keys{display:flex;gap:4px;flex-wrap:wrap}.keys button{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line,#e3e1db);background:var(--paper,#fff);cursor:pointer;color:inherit}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="brand" href="./" aria-label="Little Light Lit home"><img src="assets/logo.png" alt="" width="28" height="28"><span>Little Light Lit</span></a>
+    <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html" aria-current="page">Course</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+    <span class="spacer"></span>
+    <button class="btn" id="previewBtn">Preview</button>
+    <button class="btn" id="openBtn">Open</button><input type="file" id="openIn" accept=".json,application/json" hidden>
+    <button class="btn" id="saveBtn">Save</button>
+    <button class="btn primary" id="exportBtn">Export</button>
+  </header>
+  <main class="ce" id="main">
+    <aside class="pal" aria-label="Add a block">
+      <section class="bk"><h2>Course</h2>
+        <label class="fld"><span>Title</span><input id="cTitle"></label>
+        <label class="fld"><span>Introduction</span><textarea id="cIntro" rows="2"></textarea></label>
+        <div class="two"><label class="fld"><span>Colour</span><input type="color" id="cAccent"></label><label class="fld"><span>Pass mark %</span><input type="number" id="cPass" min="0" max="100"></label></div>
+        <details><summary class="small"><b>Variables</b> (for scenes)</summary><div id="vars" class="items"></div><button class="btn mini" id="addVar">Add variable</button></details>
+      </section>
+      <div><h2>Content</h2><div class="grid" data-g="content"></div></div>
+      <div><h2>Interactive</h2><div class="grid" data-g="inter"></div></div>
+      <div><h2>Questions</h2><div class="grid" data-g="q"></div></div>
+      <div><h2>Advanced</h2><div class="grid" data-g="adv"></div></div>
+    </aside>
+    <div class="blocks" id="blocks" aria-label="Course blocks"></div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/nav.js"></script>
+<script src="vendor/jszip/jszip.min.js"></script>
+<script src="assets/course-player.js"></script>
+<script>
+/* Little Light Lit Course editor. The course is plain data (C); assets/course-player.js renders it in Preview and in
+   every export, so learners see exactly what you previewed. Everything stays on this device. */
+const $ = s => document.querySelector(s), uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toast = (t, ms = 3200) => { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), ms); };
+const DRAFT = "littlelightlit-course-draft";
+let C = null;
+
+/* ---------- block types: palette entries and starting content ---------- */
+const TYPES = {
+  heading: ["content", "H", "Heading", () => ({ text: "New section", level: 2 })],
+  text: ["content", "¶", "Text", () => ({ text: "Write here. Use **bold**, _italic_, [links](https://example.org) and lines starting with - for lists." })],
+  image: ["content", "▣", "Image", () => ({ src: "", alt: "", caption: "" })],
+  video: ["content", "▶", "Video", () => ({ url: "", caption: "" })],
+  accordion: ["inter", "≡", "Accordion", () => ({ title: "", items: [{ title: "First", body: "Details" }, { title: "Second", body: "Details" }] })],
+  tabs: ["inter", "⊟", "Tabs", () => ({ title: "", items: [{ title: "Tab 1", body: "Content" }, { title: "Tab 2", body: "Content" }] })],
+  flashcards: ["inter", "◫", "Flashcards", () => ({ title: "", cards: [{ front: "Term", back: "Meaning" }, { front: "Term", back: "Meaning" }] })],
+  process: ["inter", "→", "Process", () => ({ title: "", steps: [{ title: "Step 1", body: "" }, { title: "Step 2", body: "" }] })],
+  timeline: ["inter", "⋮", "Timeline", () => ({ title: "", events: [{ date: "2025", title: "Event", body: "" }] })],
+  labelled: ["inter", "⊙", "Labelled graphic", () => ({ title: "", src: "", alt: "", pins: [] })],
+  q_mc: ["q", "◉", "Multiple choice", () => ({ type: "question", qtype: "mc", prompt: "Question?", choices: [{ text: "Right answer", correct: true }, { text: "Wrong answer", correct: false }], points: 1, shuffle: true })],
+  q_mr: ["q", "☑", "Multiple response", () => ({ type: "question", qtype: "mr", prompt: "Select all that apply.", choices: [{ text: "Correct", correct: true }, { text: "Also correct", correct: true }, { text: "Wrong", correct: false }], points: 1 })],
+  q_tf: ["q", "±", "True or false", () => ({ type: "question", qtype: "tf", prompt: "Statement.", answer: true, points: 1 })],
+  q_fill: ["q", "▁", "Fill in blanks", () => ({ type: "question", qtype: "fill", prompt: "Complete the sentence.", text: "Water [evaporates|evaporating] and then [condenses].", points: 1 })],
+  q_match: ["q", "⇄", "Matching", () => ({ type: "question", qtype: "match", prompt: "Match each term.", pairs: [{ left: "A", right: "1" }, { left: "B", right: "2" }], points: 1 })],
+  q_order: ["q", "↕", "Sequencing", () => ({ type: "question", qtype: "order", prompt: "Put these in order.", items: ["First", "Second", "Third"], points: 1 })],
+  q_cat: ["q", "⊞", "Drag into groups", () => ({ type: "question", qtype: "categorize", prompt: "Put each item in its group.", categories: ["Group A", "Group B"], items: [{ text: "Item 1", cat: "Group A" }, { text: "Item 2", cat: "Group B" }], points: 1 })],
+  q_hot: ["q", "✛", "Click the spot", () => ({ type: "question", qtype: "hotspot", prompt: "Click the right place.", src: "", alt: "", target: { x: 40, y: 40, w: 20, h: 20 }, points: 1 })],
+  scene: ["adv", "✦", "Interactive scene", () => ({ title: "", bg: "#f6f5f2", objects: [{ id: uid(), kind: "button", text: "Click me", x: 38, y: 40, w: 24, h: 16, size: 18, states: { normal: { fill: "#c23a22", color: "#ffffff" }, hover: { fill: "#a93019" }, visited: { fill: "#6b7280" } } }], layers: [], rules: [], points: 1 })],
+  animation: ["adv", "◔", "Animation", () => { const id = uid(); return { title: "", bg: "#f6f5f2", duration: 3, loop: false, autoplay: true, objects: [{ id, kind: "text", text: "Hello!", w: 22, h: 14, size: 26, fill: "#c23a22", color: "#ffffff", keys: [{ t: 0, x: 5, y: 40, scale: 1, rotate: 0, opacity: 0 }, { t: 1.5, x: 39, y: 40, scale: 1.2, rotate: 0, opacity: 1 }] }] }; }],
+  simulation: ["adv", "⌖", "Simulation", () => ({ title: "", steps: [], modes: ["watch", "try", "test"], scored: true, points: 1 })],
+};
+const typeKey = b => b.type === "question" ? { mc: "q_mc", mr: "q_mr", tf: "q_tf", fill: "q_fill", match: "q_match", order: "q_order", categorize: "q_cat", hotspot: "q_hot" }[b.qtype] : b.type;
+const make = k => { const d = TYPES[k][3](); return { id: uid(), type: d.type || k, ...d }; };
+
+/* ---------- saving: autosave a draft in this browser; files for keeping ---------- */
+let saveT = 0;
+function changed() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(DRAFT, JSON.stringify(C)); } catch { toast("This course is too large to keep as a draft in the browser. Use Save to keep a file.", 6000); } }, 400); }
+const download = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+const slug = s => (s || "course").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "course";
+async function readImage(file, max = 1600) { // pictures are shrunk to keep courses small
+  const bmp = await createImageBitmap(file), k = Math.min(1, max / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL(/png/.test(file.type) ? "image/png" : "image/jpeg", .86);
+}
+const pickImage = () => new Promise(res => { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.multiple = false; i.onchange = async () => { const f = i.files[0]; if (!f) return res(null); const k = await LightLitSniff(f); if (!LightLitPhotoKinds.has(k)) { toast(LightLitWhyNot(f.name, k)); return res(null); } res(await readImage(f)); }; i.click(); });
+
+/* ---------- form helpers ---------- */
+function fld(label, val, set, kind = "text", extra = {}) {
+  const w = document.createElement("label"); w.className = "fld"; w.innerHTML = `<span>${esc(label)}</span>`;
+  let e;
+  if (kind === "textarea") { e = document.createElement("textarea"); e.value = val ?? ""; e.rows = extra.rows || 3; }
+  else if (kind === "select") { e = document.createElement("select"); e.innerHTML = extra.options.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join(""); e.value = val ?? ""; }
+  else if (kind === "checkbox") { w.className = "fld small"; w.style.cssText = "display:flex;gap:6px;align-items:center"; w.innerHTML = ""; e = document.createElement("input"); e.type = "checkbox"; e.checked = !!val; w.append(e, document.createTextNode(label)); e.onchange = () => { set(e.checked); changed(); extra.re?.(); }; return w; }
+  else { e = document.createElement("input"); e.type = kind; e.value = val ?? ""; if (extra.min != null) e.min = extra.min; if (extra.max != null) e.max = extra.max; if (extra.step) e.step = extra.step; }
+  e.addEventListener(kind === "select" ? "change" : "input", () => { set(kind === "number" ? +e.value : e.value); changed(); extra.re?.(); }); w.append(e); return w;
+}
+function list(arr, makeItem, render, addLabel, re) {
+  const box = document.createElement("div"); box.className = "items";
+  arr.forEach((it, i) => { const d = document.createElement("div"); d.className = "item"; render(d, it, i); const x = document.createElement("button"); x.className = "ib x"; x.textContent = "✕"; x.setAttribute("aria-label", "Remove"); x.onclick = () => { arr.splice(i, 1); changed(); re(); }; d.append(x); box.append(d); });
+  const add = document.createElement("button"); add.className = "btn mini"; add.textContent = addLabel; add.onclick = () => { arr.push(makeItem()); changed(); re(); }; box.append(add); return box;
+}
+const imgField = (b, key, label, re) => { const w = document.createElement("div"); w.className = "fld"; w.innerHTML = `<span>${esc(label)}</span>`; if (b[key]) { const im = document.createElement("img"); im.src = b[key]; im.style.cssText = "max-height:120px;border-radius:8px;justify-self:start"; w.append(im); } const btn = document.createElement("button"); btn.className = "btn mini"; btn.textContent = b[key] ? "Change picture" : "Choose a picture"; btn.onclick = async () => { const d = await pickImage(); if (d) { b[key] = d; changed(); re(); } }; w.append(btn); return w; };
+
+/* ---------- each block's editor ---------- */
+function editor(b, body, re) {
+  const t = b.type, add = (...n) => body.append(...n);
+  if (t === "heading") add(fld("Heading", b.text, v => b.text = v), fld("Size", String(b.level), v => b.level = +v, "select", { options: [["2", "Section"], ["3", "Subsection"]] }));
+  if (t === "text") add(fld("Text", b.text, v => b.text = v, "textarea", { rows: 5 }));
+  if (t === "image") add(imgField(b, "src", "Picture", re), fld("Description for screen readers", b.alt, v => b.alt = v), fld("Caption", b.caption, v => b.caption = v));
+  if (t === "video") add(fld("YouTube link or video address", b.url, v => b.url = v), fld("Caption", b.caption, v => b.caption = v));
+  const titled = () => add(fld("Title (optional)", b.title, v => b.title = v));
+  if (t === "accordion" || t === "tabs") { titled(); add(list(b.items, () => ({ title: "New", body: "" }), (d, it) => d.append(fld("Title", it.title, v => it.title = v), fld("Content", it.body, v => it.body = v, "textarea")), t === "tabs" ? "Add tab" : "Add section", re)); }
+  if (t === "flashcards") { titled(); add(list(b.cards, () => ({ front: "", back: "" }), (d, it) => d.append(h2(fld("Front", it.front, v => it.front = v, "textarea", { rows: 2 }), fld("Back", it.back, v => it.back = v, "textarea", { rows: 2 }))), "Add card", re)); }
+  if (t === "process") { titled(); add(list(b.steps, () => ({ title: "", body: "" }), (d, it) => d.append(fld("Step title", it.title, v => it.title = v), fld("Details", it.body, v => it.body = v, "textarea")), "Add step", re)); }
+  if (t === "timeline") { titled(); add(list(b.events, () => ({ date: "", title: "", body: "" }), (d, it) => d.append(h2(fld("Date", it.date, v => it.date = v), fld("Title", it.title, v => it.title = v)), fld("Details", it.body, v => it.body = v, "textarea", { rows: 2 })), "Add event", re)); }
+  if (t === "labelled") {
+    titled(); add(imgField(b, "src", "Picture", re), fld("Description for screen readers", b.alt, v => b.alt = v));
+    if (b.src) { const box = document.createElement("div"); box.className = "simbox"; box.innerHTML = `<img src="${b.src}" alt="">` + b.pins.map((p, i) => `<span style="position:absolute;left:${p.x}%;top:${p.y}%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:#c23a22;color:#fff;display:grid;place-items:center;font-weight:800;border:2px solid #fff">${i + 1}</span>`).join("");
+      box.onclick = e => { const r = box.getBoundingClientRect(); b.pins.push({ x: +((e.clientX - r.left) / r.width * 100).toFixed(1), y: +((e.clientY - r.top) / r.height * 100).toFixed(1), title: `Label ${b.pins.length + 1}`, body: "" }); changed(); re(); };
+      add(note("Click the picture to add a numbered label."), box, list(b.pins, null, (d, p, i) => d.append(fld(`Label ${i + 1}`, p.title, v => p.title = v), fld("Details", p.body, v => p.body = v, "textarea", { rows: 2 })), "", re)); body.querySelector(".items > .btn:last-child")?.remove(); }
+  }
+  if (t === "question") questionEditor(b, add, re);
+  if (t === "scene") sceneEditor(b, body, re);
+  if (t === "animation") animEditor(b, body, re);
+  if (t === "simulation") simEditor(b, body, re);
+}
+const h2 = (...n) => { const d = document.createElement("div"); d.className = "two"; d.append(...n); return d; };
+const note = t => { const p = document.createElement("p"); p.className = "small"; p.style.color = "var(--muted,#5b616a)"; p.textContent = t; return p; };
+
+function questionEditor(b, add, re) {
+  const q = b.qtype; add(fld("Question", b.prompt, v => b.prompt = v, "textarea", { rows: 2 }));
+  if (q === "mc" || q === "mr") add(list(b.choices, () => ({ text: "", correct: false }), (d, c) => d.append(fld("Answer", c.text, v => c.text = v), fld("Correct", c.correct, v => { if (q === "mc" && v) b.choices.forEach(x => x.correct = false); c.correct = v; }, "checkbox", { re })), "Add answer", re), fld("Shuffle answers", b.shuffle, v => b.shuffle = v, "checkbox"));
+  if (q === "tf") add(fld("The statement is", b.answer ? "true" : "false", v => b.answer = v === "true", "select", { options: [["true", "True"], ["false", "False"]] }));
+  if (q === "fill") add(fld("Sentence: put each answer in [square brackets]; separate accepted answers with |", b.text, v => b.text = v, "textarea"));
+  if (q === "match" || q === "categorize") add(fld("Drag and drop (switch off to use drop-down lists)", b.dnd !== false, v => b.dnd = v, "checkbox"));
+  if (q === "match") add(list(b.pairs, () => ({ left: "", right: "" }), (d, p) => d.append(h2(fld("Item", p.left, v => p.left = v), fld("Matches", p.right, v => p.right = v))), "Add pair", re));
+  if (q === "order") add(note("List the items in the correct order. Learners see them shuffled."), list(b.items, () => "", (d, it, i) => d.append(fld(`${i + 1}.`, it, v => b.items[i] = v)), "Add item", re));
+  if (q === "categorize") { add(list(b.categories, () => "New group", (d, c, i) => d.append(fld(`Group ${i + 1}`, c, v => { b.items.forEach(x => { if (x.cat === b.categories[i]) x.cat = v; }); b.categories[i] = v; })), "Add group", re));
+    add(list(b.items, () => ({ text: "", cat: b.categories[0] }), (d, it) => d.append(h2(fld("Item", it.text, v => it.text = v), fld("Belongs in", it.cat, v => it.cat = v, "select", { options: b.categories.map(c => [c, c]) }))), "Add item", re)); }
+  if (q === "hotspot") { add(imgField(b, "src", "Picture", re), fld("Description for screen readers", b.alt, v => b.alt = v)); if (b.src) add(note("Drag on the picture to mark the correct area."), rectPicker(b.src, b.target, z => { b.target = z; changed(); })); }
+  add(h2(fld("Feedback when right", b.right, v => b.right = v), fld("Feedback when wrong", b.wrong, v => b.wrong = v)), h2(fld("Points", b.points ?? 1, v => b.points = v, "number", { min: 0 }), fld("Allow another try", b.retry !== false, v => b.retry = v, "checkbox")));
+}
+// drag a rectangle on a picture; values are percentages
+function rectPicker(src, z, set) {
+  const box = document.createElement("div"); box.className = "simbox"; box.innerHTML = `<img src="${src}" alt=""><div class="r"></div>`; const r = box.querySelector(".r");
+  const show = q => Object.assign(r.style, { left: q.x + "%", top: q.y + "%", width: q.w + "%", height: q.h + "%" }); show(z || { x: 0, y: 0, w: 0, h: 0 });
+  let s0 = null; const pt = e => { const b = box.getBoundingClientRect(); return { x: Math.max(0, Math.min(100, (e.clientX - b.left) / b.width * 100)), y: Math.max(0, Math.min(100, (e.clientY - b.top) / b.height * 100)) }; };
+  box.onpointerdown = e => { s0 = pt(e); box.setPointerCapture(e.pointerId); };
+  box.onpointermove = e => { if (!s0) return; const p = pt(e); show({ x: Math.min(s0.x, p.x), y: Math.min(s0.y, p.y), w: Math.abs(p.x - s0.x), h: Math.abs(p.y - s0.y) }); };
+  box.onpointerup = e => { if (!s0) return; const p = pt(e), q = { x: +Math.min(s0.x, p.x).toFixed(1), y: +Math.min(s0.y, p.y).toFixed(1), w: +Math.abs(p.x - s0.x).toFixed(1), h: +Math.abs(p.y - s0.y).toFixed(1) }; s0 = null; if (q.w > 1 && q.h > 1) set(q); };
+  return box;
+}
+// drag objects on a 16:9 stage; positions are percentages
+function stageEditor(objs, at, sel, onSel, onMove, bg) {
+  const st = document.createElement("div"); st.className = "stagex"; if (bg) st.style.background = bg;
+  objs.forEach(o => { const p = at(o), e = document.createElement("div"); e.className = "ob" + (o.id === sel ? " sel" : ""); e.style.cssText += `left:${p.x}%;top:${p.y}%;width:${o.w}%;height:${o.h}%;font-size:${(o.size || 16) * .7}px;background:${p.fill || "transparent"};color:${p.color || "inherit"};opacity:${p.opacity ?? 1};transform:scale(${p.scale ?? 1}) rotate(${p.rotate ?? 0}deg)`;
+    if (o.kind === "image" && o.src) e.innerHTML = `<img src="${o.src}" alt="">`; else e.textContent = o.text || "";
+    // select on release, not on press: selecting redraws the editor, which would end the drag before it starts
+    e.onpointerdown = ev => { ev.preventDefault(); const b = st.getBoundingClientRect(), sx = ev.clientX, sy = ev.clientY, ox = p.x, oy = p.y; e.setPointerCapture(ev.pointerId); delete e.dataset.nx;
+      e.onpointermove = m => { const nx = Math.max(-o.w / 2, Math.min(100 - o.w / 2, ox + (m.clientX - sx) / b.width * 100)), ny = Math.max(-o.h / 2, Math.min(100 - o.h / 2, oy + (m.clientY - sy) / b.height * 100)); e.style.left = nx + "%"; e.style.top = ny + "%"; e.dataset.nx = nx; e.dataset.ny = ny; };
+      e.onpointerup = () => { e.onpointermove = null; if (e.dataset.nx) onMove(o, +(+e.dataset.nx).toFixed(1), +(+e.dataset.ny).toFixed(1)); else onSel(o.id); }; };
+    st.append(e); });
+  return st;
+}
+
+function sceneEditor(b, body, re) {
+  body.append(h2(fld("Title (optional)", b.title, v => b.title = v), fld("Background", b.bg, v => b.bg = v, "color")));
+  b._sel = b.objects.some(o => o.id === b._sel) ? b._sel : b.objects[0]?.id;
+  body.append(note("Drag objects to place them. Select one to edit it."), stageEditor(b.objects, o => ({ x: o.x, y: o.y, ...(o.states?.normal || {}) }), b._sel, id => { b._sel = id; re(); }, (o, x, y) => { o.x = x; o.y = y; b._sel = o.id; changed(); re(); }, b.bg));
+  const bar = document.createElement("div"); bar.className = "row"; bar.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin:8px 0";
+  [["button", "Add button"], ["text", "Add text"], ["shape", "Add shape"], ["image", "Add picture"]].forEach(([k, l]) => { const btn = document.createElement("button"); btn.className = "btn mini"; btn.textContent = l; btn.onclick = async () => { const o = { id: uid(), kind: k, text: k === "image" ? "" : k === "button" ? "Button" : k === "text" ? "Text" : "", x: 10, y: 10, w: k === "text" ? 30 : 20, h: k === "text" ? 10 : 14, size: 16, states: { normal: { fill: k === "button" ? "#2453d6" : k === "shape" ? "#f6c744" : "transparent", color: k === "button" ? "#ffffff" : "#18191c" } } }; if (k === "image") { o.src = await pickImage(); if (!o.src) return; } b.objects.push(o); b._sel = o.id; changed(); re(); }; bar.append(btn); });
+  body.append(bar);
+  const o = b.objects.find(x => x.id === b._sel);
+  if (o) { const box = document.createElement("div"); box.className = "item"; box.innerHTML = `<b class="small">Selected: ${esc(o.text || o.kind)}</b>`;
+    if (o.kind !== "image") box.append(fld("Text (use {{name}} to show a variable)", o.text, v => o.text = v, "text", { re }));
+    box.append(h2(fld("Width %", o.w, v => o.w = v, "number", { min: 2, max: 100, re }), fld("Height %", o.h, v => o.h = v, "number", { min: 2, max: 100, re })), fld("Text size", o.size, v => o.size = v, "number", { min: 8, max: 80, re }));
+    o.states ||= {}; [["normal", "Normal"], ["hover", "When hovered"], ["visited", "After clicking"], ["selected", "Selected"]].forEach(([k, l]) => { const s = o.states[k] ||= {}; box.append(h2(fld(`${l}: fill`, s.fill || "#ffffff", v => s.fill = v, "color", { re }), fld(`${l}: text`, s.color || "#18191c", v => s.color = v, "color", { re }))); });
+    box.append(fld("Show in", o.layer || "", v => o.layer = v || null, "select", { options: [["", "The main scene"], ...b.layers.map(L => [L.id, `Layer: ${L.name}`])], re }));
+    const del = document.createElement("button"); del.className = "btn mini"; del.textContent = "Delete object"; del.onclick = () => { b.objects = b.objects.filter(x => x !== o); b.rules = b.rules.filter(r => r.obj !== o.id); changed(); re(); }; box.append(del); body.append(box); }
+  body.append(Object.assign(document.createElement("h3"), { className: "small", textContent: "Layers (pop-ups shown by rules)" }), list(b.layers, () => ({ id: uid(), name: `Layer ${b.layers.length + 1}`, visible: false }), (d, L) => d.append(h2(fld("Name", L.name, v => L.name = v), fld("Visible at start", L.visible, v => L.visible = v, "checkbox")), ), "Add layer", re));
+  body.append(Object.assign(document.createElement("h3"), { className: "small", textContent: "Rules: when… then…" }));
+  const objOpts = b.objects.map(x => [x.id, x.text || x.kind]), layerOpts = b.layers.map(L => [L.id, L.name]), varOpts = (C.vars || []).map(v => [v.name, v.name]);
+  const sel = (opts, val, set, label) => { const s = document.createElement("select"); if (label) s.setAttribute("aria-label", label); s.innerHTML = opts.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join(""); s.value = val ?? ""; s.onchange = () => { set(s.value); changed(); re(); }; return s; };
+  const txt = (val, set, ph) => { const i = document.createElement("input"); i.value = val ?? ""; i.placeholder = ph || ""; i.setAttribute("aria-label", ph || "Value"); i.oninput = () => { set(i.value); changed(); }; return i; };
+  b.rules.forEach((r, ri) => { const row = document.createElement("div"); row.className = "rule";
+    row.append("When", sel(objOpts, r.obj, v => r.obj = v, "Object"), "is", sel([["click", "clicked"], ["hover", "hovered"], ["start", "shown (at start)"]], r.event, v => r.event = v, "Event"));
+    if (varOpts.length) { r.cond ||= { var: "", op: "=", val: "" }; row.append("and", sel([["", "(always)"], ...varOpts], r.cond.var, v => r.cond.var = v, "Only if variable")); if (r.cond.var) row.append(sel(["=", "≠", ">", "<", "≥", "≤"].map(x => [x, x]), r.cond.op, v => r.cond.op = v, "Comparison"), txt(r.cond.val, v => r.cond.val = v, "value")); }
+    (r.then ||= []).forEach((a, ai) => { const sub = document.createElement("span"); sub.style.cssText = "display:flex;gap:6px;align-items:center;flex-basis:100%"; sub.append("→", sel([["show", "show layer"], ["hide", "hide layer"], ["toggle", "toggle layer"], ["state", "set state of"], ["set", "set variable"], ["add", "add to variable"], ["goto", "go to block"], ["complete", "mark scene complete"]], a.do, v => { a.do = v; a.target = ""; }, "Action"));
+      if (["show", "hide", "toggle"].includes(a.do)) sub.append(sel([["", "choose…"], ...layerOpts], a.target, v => a.target = v, "Layer"));
+      if (a.do === "state") sub.append(sel([["", "choose…"], ...objOpts], a.target, v => a.target = v, "Object"), "to", sel([["normal", "normal"], ["selected", "selected"], ["visited", "after clicking"]], a.value, v => a.value = v, "State"));
+      if (a.do === "set" || a.do === "add") sub.append(sel([["", "choose…"], ...varOpts], a.target, v => a.target = v, "Variable"), a.do === "set" ? "to" : "by", txt(a.value, v => a.value = v, "value"));
+      if (a.do === "goto") sub.append(sel([["", "choose…"], ...C.blocks.filter(x => x !== b).map((x, i) => [x.id, `${i + 1}. ${TYPES[typeKey(x)][2]}${x.title || x.text ? ": " + String(x.title || x.text).slice(0, 24) : ""}`])], a.target, v => a.target = v, "Block"));
+      const rm = document.createElement("button"); rm.className = "ib"; rm.textContent = "✕"; rm.setAttribute("aria-label", "Remove action"); rm.onclick = () => { r.then.splice(ai, 1); changed(); re(); }; sub.append(rm); row.append(sub); });
+    const addA = document.createElement("button"); addA.className = "btn mini"; addA.textContent = "Add action"; addA.onclick = () => { r.then.push({ do: "show", target: "" }); changed(); re(); };
+    const rmR = document.createElement("button"); rmR.className = "btn mini"; rmR.textContent = "Delete rule"; rmR.onclick = () => { b.rules.splice(ri, 1); changed(); re(); }; row.append(addA, rmR); body.append(row); });
+  const addR = document.createElement("button"); addR.className = "btn mini"; addR.textContent = "Add rule"; addR.onclick = () => { b.rules.push({ obj: b.objects[0]?.id, event: "click", then: [{ do: "show", target: b.layers[0]?.id || "" }] }); changed(); re(); };
+  body.append(addR, fld("Points when complete", b.points ?? 1, v => b.points = v, "number", { min: 0 }));
+  if (!varOpts.length) body.append(note("Tip: add variables in the Course panel to keep scores or choices, and show them with {{name}}."));
+}
+
+// animation: value of each property at time t, by linear interpolation between keyframes
+const interpAt = (o, t) => { const k = (o.keys || []).slice().sort((a, b) => a.t - b.t); if (!k.length) return { x: 10, y: 10, scale: 1, rotate: 0, opacity: 1 }; if (t <= k[0].t) return k[0]; if (t >= k[k.length - 1].t) return k[k.length - 1]; for (let i = 0; i < k.length - 1; i++) if (t >= k[i].t && t <= k[i + 1].t) { const f = (t - k[i].t) / (k[i + 1].t - k[i].t || 1), m = p => (k[i][p] ?? 1) + ((k[i + 1][p] ?? 1) - (k[i][p] ?? 1)) * f; return { t, x: m("x"), y: m("y"), scale: m("scale"), rotate: m("rotate"), opacity: m("opacity") }; } };
+function animEditor(b, body, re) {
+  b._t ??= 0; b._sel = b.objects.some(o => o.id === b._sel) ? b._sel : b.objects[0]?.id;
+  body.append(h2(fld("Title (optional)", b.title, v => b.title = v), fld("Background", b.bg, v => b.bg = v, "color")), h2(fld("Length (seconds)", b.duration, v => b.duration = Math.max(.5, v), "number", { min: .5, max: 60, step: .5, re }), fld("Easing", b.easing || "ease-in-out", v => b.easing = v, "select", { options: [["ease-in-out", "Smooth"], ["linear", "Steady"], ["ease-out", "Slow down"], ["ease-in", "Speed up"]] })), h2(fld("Loop", b.loop, v => b.loop = v, "checkbox"), fld("Play when scrolled into view", b.autoplay !== false, v => b.autoplay = v, "checkbox")));
+  const tl = document.createElement("div"); tl.className = "tline"; tl.innerHTML = `<span class="small">Time</span><input type="range" min="0" max="${b.duration}" step="0.1" value="${b._t}" aria-label="Time"><b class="small">${(+b._t).toFixed(1)} s</b>`;
+  tl.querySelector("input").oninput = e => { b._t = +e.target.value; re(); };
+  body.append(note("Move the time slider, then drag an object or edit its values: Kutip saves a keyframe at that time."), tl, stageEditor(b.objects, o => ({ ...interpAt(o, b._t), fill: o.fill, color: o.color }), b._sel, id => { b._sel = id; re(); }, (o, x, y) => { setKey(o, { x, y }); b._sel = o.id; re(); }, b.bg));
+  const setKey = (o, patch) => { const cur = interpAt(o, b._t), t = +(+b._t).toFixed(1); let k = o.keys.find(k => Math.abs(k.t - t) < .05); if (!k) { k = { t, x: cur.x, y: cur.y, scale: cur.scale, rotate: cur.rotate, opacity: cur.opacity }; o.keys.push(k); } Object.assign(k, patch); changed(); };
+  const bar = document.createElement("div"); bar.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin:8px 0";
+  [["text", "Add text"], ["shape", "Add shape"], ["image", "Add picture"]].forEach(([k, l]) => { const btn = document.createElement("button"); btn.className = "btn mini"; btn.textContent = l; btn.onclick = async () => { const o = { id: uid(), kind: k, text: k === "text" ? "Text" : "", w: 20, h: 14, size: 20, fill: k === "shape" ? "#f6c744" : "transparent", color: "#18191c", keys: [{ t: 0, x: 10, y: 10, scale: 1, rotate: 0, opacity: 1 }] }; if (k === "image") { o.src = await pickImage(); if (!o.src) return; } b.objects.push(o); b._sel = o.id; changed(); re(); }; bar.append(btn); });
+  const pv = document.createElement("button"); pv.className = "btn mini"; pv.textContent = "▶ Play preview"; pv.onclick = () => { const w = document.createElement("div"); body.querySelector(".anim-pv")?.remove(); w.className = "anim-pv"; body.append(w); const tmp = document.createElement("div"); LLLCourse.render(tmp, { title: "", blocks: [{ ...b, autoplay: false, title: "" }] }, { scorm: false }); w.append(tmp.querySelector("[data-type=animation]")); w.querySelector(".cp-btn")?.click(); };
+  bar.append(pv); body.append(bar);
+  const o = b.objects.find(x => x.id === b._sel);
+  if (o) { const cur = interpAt(o, b._t), box = document.createElement("div"); box.className = "item"; box.innerHTML = `<b class="small">Selected: ${esc(o.text || o.kind)}</b>`;
+    if (o.kind !== "image") box.append(fld("Text", o.text, v => o.text = v, "text", { re }));
+    box.append(h2(fld("Fill", o.fill || "#ffffff", v => o.fill = v, "color", { re }), fld("Text colour", o.color || "#18191c", v => o.color = v, "color", { re })), h2(fld("Width %", o.w, v => o.w = v, "number", { re }), fld("Height %", o.h, v => o.h = v, "number", { re })));
+    const four = document.createElement("div"); four.className = "four"; [["x", "Left %"], ["y", "Top %"], ["scale", "Scale"], ["rotate", "Turn °"]].forEach(([p, l]) => four.append(fld(`${l} at ${(+b._t).toFixed(1)} s`, +(+cur[p]).toFixed(2), v => { setKey(o, { [p]: v }); re(); }, "number", { step: p === "scale" ? .1 : 1 })));
+    box.append(four, fld(`Opacity at ${(+b._t).toFixed(1)} s (0 to 1)`, +(+cur.opacity).toFixed(2), v => { setKey(o, { opacity: Math.max(0, Math.min(1, v)) }); re(); }, "number", { min: 0, max: 1, step: .1 }));
+    const keys = document.createElement("div"); keys.className = "keys"; keys.innerHTML = `<span class="small">Keyframes:</span>`; o.keys.sort((a, c) => a.t - c.t).forEach((k, i) => { const kb = document.createElement("button"); kb.textContent = `${k.t.toFixed(1)} s ✕`; kb.title = "Jump here; Shift-click to delete"; kb.onclick = e => { if (e.shiftKey && o.keys.length > 1) { o.keys.splice(i, 1); changed(); } else b._t = k.t; re(); }; keys.append(kb); });
+    const del = document.createElement("button"); del.className = "btn mini"; del.textContent = "Delete object"; del.onclick = () => { b.objects = b.objects.filter(x => x !== o); changed(); re(); };
+    box.append(keys, note("Select a keyframe to jump to it; Shift-click to delete it."), del); body.append(box); }
+}
+
+function simEditor(b, body, re) {
+  body.append(fld("Title (optional)", b.title, v => b.title = v), note("Add screenshots in order (for example from Lassoft). On each one, drag to mark where to click, and write the instruction."));
+  const add = document.createElement("button"); add.className = "btn mini"; add.textContent = "Add screenshots"; add.onclick = () => { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.multiple = true; i.onchange = async () => { for (const f of i.files) { const k = await LightLitSniff(f); if (!LightLitPhotoKinds.has(k)) { toast(LightLitWhyNot(f.name, k)); continue; } b.steps.push({ src: await readImage(f, 1600), instruction: "Click here", kind: "click", target: { x: 40, y: 40, w: 20, h: 10 } }); } changed(); re(); }; i.click(); };
+  body.append(list(b.steps, null, (d, st, i) => { d.append(Object.assign(document.createElement("b"), { className: "small", textContent: `Step ${i + 1}` }), rectPicker(st.src, st.target, z => { st.target = z; changed(); }), h2(fld("Instruction", st.instruction, v => st.instruction = v), fld("Learner should", st.kind, v => st.kind = v, "select", { options: [["click", "Click the marked area"], ["type", "Type text"]], re })));
+    if (st.kind === "type") d.append(fld("Text to type", st.text, v => st.text = v));
+    const mv = document.createElement("div"); mv.style.cssText = "display:flex;gap:6px"; [["↑", -1], ["↓", 1]].forEach(([l, dlt]) => { const m = document.createElement("button"); m.className = "btn mini"; m.textContent = `Move ${l}`; m.disabled = !b.steps[i + dlt]; m.onclick = () => { [b.steps[i], b.steps[i + dlt]] = [b.steps[i + dlt], b.steps[i]]; changed(); re(); }; mv.append(m); }); d.append(mv); }, "", re));
+  body.querySelector(".items > .btn:last-child")?.remove(); body.append(add);
+  const modes = document.createElement("div"); modes.style.cssText = "display:flex;gap:10px;flex-wrap:wrap"; [["watch", "Watch"], ["try", "Try it"], ["test", "Test"]].forEach(([m, l]) => modes.append(fld(l, b.modes.includes(m), v => { b.modes = v ? [...new Set([...b.modes, m])] : b.modes.filter(x => x !== m); if (!b.modes.length) b.modes = ["try"]; }, "checkbox")));
+  body.append(modes, h2(fld("Score the test", b.scored, v => b.scored = v, "checkbox"), fld("Points", b.points ?? 1, v => b.points = v, "number", { min: 0 })));
+}
+
+/* ---------- the block list ---------- */
+/* ---------- narration: read aloud by the device's voice, or recorded or uploaded audio, with a transcript ---------- */
+function narrationEditor(b, box, re) {
+  const n = b.narration ||= { mode: "none" }; const mode = n.src ? "audio" : n.tts ? "tts" : (n.mode || "none");
+  box.append(fld("Narration", mode, v => { n.mode = v; if (v === "none") { delete n.src; n.tts = false; } if (v === "tts") { delete n.src; n.tts = true; } if (v === "audio") n.tts = false; }, "select", { options: [["none", "None"], ["tts", "Read aloud (the device’s own voice, no file)"], ["audio", "Recorded or uploaded audio"]], re }));
+  if (mode === "tts") box.append(h2(fld("Speed", n.rate || 1, v => n.rate = v, "select", { options: [["0.8", "Slower"], ["1", "Normal"], ["1.2", "Faster"]] }), fld("Language code", n.lang || "en-GB", v => n.lang = v)), note("Learners press Listen. The text of the block is read; edit the transcript to change what is said."));
+  if (mode === "audio" || (n.mode === "audio")) {
+    const row = document.createElement("div"); row.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;align-items:center";
+    if (n.src) { const a = document.createElement("audio"); a.controls = true; a.src = n.src; a.style.height = "34px"; row.append(a); }
+    const up = document.createElement("button"); up.className = "btn mini"; up.textContent = n.src ? "Replace with a file" : "Upload audio"; up.onclick = () => { const i = document.createElement("input"); i.type = "file"; i.accept = "audio/*"; i.onchange = () => { const f = i.files[0]; if (!f) return; if (f.size > 8 * 1024 * 1024) return toast("Keep narration files under 8 MB, for example by recording in mono."); const r = new FileReader(); r.onload = () => { n.src = r.result; n.tts = false; changed(); re(); }; r.readAsDataURL(f); }; i.click(); };
+    const rec = document.createElement("button"); rec.className = "btn mini"; rec.textContent = "● Record";
+    rec.onclick = async () => {
+      if (rec._mr) { rec._mr.stop(); return; }
+      try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }), mr = new MediaRecorder(stream), parts = []; rec._mr = mr; mr.ondataavailable = e => parts.push(e.data);
+        mr.onstop = () => { stream.getTracks().forEach(t => t.stop()); rec._mr = null; const blob = new Blob(parts, { type: mr.mimeType || "audio/webm" }), r = new FileReader(); r.onload = () => { n.src = r.result; n.tts = false; changed(); re(); toast("Narration recorded"); }; r.readAsDataURL(blob); };
+        mr.start(); rec.textContent = "■ Stop recording"; toast("Recording… press Stop when you’re done"); } catch { toast("Couldn’t use the microphone. Check that this site may use it, or upload a file instead."); }
+    };
+    row.append(up, rec); if (n.src) { const rm = document.createElement("button"); rm.className = "btn mini"; rm.textContent = "Remove audio"; rm.onclick = () => { delete n.src; changed(); re(); }; row.append(rm); }
+    box.append(row);
+  }
+  if (mode !== "none") box.append(fld("Transcript (shown to learners; for text-to-speech, also what is read)", n.transcript || "", v => n.transcript = v, "textarea", { rows: 2 }));
+}
+function renderBlocks() {
+  const box = $("#blocks"); box.innerHTML = "";
+  if (!C.blocks.length) { box.innerHTML = `<div class="empty-c"><h2>Start your course</h2><p>Add blocks from the left: text, images, interactions, questions, scenes, animations and simulations.</p></div>`; return; }
+  C.blocks.forEach((b, i) => {
+    const card = document.createElement("section"); card.className = "bk"; card.id = "e-" + b.id; const tk = typeKey(b);
+    card.innerHTML = `<header><span aria-hidden="true">${TYPES[tk][1]}</span><b>${esc(TYPES[tk][2])}</b><small>${i + 1} of ${C.blocks.length}</small><button class="ib" data-a="up" aria-label="Move up" ${i ? "" : "disabled"}>↑</button><button class="ib" data-a="down" aria-label="Move down" ${i < C.blocks.length - 1 ? "" : "disabled"}>↓</button><button class="ib" data-a="dup" aria-label="Duplicate">⧉</button><button class="ib" data-a="del" aria-label="Delete">✕</button></header>`;
+    const body = document.createElement("div"); card.append(body);
+    const nar = document.createElement("details"); nar.className = "small"; nar.style.marginTop = "8px"; if (b.narration && b.narration.mode !== "none" && (b.narration.src || b.narration.tts || b.narration.mode)) nar.open = b._narOpen ?? false;
+    const re = () => { const y = scrollY; body.innerHTML = ""; editor(b, body, re); nar.innerHTML = `<summary><b>Narration</b>${b.narration?.src ? " · audio" : b.narration?.tts ? " · read aloud" : ""}</summary>`; const nb = document.createElement("div"); narrationEditor(b, nb, re); nar.append(nb); scrollTo(0, y); };
+    nar.addEventListener("toggle", () => { b._narOpen = nar.open; }); card.append(nar); re();
+    card.querySelector("header").onclick = e => { const a = e.target.closest("[data-a]")?.dataset.a; if (!a) return;
+      if (a === "up") [C.blocks[i - 1], C.blocks[i]] = [C.blocks[i], C.blocks[i - 1]]; if (a === "down") [C.blocks[i + 1], C.blocks[i]] = [C.blocks[i], C.blocks[i + 1]];
+      if (a === "dup") C.blocks.splice(i + 1, 0, { ...JSON.parse(JSON.stringify(b)), id: uid() }); if (a === "del") { if (!confirm(`Delete this ${TYPES[tk][2].toLowerCase()} block?`)) return; C.blocks.splice(i, 1); }
+      changed(); renderBlocks(); };
+    box.append(card);
+  });
+}
+function renderSettings() {
+  $("#cTitle").value = C.title; $("#cIntro").value = C.intro || ""; $("#cAccent").value = C.accent || "#c23a22"; $("#cPass").value = C.passMark ?? 60;
+  const v = $("#vars"); v.innerHTML = ""; v.append(list(C.vars, null, (d, x) => d.append(h2(fld("Name", x.name, val => x.name = val.replace(/\W/g, "")), fld("Starts at", x.value, val => x.value = val))), "", renderSettings)); v.querySelector(".items > .btn:last-child")?.remove();
+}
+$("#cTitle").oninput = e => { C.title = e.target.value; changed(); }; $("#cIntro").oninput = e => { C.intro = e.target.value; changed(); };
+$("#cAccent").oninput = e => { C.accent = e.target.value; changed(); }; $("#cPass").oninput = e => { C.passMark = +e.target.value; changed(); };
+$("#addVar").onclick = () => { C.vars.push({ name: `score${C.vars.length ? C.vars.length + 1 : ""}`, value: "0" }); changed(); renderSettings(); renderBlocks(); };
+for (const [k, [g, ic, name]] of Object.entries(TYPES)) { const b = document.createElement("button"); b.innerHTML = `<span aria-hidden="true">${ic}</span>${esc(name)}`; b.onclick = () => { const nb = make(k); C.blocks.push(nb); changed(); renderBlocks(); document.getElementById("e-" + nb.id)?.scrollIntoView({ behavior: "smooth", block: "center" }); document.querySelector(`#e-${nb.id} input, #e-${nb.id} textarea`)?.focus({ preventScroll: true }); }; document.querySelector(`[data-g="${g}"]`).append(b); }
+
+/* ---------- preview and export ---------- */
+const clean = () => JSON.parse(JSON.stringify(C, (k, v) => k.startsWith("_") ? undefined : v));
+$("#previewBtn").onclick = () => { const o = document.createElement("div"); o.className = "ovl"; o.innerHTML = `<div class="bar"><b>Preview</b><span class="spacer" style="flex:1"></span><button class="btn" id="closePv">Close preview</button></div><div id="pvRoot"></div>`; document.body.append(o); LLLCourse.render(o.querySelector("#pvRoot"), clean(), { scorm: false }); const close = () => { o.remove(); removeEventListener("keydown", k); $("#previewBtn").focus(); }, k = e => { if (e.key === "Escape") close(); }; o.querySelector("#closePv").onclick = close; addEventListener("keydown", k); o.querySelector("#closePv").focus(); };
+async function courseHTML(data, sls) {
+  const player = await (await fetch("assets/course-player.js")).text();
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light dark"><title>${esc(data.title || "Course")}</title><style>:root{color-scheme:light dark}body{margin:0;background:#fff}@media (prefers-color-scheme:dark){body{background:#121316}}</style>${sls ? '<script src="xapiwrapper.min.js"><\/script>' : ""}</head><body><main id="course"></main><script>${player.replace(/<\/script/gi, "<\\/script")}<\/script><script>LLLCourse.render(document.getElementById("course"), ${JSON.stringify(data).replace(/</g, "\\u003c")}${sls ? ", { sls: true, scorm: false }" : ""});<\/script></body></html>`;
+}
+const manifest12 = t => `<?xml version="1.0" encoding="UTF-8"?><manifest identifier="lll-${uid()}" version="1" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd"><metadata><schema>ADL SCORM</schema><schemaversion>1.2</schemaversion></metadata><organizations default="o1"><organization identifier="o1"><title>${esc(t)}</title><item identifier="i1" identifierref="r1"><title>${esc(t)}</title></item></organization></organizations><resources><resource identifier="r1" type="webcontent" adlcp:scormtype="sco" href="index.html"><file href="index.html"/></resource></resources></manifest>`;
+const manifest2004 = t => `<?xml version="1.0" encoding="UTF-8"?><manifest identifier="lll-${uid()}" version="1" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3" xmlns:adlseq="http://www.adlnet.org/xsd/adlseq_v1p3" xmlns:adlnav="http://www.adlnet.org/xsd/adlnav_v1p3" xmlns:imsss="http://www.imsglobal.org/xsd/imsss" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><metadata><schema>ADL SCORM</schema><schemaversion>2004 4th Edition</schemaversion></metadata><organizations default="o1"><organization identifier="o1"><title>${esc(t)}</title><item identifier="i1" identifierref="r1"><title>${esc(t)}</title></item></organization></organizations><resources><resource identifier="r1" type="webcontent" adlcp:scormType="sco" href="index.html"><file href="index.html"/></resource></resources></manifest>`;
+$("#exportBtn").onclick = () => { const o = document.createElement("div"); o.className = "ovl"; o.style.cssText = "inset:auto 0 0 0;max-height:70vh;border-top:1px solid var(--line,#ddd);box-shadow:0 -8px 30px rgba(0,0,0,.15)"; o.innerHTML = `<div class="bar"><b>Export</b><span style="flex:1"></span><button class="btn" data-x="close">Close</button></div><div style="padding:14px;display:grid;gap:8px;max-width:640px"><button class="btn primary" data-x="html">Web page (one HTML file): open in any browser or put online</button><button class="btn" data-x="s12">SCORM 1.2 package: for Moodle, Canvas, Blackboard and most LMSs</button><button class="btn" data-x="s2004">SCORM 2004 package: for LMSs that prefer it</button><button class="btn" data-x="sls">SLS package: for the Student Learning Space (Integrated Scorable Response)</button><p class="small" style="color:var(--muted,#5b616a)">Scores, completion and pass or fail are reported to the LMS. Pass mark: ${C.passMark ?? 60}%.</p></div>`; document.body.append(o); o.querySelector('[data-x="html"]').focus();
+  o.onclick = async e => { const x = e.target.closest("[data-x]")?.dataset.x; if (!x) return; if (x === "close") return o.remove(); const data = clean();
+    if (x === "sls") {
+      if (data.blocks.some(b => b.type === "video" && /youtu/.test(b.url || ""))) return toast("SLS packages can’t load YouTube. Use a video address instead, or remove the YouTube block for SLS.", 6500);
+      const z = new JSZip(); z.file("index.html", await courseHTML(data, true)); z.file("xapiwrapper.min.js", await (await fetch("vendor/xapi/xapiwrapper.min.js")).text());
+      const blob = await z.generateAsync({ type: "blob", compression: "DEFLATE" }); if (blob.size > 480 * 1024 * 1024) return toast("SLS allows up to 500 MB. Use smaller pictures or audio.", 6000);
+      download(blob, `${slug(C.title)}-sls.zip`); const pts = data.blocks.filter(b => b.type === "question" || b.type === "simulation" && b.scored || b.type === "scene" && (b.rules || []).some(r => (r.then || []).some(a => a.do === "complete"))).reduce((a, b) => a + (+b.points || 1), 0);
+      toast(`SLS package saved. Upload it as an Integrated Scorable Response question, with maximum marks set to ${pts}.`, 8000); o.remove(); return;
+    }
+    const html = await courseHTML(data);
+    if (x === "html") download(new Blob([html], { type: "text/html" }), `${slug(C.title)}.html`);
+    else { const z = new JSZip(); z.file("index.html", html); z.file("imsmanifest.xml", x === "s12" ? manifest12(C.title) : manifest2004(C.title)); download(await z.generateAsync({ type: "blob", compression: "DEFLATE" }), `${slug(C.title)}-${x === "s12" ? "scorm12" : "scorm2004"}.zip`); }
+    toast("Exported. Test it in your LMS before sharing it with learners."); o.remove(); }; };
+$("#saveBtn").onclick = () => { download(new Blob([JSON.stringify({ kind: "littlelightlit-course", v: 1, course: clean() }, null, 1)], { type: "application/json" }), `${slug(C.title)}.course.json`); toast("Saved. Open this file here to keep editing."); };
+$("#openBtn").onclick = () => $("#openIn").click();
+$("#openIn").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const d = JSON.parse(await f.text()); if (d.kind !== "littlelightlit-course") throw 0; load(d.course); toast("Course opened"); } catch { toast("That file isn’t a Little Light Lit course."); } };
+
+/* ---------- start ---------- */
+function load(c) { C = { title: "Untitled course", intro: "", accent: "#c23a22", passMark: 60, vars: [], blocks: [], ...c }; renderSettings(); renderBlocks(); changed(); }
+function sample() {
+  const sc = make("scene"), btn = sc.objects[0]; btn.text = "Reveal the answer"; const L = { id: uid(), name: "Answer", visible: false }; sc.layers.push(L);
+  sc.objects.push({ id: uid(), kind: "shape", text: "Clouds form when water vapour condenses. You’ve clicked {{clicks}} time(s).", x: 15, y: 62, w: 70, h: 26, size: 16, layer: L.id, states: { normal: { fill: "#fff4dc", color: "#6b4400" } } });
+  sc.rules.push({ obj: btn.id, event: "click", cond: { var: "", op: "=", val: "" }, then: [{ do: "show", target: L.id }, { do: "add", target: "clicks", value: "1" }, { do: "complete" }] });
+  return { title: "The water cycle", intro: "A short course showing every kind of block.", accent: "#2563c9", passMark: 60, vars: [{ name: "clicks", value: "0" }], blocks: [
+    { id: uid(), type: "heading", text: "How water moves", level: 2 },
+    { id: uid(), type: "text", text: "Water is always moving between the sea, the sky and the land. This is called the **water cycle**.\n\n- Evaporation\n- Condensation\n- Precipitation" },
+    { ...make("accordion"), title: "The three stages", items: [{ title: "Evaporation", body: "The sun heats water, which rises as vapour." }, { title: "Condensation", body: "The vapour cools and forms clouds." }, { title: "Precipitation", body: "Water falls as rain, snow or hail." }] },
+    { ...make("tabs"), items: [{ title: "Sea", body: "Most evaporation happens over the sea." }, { title: "Sky", body: "Clouds carry water across the world." }, { title: "Land", body: "Rivers carry water back to the sea." }] },
+    { ...make("flashcards"), title: "Key words", cards: [{ front: "Evaporation", back: "Liquid turning into gas" }, { front: "Condensation", back: "Gas turning into liquid" }] },
+    { ...make("process"), title: "A raindrop’s journey", steps: [{ title: "In the sea", body: "Warmed by the sun." }, { title: "In a cloud", body: "Cooled high up." }, { title: "Falling", body: "Back to the ground." }] },
+    { ...make("timeline"), title: "Discoveries", events: [{ date: "1580", title: "Bernard Palissy", body: "Describes how rain feeds rivers." }, { date: "1670s", title: "Perrault and Mariotte", body: "Measure rainfall and river flow." }] },
+    { ...make("q_mc"), prompt: "What is it called when water vapour turns into liquid?", choices: [{ text: "Evaporation", correct: false }, { text: "Condensation", correct: true }, { text: "Precipitation", correct: false }], right: "Yes: condensation forms clouds.", wrong: "Not quite: think about clouds." },
+    { ...make("q_mr"), prompt: "Which are kinds of precipitation?", choices: [{ text: "Rain", correct: true }, { text: "Snow", correct: true }, { text: "Fog", correct: false }] },
+    { ...make("q_tf"), prompt: "Most evaporation happens over the sea.", answer: true },
+    make("q_fill"),
+    { ...make("q_match"), prompt: "Match each stage to what happens.", pairs: [{ left: "Evaporation", right: "Water rises" }, { left: "Condensation", right: "Clouds form" }, { left: "Precipitation", right: "Rain falls" }] },
+    { ...make("q_order"), prompt: "Put the stages in order.", items: ["Evaporation", "Condensation", "Precipitation"] },
+    { ...make("q_cat"), prompt: "Sort each into gas or liquid.", categories: ["Gas", "Liquid"], items: [{ text: "Water vapour", cat: "Gas" }, { text: "Rain", cat: "Liquid" }, { text: "Steam", cat: "Gas" }] },
+    sc, make("animation"),
+  ] };
+}
+function startScreen() {
+  const box = $("#blocks"); let draft = null; try { draft = JSON.parse(localStorage.getItem(DRAFT) || "null"); } catch {}
+  box.innerHTML = `<div class="empty-c"><h2>Build an interactive course</h2><p>Blocks for content, interactions, eight question types, scenes with rules, animations and software simulations. Export as a web page or a SCORM package.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${draft ? `<button class="btn primary" id="sDraft">Carry on with “${esc(draft.title)}”</button><button class="btn" id="sDiscard">Discard draft</button>` : ""}<button class="btn ${draft ? "" : "primary"}" id="sBlank">Start a blank course</button><button class="btn" id="sSample">Try the sample course</button></div></div>`;
+  $("#sBlank").onclick = () => load({}); $("#sSample").onclick = () => load(sample());
+  if (draft) { $("#sDraft").onclick = () => load(draft); $("#sDiscard").onclick = () => { if (!confirm(`Discard the draft “${draft.title}”? Save it first if you want to keep it.`)) return; localStorage.removeItem(DRAFT); startScreen(); toast("Draft discarded"); }; }
+  C = { title: "", vars: [], blocks: [] }; renderSettings();
+}
+startScreen();
+</script>
+</body>
+</html>
