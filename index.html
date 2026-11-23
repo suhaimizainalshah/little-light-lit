@@ -793,7 +793,7 @@ async function decode(file) {
   catch { return await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); }); }
 }
 async function loadFile(file) {
-  if (!file || !/^image\//.test(file.type)) return toast("That file isn’t a photo. Open a JPG, PNG, WebP or GIF.");
+  if (!file) return; { const kind = await LightLitSniff(file); if (!LightLitPhotoKinds.has(kind)) return toast(LightLitWhyNot(file.name, kind)); if (!/^image\//.test(file.type)) file = new File([file], file.name, { type: "image/" + kind }); }
   aiSteps.clear(); srcLabel = await readSourceLabel(file);
   let img; try { img = await decode(file); } catch { return toast("This photo format can’t be opened here. Save it as JPG or PNG and try again."); }
   const w = img.width || img.naturalWidth, h = img.height || img.naturalHeight, k = Math.min(1, MAX_DIM / Math.max(w, h));

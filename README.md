@@ -195,3 +195,15 @@ Photos, photo strips and designs saved as JPEG or PNG carry a standard IPTC **di
 
 ## Fonts and accessibility
 All fonts are bundled in `assets/fonts/` (SIL Open Font License, via Fontsource), so pages make no requests to Google. Every studio page passes the automated WCAG 2.x A and AA checks in axe-core, in light and dark mode; automated checks cover only part of accessibility, so testing with keyboards, screen readers and real users still matters.
+
+## Photo booth background removal
+**Remove the background** in the photo booth, with no AI model and nothing downloaded: a small GLSL shader runs on your device’s graphics chip.
+- **Clean background:** step out of the frame and capture the empty scene; whatever matches it is removed. Works with any backdrop if the camera stays still and the lighting is steady.
+- **Green screen:** for a green or blue backdrop, with reduced colour spill on the edges.
+- **Strength** and **Edge softness** sliders, with a live preview. Removed areas show the strip’s own background colour or image.
+
+## Checking what files really are
+Photos opened in the Photo, Photo booth and Design studios are checked by their first bytes, whatever their names say: programs or web pages disguised as photos are refused, misnamed photos still open, and PDFs and HEIC photos get advice.
+
+## Third-party code
+- **AI background removal in the Photo and Design studios** uses `@imgly/background-removal`, loaded from jsDelivr when first used. Its licence is **AGPL-3.0**, so the app as a whole must follow AGPL terms while it uses it, and commercial use needs img.ly’s commercial licence. Its models are downloaded from img.ly’s servers. Under review for replacement with a permissively licensed, locally bundled alternative.

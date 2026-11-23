@@ -21,7 +21,7 @@
 .steps button[aria-current=step]{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.steps button[aria-current=step] b{background:var(--accent);color:#fff}
 .steps button:disabled{opacity:.45}
 .cam{position:relative;width:min(100%,calc((100vh - 230px) * 4 / 3));aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#111;box-shadow:0 24px 48px -24px rgba(0,0,0,.5)}
-.cam video{width:100%;height:100%;object-fit:cover;display:block}.cam.mirror video{transform:scaleX(-1)}
+.cam video{width:100%;height:100%;object-fit:cover;display:block}.cam.mirror video{transform:scaleX(-1)}#keyView{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}#keyView[hidden]{display:none}.cam{position:relative}
 .cd{position:absolute;inset:0;display:grid;place-items:center;font:800 clamp(5rem,18vw,11rem)/1 "Schibsted Grotesk",system-ui,sans-serif;color:#fff;text-shadow:0 6px 30px rgba(0,0,0,.45);pointer-events:none}
 .cd.pop{animation:pop .9s ease-out}@keyframes pop{from{transform:scale(1.35);opacity:0}25%{opacity:1}to{transform:scale(.9);opacity:.85}}
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.flash.on{animation:flash .45s ease-out}@keyframes flash{from{opacity:.95}to{opacity:0}}
@@ -63,7 +63,7 @@
         <p class="note">Your camera and photos stay on this device. Nothing is uploaded.</p>
       </section>
       <section class="camwrap" id="camView" hidden>
-        <div class="cam mirror" id="cam"><video id="vid" playsinline muted autoplay aria-label="Live camera"></video><span class="badge" id="badge" aria-live="polite"></span><div class="cd" id="cd" aria-live="assertive"></div><div class="flash" id="flash"></div></div>
+        <div class="cam mirror" id="cam"><video id="vid" playsinline muted autoplay aria-label="Live camera"></video><canvas id="keyView" width="480" height="360" hidden aria-label="Live preview with the background removed"></canvas><span class="badge" id="badge" aria-live="polite"></span><div class="cd" id="cd" aria-live="assertive"></div><div class="flash" id="flash"></div></div>
         <div class="shutter-row"><button class="btn" id="stopBtn" hidden>Stop</button><button class="shutter" id="shoot" aria-label="Take photos (Space)"></button><button class="btn" id="doneBtn" hidden>Style my strip</button></div>
         <div class="tray" id="tray" aria-label="Your photos"></div>
       </section>
@@ -91,7 +91,7 @@ try { if (!sessionStorage.getItem("littlelightlit-strip-visit")) { sessionStorag
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ---------- State ---------- */
-const S = { n: 4, timer: 3, mirror: true, sound: true, facing: "user", shots: [], look: "color", bg: "#FFFFFF", bgImg: null, layout: "strip", gap: 40, round: true, caption: "", date: true, font: "sans" };
+const S = { key: "off", keyThr: 0.14, keySoft: 0.1, keyScreen: "green", n: 4, timer: 3, mirror: true, sound: true, facing: "user", shots: [], look: "color", bg: "#FFFFFF", bgImg: null, layout: "strip", gap: 40, round: true, caption: "", date: true, font: "sans" };
 try { Object.assign(S, JSON.parse(localStorage.getItem("littlelightlit-strip-prefs") || "{}"), { shots: [], bgImg: null }); } catch {}
 const savePrefs = () => { try { const { shots, bgImg, ...p } = S; localStorage.setItem("littlelightlit-strip-prefs", JSON.stringify(p)); } catch {} };
 let step = "snap", stream = null, running = false, cancel = false, cams = [];
@@ -108,7 +108,7 @@ async function startCamera() { srcInfo.camera = true; srcInfo.sources = [];
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: S.facing, width: { ideal: 1920 }, height: { ideal: 1440 } }, audio: false });
     $("#vid").srcObject = stream; await $("#vid").play().catch(() => {});
-    $("#empty").hidden = true; $("#preview").hidden = true; $("#camView").hidden = false; $("#cam").classList.toggle("mirror", S.mirror && S.facing === "user");
+    $("#empty").hidden = true; $("#preview").hidden = true; $("#camView").hidden = false; $("#cam").classList.toggle("mirror", S.mirror && S.facing === "user"); setTimeout(keyPreview, 300);
     try { cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "videoinput"); } catch { cams = []; }
     setStep("snap"); renderTray(); count("strip_camera");
   } catch (e) {
@@ -119,7 +119,75 @@ async function startCamera() { srcInfo.camera = true; srcInfo.sources = [];
 function camError(msg) { $("#empty").hidden = true; $("#camView").hidden = true; const b = $("#camErr"); b.hidden = false; b.innerHTML = `<h2>Camera not available</h2><p>${msg}</p><div class="row" style="justify-content:center"><button class="btn primary" id="retryCam">Try again</button><button class="btn" id="photosInstead">Use photos instead</button></div>`; $("#retryCam").onclick = startCamera; $("#photosInstead").onclick = () => $("#photoIn").click(); }
 function stopCamera() { stream?.getTracks().forEach(t => t.stop()); stream = null; }
 addEventListener("pagehide", stopCamera);
+/* ---------- Background removal with a small GLSL shader ----------
+   No AI model and nothing downloaded: it runs on this device's graphics chip.
+   "Clean background": you step out of frame and the booth captures the empty scene (a "clean plate"); pixels that
+   match it become transparent. Works with any backdrop if the camera stays still and the lighting is steady.
+   "Green screen": classic chroma key for a green or blue backdrop, with spill reduction on the edges.
+   Colours are compared in a luma/chroma space, so shadows and brightness shifts matter less than colour changes,
+   and the mask is smoothed by sampling neighbouring pixels. Removed areas are transparent, so the strip's own
+   background colour or image shows through. */
+let plate = null;
+const KEY = (() => {
+  let gl = null, cv = null, prog = null, tf = null, tb = null, L = {};
+  function sh(type, src) { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; }
+  function tex() { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE)); [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR)); return t; }
+  function init() {
+    if (gl) return true; cv = document.createElement("canvas"); gl = cv.getContext("webgl", { premultipliedAlpha: false, preserveDrawingBuffer: true, alpha: true }); if (!gl) return false;
+    const vs = "attribute vec2 p;varying vec2 v;void main(){v=vec2((p.x+1.)*.5,1.-(p.y+1.)*.5);gl_Position=vec4(p,0.,1.);}";
+    const fs = `precision mediump float;varying vec2 v;uniform sampler2D f,b;uniform int mode;uniform vec3 key;uniform float thr,soft;uniform vec2 px;
+      vec3 ycc(vec3 c){float y=dot(c,vec3(.299,.587,.114));return vec3(y,(c.b-y)*.565,(c.r-y)*.713);}
+      float dist(vec2 uv){vec3 c=ycc(texture2D(f,uv).rgb);if(mode==0){vec3 d=c-ycc(texture2D(b,uv).rgb);return length(vec3(d.x*.55,d.y*1.7,d.z*1.7));}return distance(c.yz,ycc(key).yz)*2.;}
+      void main(){float d=dist(v)*.4+(dist(v+vec2(px.x,0.))+dist(v-vec2(px.x,0.))+dist(v+vec2(0.,px.y))+dist(v-vec2(0.,px.y)))*.15;
+        float a=smoothstep(thr,thr+soft,d);vec3 c=texture2D(f,v).rgb;
+        if(mode==1){float s=max(c.g-max(c.r,c.b),0.);if(key.b>key.g)s=max(c.b-max(c.r,c.g),0.);if(key.b>key.g)c.b-=s*.7;else c.g-=s*.7;}
+        gl_FragColor=vec4(c,a);}`;
+    prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); gl.useProgram(prog);
+    const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const ap = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+    ["f", "b", "mode", "key", "thr", "soft", "px"].forEach(n => L[n] = gl.getUniformLocation(prog, n)); tf = tex(); tb = tex(); return true;
+  }
+  // frame and back are canvases of the same size; returns a new canvas with a transparent background
+  function apply(frame, back, opts) {
+    if (!init()) return null;
+    cv.width = frame.width; cv.height = frame.height; gl.viewport(0, 0, cv.width, cv.height);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tf); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, frame); gl.uniform1i(L.f, 0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tb); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, back || frame); gl.uniform1i(L.b, 1);
+    const k = opts.screen === "blue" ? [0.1, 0.3, 0.85] : [0.1, 0.75, 0.25];
+    gl.uniform1i(L.mode, opts.mode === "plate" ? 0 : 1); gl.uniform3f(L.key, ...k); gl.uniform1f(L.thr, opts.thr); gl.uniform1f(L.soft, opts.soft); gl.uniform2f(L.px, 1.5 / cv.width, 1.5 / cv.height);
+    gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    const out = document.createElement("canvas"); out.width = cv.width; out.height = cv.height; out.getContext("2d").drawImage(cv, 0, 0); return out;
+  }
+  return { apply, ok: () => init() };
+})();
+const keyOn = () => S.key === "green" || (S.key === "plate" && plate);
+const keyOpts = () => ({ mode: S.key, screen: S.keyScreen, thr: S.keyThr, soft: S.keySoft });
+function rawGrab(w = PW, h = PH) {
+  const v = $("#vid"), vw = v.videoWidth, vh = v.videoHeight; if (!vw) return null;
+  const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d"), a = 4 / 3; let sw = vw, sh = vw / a; if (sh > vh) { sh = vh; sw = vh * a; }
+  if (S.mirror && S.facing === "user") { x.translate(w, 0); x.scale(-1, 1); }
+  x.drawImage(v, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, w, h); return c;
+}
+function scaled(c, w, h) { const o = document.createElement("canvas"); o.width = w; o.height = h; o.getContext("2d").drawImage(c, 0, 0, w, h); return o; }
+// Live preview of the removal over the camera view, drawn on the strip's background so you can tune it before shooting
+let keyRaf = 0;
+function keyPreview() {
+  cancelAnimationFrame(keyRaf); const pv = $("#keyView");
+  if (!keyOn() || !stream) { if (pv) pv.hidden = true; return; }
+  pv.hidden = false; const x = pv.getContext("2d"), small = plate ? scaled(plate, 480, 360) : null;
+  const tick = () => { if (!keyOn() || !stream || $("#camView").hidden) { pv.hidden = true; return; }
+    const f = rawGrab(480, 360); if (f) { const k = KEY.apply(f, small, keyOpts()); x.fillStyle = S.bg; x.fillRect(0, 0, 480, 360); if (S.bgImg) x.drawImage(S.bgImg, 0, 0, 480, 360); if (k) x.drawImage(k, 0, 0); }
+    keyRaf = requestAnimationFrame(tick); };
+  tick();
+}
+async function capturePlate() {
+  if (!stream) return toast("Start the camera first.");
+  $("#badge").textContent = "Step out of the frame"; await wait(400);
+  if (!(await countdown(3, "Step out of the frame"))) return;
+  plate = rawGrab(); $("#badge").textContent = ""; toast(plate ? "Empty background captured. Step back in." : "Couldn’t capture the background."); renderPane(); keyPreview();
+}
 function grab() {
+  if (keyOn()) { const f = rawGrab(); return f ? (KEY.apply(f, plate, keyOpts()) || f) : null; } // background removed: transparent areas show the strip background
   const v = $("#vid"), vw = v.videoWidth, vh = v.videoHeight; if (!vw) return null;
   const c = document.createElement("canvas"); c.width = PW; c.height = PH; const x = c.getContext("2d"), a = 4 / 3; let sw = vw, sh = vw / a; if (sh > vh) { sh = vh; sw = vh * a; }
   if (S.mirror && S.facing === "user") { x.translate(PW, 0); x.scale(-1, 1); }
@@ -157,7 +225,7 @@ $("#startCam").onclick = startCamera;
 
 /* ---------- Photos instead of the camera ---------- */
 $("#usePhotos").onclick = () => $("#photoIn").click();
-$("#photoIn").onchange = async () => { srcInfo.camera = false; srcInfo.sources = await Promise.all([...$("#photoIn").files].slice(0, 5).map(f => LightLitLabels.readSource(f)));
+$("#photoIn").onchange = async () => { { const fs = [...$("#photoIn").files]; for (const f of fs) { const k = await LightLitSniff(f); if (!LightLitPhotoKinds.has(k)) { toast(LightLitWhyNot(f.name, k)); $("#photoIn").value = ""; return; } } } srcInfo.camera = false; srcInfo.sources = await Promise.all([...$("#photoIn").files].slice(0, 5).map(f => LightLitLabels.readSource(f)));
   const files = [...$("#photoIn").files].filter(f => f.type.startsWith("image/")).slice(0, 5); $("#photoIn").value = ""; if (!files.length) return;
   S.n = files.length; S.shots = [];
   for (const f of files) { const img = await createImageBitmap(f), c = document.createElement("canvas"); c.width = PW; c.height = PH; const x = c.getContext("2d"), a = 4 / 3; let sw = img.width, sh = img.width / a; if (sh > img.height) { sh = img.height; sw = img.height * a; } x.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, PW, PH); S.shots.push(c); }
@@ -227,6 +295,10 @@ function renderPane() {
     <span class="lbl">Countdown for each photo</span><div class="chips">${[3, 5, 10].map(n => chip("timer", n, S.timer, n + " s")).join("")}</div>
     <label class="check"><input type="checkbox" id="mirror" ${S.mirror ? "checked" : ""}> Mirror the camera, like a real mirror</label>
     <label class="check"><input type="checkbox" id="sound" ${S.sound ? "checked" : ""}> Countdown and shutter sounds</label>
+    <span class="lbl">Remove the background</span><div class="chips">${chip("key", "off", S.key, "Off")}${chip("key", "plate", S.key, "Clean background")}${chip("key", "green", S.key, "Green screen")}</div>
+    ${S.key === "plate" ? `<p class="note">Step out of the frame and capture the empty scene. Keep the camera still and the lighting steady.</p><button class="btn" id="plateBtn">${plate ? "Recapture the empty background" : "Capture the empty background (3 s)"}</button>` : ""}
+    ${S.key === "green" ? `<div class="chips">${chip("screen", "green", S.keyScreen, "Green backdrop")}${chip("screen", "blue", S.keyScreen, "Blue backdrop")}</div>` : ""}
+    ${S.key !== "off" ? `<label class="lbl" for="keyThr">Strength</label><input type="range" id="keyThr" min="0.03" max="0.45" step="0.01" value="${S.keyThr}"><label class="lbl" for="keySoft">Edge softness</label><input type="range" id="keySoft" min="0.01" max="0.3" step="0.01" value="${S.keySoft}"><p class="note">The removed area shows the strip’s background, which you choose in Style. This runs on your device’s graphics chip, with nothing uploaded or downloaded.</p>` : ""}
     ${cams.length > 1 ? `<button class="btn" id="flip">Switch camera</button>` : ""}
     ${stream ? `<button class="btn primary big" id="go" ${running ? "disabled" : ""}>${S.shots.filter(Boolean).length ? "Take the remaining photos" : `Take ${S.n} photo${S.n > 1 ? "s" : ""}`}</button>` : `<button class="btn primary big" id="cam2">Start the camera</button>`}
     <button class="btn" id="photos2">Use photos instead</button>
@@ -255,17 +327,19 @@ $("#pane").addEventListener("click", e => {
   if (d.step) { if (d.step === "snap") { if (!stream) startCamera(); else { $("#preview").hidden = true; $("#camView").hidden = false; renderTray(); } } else goStyle(); return setStep(d.step); }
   if (d.n) { S.n = +d.n; S.shots.length = Math.min(S.shots.length, S.n); savePrefs(); renderTray(); return renderPane(); }
   if (d.timer) { S.timer = +d.timer; savePrefs(); return renderPane(); }
+  if (d.key) { if (d.key !== "off" && !KEY.ok()) { toast("This browser can’t run the background removal (WebGL is off)."); return; } S.key = d.key; savePrefs(); renderPane(); return keyPreview(); }
+  if (d.screen) { S.keyScreen = d.screen; savePrefs(); renderPane(); return keyPreview(); }
   if (d.look) { S.look = d.look; savePrefs(); drawStrip(); return renderPane(); }
   if (d.bg) { S.bg = d.bg; S.bgImg = null; savePrefs(); drawStrip(); return renderPane(); }
   if (d.layout) { S.layout = d.layout; savePrefs(); drawStrip(); return renderPane(); }
   if (d.font) { S.font = d.font; savePrefs(); drawStrip(); return renderPane(); }
-  ({ go: () => runSequence(), cam2: startCamera, photos2: () => $("#photoIn").click(), flip: () => { S.facing = S.facing === "user" ? "environment" : "user"; startCamera(); },
-     bgUp: () => $("#bgIn").click(), bgClear: () => { S.bgImg = null; drawStrip(); renderPane(); },
+  ({ go: () => runSequence(), cam2: startCamera, photos2: () => $("#photoIn").click(), flip: () => { S.facing = S.facing === "user" ? "environment" : "user"; plate = null; startCamera(); },
+     plateBtn: capturePlate, bgUp: () => $("#bgIn").click(), bgClear: () => { S.bgImg = null; drawStrip(); renderPane(); },
      shareBtn: share, png: () => download("image/png"), jpg: () => download("image/jpeg"), copy: copyImg, mail: emailIt, again2: startAgain })[b.id]?.();
 });
 $("#pane").addEventListener("input", e => {
   const el = e.target;
-  ({ mirror: () => { S.mirror = el.checked; $("#cam").classList.toggle("mirror", S.mirror && S.facing === "user"); }, sound: () => S.sound = el.checked, gap: () => S.gap = +el.value, round: () => S.round = el.checked, cap: () => S.caption = el.value, date: () => S.date = el.checked, bgPick: () => { S.bg = el.value.toUpperCase(); S.bgImg = null; } })[el.id]?.();
+  ({ keyThr: () => { S.keyThr = +el.value; }, keySoft: () => { S.keySoft = +el.value; }, mirror: () => { S.mirror = el.checked; $("#cam").classList.toggle("mirror", S.mirror && S.facing === "user"); }, sound: () => S.sound = el.checked, gap: () => S.gap = +el.value, round: () => S.round = el.checked, cap: () => S.caption = el.value, date: () => S.date = el.checked, bgPick: () => { S.bg = el.value.toUpperCase(); S.bgImg = null; } })[el.id]?.();
   savePrefs(); if (step !== "snap") drawStrip();
   if (el.id === "bgPick") $$(".sw button").forEach(b => b.setAttribute("aria-pressed", "false"));
 });

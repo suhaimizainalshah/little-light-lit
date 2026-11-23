@@ -218,7 +218,7 @@ const addChar = () => add(base("char", { look: { ...A.DEFAULT_LOOK }, pose: "wav
 const addQR = () => { loadQR(); add(base("qr", { text: "https://example.com", color: "#1B1F24", bg: "#FFFFFF", w: 360 * S(), h: 360 * S() })); };
 async function addImages(files) {
   for (const f of files) {
-    if (!f.type.startsWith("image/")) continue;
+    { const k = await LightLitSniff(f); if (!LightLitPhotoKinds.has(k)) { toast(LightLitWhyNot(f.name, k)); continue; } }
     const bmp = await createImageBitmap(f).catch(() => null); if (!bmp) { toast("That image couldn’t be opened."); continue; } designSrc.sources.push(await LightLitLabels.readSource(f));
     const k = Math.min(1, 2400 / Math.max(bmp.width, bmp.height)), w = Math.round(bmp.width * k), h = Math.round(bmp.height * k), orig = canvas(w, h); orig.getContext("2d").drawImage(bmp, 0, 0, w, h);
     const mid = uid(), work = canvas(w, h); work.getContext("2d").drawImage(orig, 0, 0); pix.set(mid, { orig, work });
