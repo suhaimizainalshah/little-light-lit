@@ -7,8 +7,7 @@
 <title>Little Light Lit Lessons: interactive video lessons with questions</title>
 <meta name="description" content="Add questions, polls and notes to any video. Students answer as it plays, and you see the results. Free, with no student accounts.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><path d='M12 10v12l10-6z' fill='white'/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
@@ -67,7 +66,7 @@
     <main class="stage" id="stage">
       <div class="vid" id="vid"></div>
       <div class="row"><button class="btn" id="playBtn">Play</button><span id="tNow" style="font-weight:700;font-variant-numeric:tabular-nums">0:00</span><span class="hint" style="margin:0">Pause where you want something to happen, then add it.</span></div>
-      <div class="tl" id="tl" aria-label="Lesson timeline: click to jump, drag a marker to move it"><i id="tlHead"></i></div>
+      <div class="tl" id="tl" role="group" aria-label="Lesson timeline: click to jump, drag a marker to move it"><i id="tlHead"></i></div>
       <div class="legend" id="legend"><span><i style="background:#2B6CB0"></i>Multiple choice</span><span><i style="background:#2F855A"></i>Open</span><span><i style="background:#6B46C1"></i>Poll</span><span><i style="background:#718096"></i>Note</span><span><i style="background:#C05621"></i>Choice that jumps</span><span><i style="background:#0E7490"></i>Jump point</span><span>Drag a marker to move it</span></div>
       <div class="row"><button class="btn primary" data-addq="mc">+ Multiple choice</button><button class="btn" data-addq="open">+ Open question</button><button class="btn" data-addq="poll">+ Poll</button><button class="btn" data-addq="note">+ Pop-up note</button><button class="btn" data-addq="branch">+ Choice that jumps</button><button class="btn" data-addq="jump" title="Jumps silently to another time or clip, for example at the end of a scene">+ Jump point</button></div>
       <div id="results" hidden></div>

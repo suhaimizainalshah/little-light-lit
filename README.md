@@ -185,3 +185,13 @@ In **Resize**, use **Or by file size** to make a photo fit a limit such as “un
 
 ## Passport photo checker and automatic framing (Photo)
 In **Passport**, **Frame it for me** finds the face and places the crop so the head size and the space above it match the chosen photo type (Singapore, Malaysia, UK, Schengen, US, India, Australia, Canada, China, Japan or a custom size); **Frame by hand** is still there. **Check the photo** then looks for exactly one face, head size and position, centring, level eyes, open eyes, a closed mouth, a plain light background, even lighting and enough resolution to print, and explains anything worth checking. Face detection runs on the device with the open-source `@vladmandic/face-api` library and its bundled models (MIT licence, in `vendor/faceapi/`, loaded only when used), so photos never leave the device. Results are a guide: measurements are estimates, and the issuing authority makes the final decision.
+
+## Honest labels in saved images
+Photos, photo strips and designs saved as JPEG or PNG carry a standard IPTC **digital source type** label (in XMP), so tools such as AI Asli can tell how they were made:
+- **Photo:** *edited by a person*, or *algorithmically enhanced* after on-device AI background removal.
+- **Photo booth:** *composite of real captures* for camera strips; *composite of elements* for strips made from uploaded pictures.
+- **Design:** *digital creation* (made by a person with non-generative tools), with any AI-assisted steps listed.
+- An imported picture that is labelled as AI-generated is never relabelled: a single photo keeps its label, and a strip or design that contains it is labelled *edited with generative AI*.
+
+## Fonts and accessibility
+All fonts are bundled in `assets/fonts/` (SIL Open Font License, via Fontsource), so pages make no requests to Google. Every studio page passes the automated WCAG 2.x A and AA checks in axe-core, in light and dark mode; automated checks cover only part of accessibility, so testing with keyboards, screen readers and real users still matters.

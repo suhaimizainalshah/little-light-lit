@@ -7,8 +7,7 @@
 <title>Little Light Lit Animate: free whiteboard and cartoon explainer videos</title>
 <meta name="description" content="Make whiteboard drawing videos and cartoon explainers with characters you design. Free, and nothing leaves your device.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E0412B'/><path d='M9 22c4-8 8-11 14-12' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700;800&family=Caveat:wght@700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/littlelightlit.css">
 <style>
 .app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
@@ -88,7 +87,7 @@
     </main>
     <aside class="side" id="side"><section class="pane" id="pane"><h2>Animate</h2><p class="hint">Choose how to start. You can mix whiteboard and cartoon scenes in one video.</p><p class="note">Includes a people builder for your own characters, 30 props, 9 backgrounds, a drawing hand, music and voiceover, and video export.</p></section></aside>
   </div>
-  <div class="scenes" id="scenes" aria-label="Scenes"></div>
+  <div class="scenes" id="scenes" role="group" aria-label="Scenes"></div>
 </div>
 <input type="file" id="imgIn" accept="image/*" hidden>
 <input type="file" id="svgIn" accept=".svg,image/svg+xml" hidden>
