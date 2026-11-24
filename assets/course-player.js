@@ -75,7 +75,7 @@
     if (!document.getElementById("cp-css")) document.head.append(h("style", { id: "cp-css" }, CSS));
     root.innerHTML = ""; root.className = "cp";
     if (/^#[0-9a-f]{6}$/i.test(C.accent || "")) { root.style.setProperty("--a-l", fit(C.accent, "#000000", "#ffffff")); root.style.setProperty("--a-d", fit(C.accent, "#ffffff", "#1a1c20")); }
-    const S = { vars: Object.fromEntries((C.vars || []).map(v => [v.name, isNaN(+v.value) || v.value === "" ? v.value : +v.value])), results: {}, rerun: [] };
+    const S = { anims: {}, vars: Object.fromEntries((C.vars || []).map(v => [v.name, isNaN(+v.value) || v.value === "" ? v.value : +v.value])), results: {}, rerun: [] };
     const scorm = opts.scorm === false ? null : lms();
     // activities that count: questions, scored simulations, and scenes that can be marked complete
     const qs = C.blocks.filter(b => b.type === "question" || b.type === "simulation" && b.scored || b.type === "scene" && (b.rules || []).some(r => (r.then || []).some(x => x.do === "complete")));
@@ -85,7 +85,7 @@
     root.append(h("h1", {}, esc(C.title || "Untitled course")));
     if (C.intro) root.append(h("div", { class: "cp-intro" }, md(C.intro)));
     // narration goes in after each block draws, as some blocks replace their whole section
-    for (const b of C.blocks) { const sec = h("section", { class: "cp-block", id: "b-" + b.id, "data-type": b.type }); try { (R[b.type] || (() => {}))(sec, b, S, update, interp, root); narrate(sec, b); } catch (e) { sec.textContent = "This block couldn’t be shown."; } root.append(sec); }
+    for (const b of C.blocks) { const sec = h("section", { class: "cp-block", id: "b-" + b.id, "data-type": b.type }); try { (R[b.type] || (() => {}))(sec, b, S, update, interp, root); narrate(sec, b); } catch (e) { console.error("Course block failed:", b.type, e); sec.textContent = "This block couldn’t be shown."; } root.append(sec); }
     if (opts.sls) { // Singapore Student Learning Space: send the score as xAPI state, following MOE's published method
       let prm = null; const init = () => { if (prm || !window.ADL) return prm; const u = new URLSearchParams(location.search); try { ADL.XAPIWrapper.changeConfig({ endpoint: u.get("endpoint") + "/", auth: `Basic ${u.get("auth")}` }); prm = { agent: JSON.parse(u.get("agent")), stateId: u.get("stateId"), activityId: u.get("activityId") }; } catch (e) { console.warn("Not running inside SLS", e); } return prm; };
       const prev = opts.onProgress; opts.onProgress = t => { try { const p = init(); if (p) ADL.XAPIWrapper.sendState(p.activityId, p.agent, p.stateId, null, { score: t.got }); } catch (e) { console.error(e); } prev?.(t); };
@@ -246,6 +246,9 @@
         if (a.do === "add") S.vars[a.target] = (+S.vars[a.target] || 0) + (+a.value || 0);
         if (a.do === "goto") root.querySelector("#b-" + a.target)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         if (a.do === "complete") { S.results[b.id] = { score: +b.points || 1, ok: true }; update(); }
+        // control an animation block: play, pause, restart, or jump to a time (seconds)
+        const an = S.anims[a.target];
+        if (an) { if (a.do === "aplay") an.play(); if (a.do === "apause") an.pause(); if (a.do === "arestart") an.restart(); if (a.do === "aseek") an.seek(+a.value || 0); }
         redrawAll(); S.rerun.forEach(f => f());
       };
       const fire = (o, ev) => rulesFor(o, ev).forEach(r => { if (test(r.cond)) (r.then || []).forEach(act); });
@@ -262,7 +265,7 @@
     },
 
     /* ---------- animation: keyframes on a timeline, played with the Web Animations API ---------- */
-    animation(s, b) {
+    animation(s, b, S) {
       if (b.title) s.append(h("h2", {}, esc(b.title)));
       const stage = h("div", { class: "cp-stage", style: b.bg ? `background:${b.bg}` : "" }), dur = Math.max(0.2, +b.duration || 3) * 1000, anims = [];
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -270,13 +273,16 @@
         const e = h("div", { class: "cp-obj", style: `left:0;top:0;width:${o.w}%;height:${o.h}%;font-size:${o.size || 18}px;background:${o.fill || "transparent"};color:${o.color || "inherit"}` });
         if (o.kind === "image" && o.src) e.append(h("img", { src: o.src, alt: o.alt || "" })); else e.textContent = o.text || "";
         const kf = (o.keys || []).slice().sort((a, c) => a.t - c.t); if (!kf.length) kf.push({ t: 0, x: 10, y: 10, scale: 1, rotate: 0, opacity: 1 });
-        const frame = k => ({ offset: Math.min(1, Math.max(0, k.t * 1000 / dur)), left: k.x + "%", top: k.y + "%", transform: `scale(${k.scale ?? 1}) rotate(${k.rotate ?? 0}deg)`, opacity: k.opacity ?? 1, easing: b.easing || "ease-in-out" });
+        // each keyframe can have its own easing, used from that keyframe to the next
+        const frame = k => ({ offset: Math.min(1, Math.max(0, k.t * 1000 / dur)), left: k.x + "%", top: k.y + "%", transform: `scale(${k.scale ?? 1}) rotate(${k.rotate ?? 0}deg)`, opacity: k.opacity ?? 1, easing: k.ease || b.easing || "ease-in-out" });
         const frames = kf.map(frame); if (frames[0].offset > 0) frames.unshift({ ...frames[0], offset: 0 }); if (frames[frames.length - 1].offset < 1) frames.push({ ...frames[frames.length - 1], offset: 1 });
         stage.append(e); const a = e.animate(frames, { duration: dur, iterations: b.loop ? Infinity : 1, fill: "both" }); a.pause(); if (reduce) a.currentTime = dur - 1; anims.push(a);
       });
       const ctl = h("div", { class: "cp-row" }), play = h("button", { class: "cp-btn", type: "button", onclick: () => { anims.forEach(a => { if (a.playState === "finished") a.currentTime = 0; a.playState === "running" ? a.pause() : a.play(); }); play.textContent = anims[0]?.playState === "running" ? "Pause" : "Play"; } }, "Play"),
         replay = h("button", { class: "cp-btn", type: "button", onclick: () => { anims.forEach(a => { a.currentTime = 0; a.play(); }); play.textContent = "Pause"; } }, "Replay");
       ctl.append(play, replay); s.append(stage, ctl);
+      const label = () => { play.textContent = anims[0]?.playState === "running" ? "Pause" : "Play"; };
+      S.anims[b.id] = { play: () => { anims.forEach(a => { if (a.playState === "finished") a.currentTime = 0; a.play(); }); label(); }, pause: () => { anims.forEach(a => a.pause()); label(); }, restart: () => { anims.forEach(a => { a.currentTime = 0; a.play(); }); label(); }, seek: t => { anims.forEach(a => { a.pause(); a.currentTime = Math.min(dur, t * 1000); }); label(); } };
       anims.forEach(a => a.onfinish = () => { play.textContent = "Play"; });
       if (!reduce && b.autoplay !== false) { const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { anims.forEach(a => a.play()); play.textContent = "Pause"; io.disconnect(); } }, { threshold: .5 }); io.observe(stage); }
     },
