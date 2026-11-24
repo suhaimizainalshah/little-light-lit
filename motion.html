@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Little Light Lit Motion: interactive HTML5 animation</title>
+<meta name="description" content="Make interactive HTML5 animations with a keyframe timeline, scenes, symbols and click actions. Export a web page or an embed code. Free and private.">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
+<style>
+body{overflow:hidden}
+.mo{display:grid;grid-template-columns:210px minmax(0,1fr) 270px;grid-template-rows:minmax(0,1fr) 230px;height:calc(100vh - 58px);gap:0}
+@media (max-width:980px){body{overflow:auto}.mo{grid-template-columns:1fr;grid-template-rows:auto;height:auto}}
+.side,.insp{overflow:auto;padding:12px;border-right:1px solid var(--line,#e3e1db);background:var(--panel,#fff)}.insp{border-right:0;border-left:1px solid var(--line,#e3e1db)}
+.side h2,.insp h2{font-size:.78rem;color:var(--muted,#5b616a);margin:12px 0 6px}.side h2:first-child,.insp h2:first-child{margin-top:0}
+.lst{display:grid;gap:4px}.lst button{display:flex;align-items:center;gap:6px;text-align:left;font:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line,#e3e1db);border-radius:9px;background:var(--paper,#fff);color:inherit;cursor:pointer}
+.lst button[aria-current=true]{border-color:var(--accent,#c23a22);box-shadow:inset 3px 0 0 var(--accent,#c23a22)}.lst button span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.mini{padding:5px 10px;font-size:12.5px}
+.centre{display:grid;place-items:center;overflow:auto;background:var(--soft,#f1efea);padding:18px;position:relative}
+.stagewrap{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.12);background:#fff}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden}
+.o{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;cursor:move;user-select:none;white-space:pre-wrap;transform-origin:50% 50%}
+.o.sel{outline:3px solid #2453d6;outline-offset:2px}.o img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.tl{grid-column:1/-1;border-top:1px solid var(--line,#e3e1db);background:var(--panel,#fff);display:grid;grid-template-rows:auto 1fr;min-height:0}
+.tlbar{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line,#e3e1db);font-size:13px}
+.tracks{overflow:auto;position:relative}.tr{display:grid;grid-template-columns:150px 1fr;min-height:28px;border-bottom:1px solid var(--line,#e3e1db)}
+.tr.sub .nm{padding-left:30px;color:var(--muted,#5b616a);font-size:12px}.tr.sub{min-height:24px;background:color-mix(in srgb,var(--soft,#f1efea) 50%,transparent)}.tg{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;font-size:11px}
+.tr .nm{padding:4px 8px;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;border-right:1px solid var(--line,#e3e1db)}.tr.sel .nm{font-weight:700;color:var(--accent,#c23a22)}
+.lane{position:relative;cursor:copy}.ruler{position:sticky;top:0;z-index:2;background:var(--panel,#fff);height:26px;cursor:pointer}
+.tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--line,#e3e1db);font-size:10.5px;color:var(--muted,#5b616a);padding-left:3px}
+.dia{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;transform:rotate(45deg);background:var(--accent,#c23a22);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);cursor:ew-resize;padding:0}
+.dia.on{background:#f6c744}.dia:focus-visible{outline:3px solid #2453d6}
+.ph{position:absolute;top:0;bottom:0;width:2px;background:#2453d6;pointer-events:none;z-index:3}
+.fld{display:grid;gap:3px;margin:6px 0}.fld>span{font-size:12px;font-weight:650;color:var(--muted,#5b616a)}
+.fld input,.fld select,.fld textarea{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line,#e3e1db);border-radius:8px;background:var(--paper,#fff);color:inherit;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.hint{font-size:12px;color:var(--muted,#5b616a);margin:4px 0}
+.act{border:1px dashed var(--line,#e3e1db);border-radius:9px;padding:6px;margin:6px 0;font-size:12.5px;display:grid;gap:4px}
+.ovl{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:20px}.ovl .box{background:var(--paper,#fff);color:inherit;border-radius:14px;max-width:960px;width:100%;max-height:90vh;overflow:auto}
+.ovl .bar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line,#e3e1db)}
+.top #exportBtn{background:#b42e18;border-color:#b42e18;color:#fff}
+code.emb{display:block;white-space:pre-wrap;word-break:break-all;background:var(--soft,#f1efea);padding:10px;border-radius:8px;font-size:12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./" aria-label="Little Light Lit home"><img src="assets/logo.png" alt="" width="28" height="28"><span>Little Light Lit</span></a>
+  <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html">Course</a><a href="motion.html" aria-current="page">Motion</a><a href="present.html">Present</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+  <span class="spacer"></span>
+  <button class="btn" id="openBtn">Open</button><input type="file" id="openIn" accept=".json,application/json" hidden>
+  <button class="btn" id="saveBtn">Save</button>
+  <button class="btn" id="previewBtn">Preview</button>
+  <button class="btn primary" id="exportBtn">Export</button>
+</header>
+<main class="mo" id="app">
+  <aside class="side" aria-label="Scenes and symbols">
+    <label class="fld"><span>Title</span><input id="mTitle"></label>
+    <label class="fld"><span>Size</span><select id="mSize"><option value="1280x720">Video, slides (16:9)</option><option value="1080x1080">Social post (1:1)</option><option value="1080x1920">Story (9:16)</option><option value="728x90">Web banner (728 × 90)</option><option value="300x250">Ad rectangle (300 × 250)</option><option value="1200x630">Link preview (1200 × 630)</option></select></label>
+    <h2>Scenes</h2><div class="lst" id="scenes"></div><div class="row"><button class="btn mini" id="addScene">Add scene</button><button class="btn mini" id="dupScene">Duplicate</button></div>
+    <h2>Symbols</h2><p class="hint">Reusable animated groups. Select objects (Shift-click for several), then make a symbol.</p><div class="lst" id="symbols"></div><div class="row"><button class="btn mini" id="makeSym">Make symbol</button></div>
+    <h2>Add</h2><div class="row"><button class="btn mini" data-add="text">Text</button><button class="btn mini" data-add="rect">Box</button><button class="btn mini" data-add="ellipse">Circle</button><button class="btn mini" data-add="image">Picture</button></div>
+  </aside>
+  <section class="centre" aria-label="Stage"><div class="stagewrap" id="wrap"><div id="stage" role="application" aria-label="Stage: drag objects to place them"></div></div></section>
+  <aside class="insp" id="insp" aria-label="Inspector"></aside>
+  <section class="tl" aria-label="Timeline">
+    <div class="tlbar"><button class="btn mini" id="playBtn" aria-label="Play (Space)">▶ Play</button><button class="btn mini" id="keyBtn" title="Add a keyframe for the selected object at the playhead (K)">◆ Keyframe</button><b id="timeTxt">0.0 s</b><span class="hint" style="margin:0">Click the ruler to move the playhead. Drag a ◆ to change its time. Double-click a row to add a keyframe.</span></div>
+    <div class="tracks" id="tracks"></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/motion-player.js"></script>
+<script>
+/* Little Light Lit Motion editor. The document (M) is plain data; assets/motion-player.js plays it in Preview and in
+   every export. Positions are in pixels on the chosen stage size. Everything stays on this device. */
+const $ = s => document.querySelector(s), uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toast = (t, ms = 3200) => { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), ms); };
+const DRAFT = "littlelightlit-motion-draft", PX = 90; // timeline pixels per second
+let M, si = 0, sel = [], t = 0, playing = null, symEdit = null;
+const scene = () => symEdit ? { objects: symEdit.objects, duration: symEdit.duration, bg: "#ffffff", name: symEdit.name } : M.scenes[si];
+const obj = () => scene().objects.find(o => o.id === sel[0]);
+function blank() { return { title: "Untitled animation", w: 1280, h: 720, bg: "#ffffff", symbols: [], scenes: [newScene("Scene 1")] }; }
+function newScene(name) { return { id: uid(), name, duration: 4, bg: "#ffffff", onEnd: "stop", transition: "cut", objects: [] }; }
+function sample() {
+  const m = blank(); m.title = "Welcome animation"; const s1 = m.scenes[0]; s1.onEnd = "stop";
+  const star = { id: uid(), name: "Star", kind: "ellipse", fill: "#f6c744", w: 60, h: 60, keys: [{ t: 0, x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 }, { t: 1, x: 0, y: 0, scale: 1.4, rotate: 0, opacity: .6 }, { t: 2, x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 }] };
+  m.symbols.push({ id: "sym1", name: "Twinkle", w: 60, h: 60, duration: 2, loop: true, objects: [star] });
+  const s2 = newScene("Thank you"); s2.bg = "#1b2a49";
+  s1.objects.push({ id: uid(), name: "Title", kind: "text", text: "Hello!", size: 96, color: "#c23a22", w: 520, h: 140, keys: [{ t: 0, x: 380, y: -160, scale: 1, rotate: 0, opacity: 0 }, { t: 1.2, x: 380, y: 200, scale: 1, rotate: 0, opacity: 1, ease: "cubic-bezier(.34,1.56,.64,1)" }] },
+    { id: uid(), name: "Sparkle", kind: "symbol", symbol: "sym1", w: 60, h: 60, keys: [{ t: 0, x: 980, y: 140, scale: 1, rotate: 0, opacity: 1 }] },
+    { id: uid(), name: "Next button", kind: "rect", text: "Continue →", size: 30, fill: "#2453d6", color: "#ffffff", radius: 14, w: 260, h: 80, keys: [{ t: 0, x: 510, y: 460, scale: .6, rotate: 0, opacity: 0 }, { t: 1.6, x: 510, y: 460, scale: 1, rotate: 0, opacity: 1 }], actions: [{ on: "click", do: "next" }] });
+  s2.objects.push({ id: uid(), name: "Thanks", kind: "text", text: "Thanks for watching", size: 64, color: "#ffffff", w: 800, h: 120, keys: [{ t: 0, x: 240, y: 300, scale: .8, rotate: 0, opacity: 0 }, { t: 1, x: 240, y: 300, scale: 1, rotate: 0, opacity: 1 }] });
+  const s3 = newScene("Physics"); s3.bg = "#eef6ff"; s3.duration = 6;
+  s3.objects.push({ id: uid(), name: "Floor shelf", kind: "rect", text: "", fill: "#1b2a49", w: 520, h: 30, radius: 6, keys: [{ t: 0, x: 380, y: 520, scale: 1, rotate: 0, opacity: 1 }], physics: { on: true, fixed: true } },
+    { id: uid(), name: "Ball", kind: "ellipse", text: "", fill: "#c23a22", w: 90, h: 90, keys: [{ t: 0, x: 560, y: 40, scale: 1, rotate: 0, opacity: 1 }], physics: { on: true, draggable: true, bounce: .7, vx: 300 } },
+    { id: uid(), name: "Box", kind: "rect", text: "Drag me", size: 22, color: "#ffffff", fill: "#2453d6", w: 140, h: 100, radius: 10, keys: [{ t: 0, x: 900, y: 0, scale: 1, rotate: 0, opacity: 1 }], physics: { on: true, draggable: true, bounce: .3 } });
+  m.scenes.push(s2, s3); return m;
+}
+let saveT = 0; const changed = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(DRAFT, JSON.stringify(M)); } catch { toast("Too large to keep as a draft in the browser: use Save.", 5000); } }, 400); };
+const download = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+const slug = s => (s || "animation").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "animation";
+// position and look of an object at time tt, by interpolating its keyframes
+const TRACKS = [["pos", "Position", ["x", "y"]], ["scale", "Scale", ["scale"]], ["rotate", "Rotation", ["rotate"]], ["opacity", "Opacity", ["opacity"]]];
+const DEF = { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 };
+const setsProp = (k, p) => !k.props || k.props.includes(p);
+// the value of each property at time tt, from only the keyframes that set that property
+function at(o, tt) { const out = {}; for (const p of ["x", "y", "scale", "rotate", "opacity"]) { const k = (o.keys || []).filter(q => setsProp(q, p)).sort((a, b) => a.t - b.t); if (!k.length) { out[p] = DEF[p]; continue; }
+  if (tt <= k[0].t) { out[p] = k[0][p] ?? DEF[p]; continue; } if (tt >= k[k.length - 1].t) { out[p] = k[k.length - 1][p] ?? DEF[p]; continue; }
+  for (let i = 0; i < k.length - 1; i++) if (tt >= k[i].t && tt <= k[i + 1].t) { const f = (tt - k[i].t) / ((k[i + 1].t - k[i].t) || 1), a = k[i][p] ?? DEF[p], b = k[i + 1][p] ?? DEF[p]; out[p] = a + (b - a) * f; break; } } return out; }
+// a keyframe for only the properties changed (an empty patch, from K or the Keyframe button, sets them all)
+function setKey(o, patch) { const cur = at(o, t), tt = +t.toFixed(2), names = Object.keys(patch); let k = o.keys.find(k => Math.abs(k.t - tt) < .03);
+  if (!k) { k = names.length ? { t: tt, props: [...names] } : { t: tt, x: cur.x, y: cur.y, scale: cur.scale, rotate: cur.rotate, opacity: cur.opacity }; if (names.length) names.forEach(n => k[n] = cur[n]); o.keys.push(k); }
+  else if (k.props) { for (const n of names) if (!k.props.includes(n)) { k.props.push(n); } }
+  Object.assign(k, patch); changed(); return k; }
+
+/* ---------- stage ---------- */
+function fitStage() { const c = $(".centre"), k = Math.min(1, (c.clientWidth - 40) / M.w, (c.clientHeight - 40) / M.h); $("#wrap").style.width = M.w * k + "px"; $("#wrap").style.height = M.h * k + "px"; $("#stage").style.cssText = `width:${M.w}px;height:${M.h}px;transform:scale(${k});background:${scene().bg || M.bg}`; $("#stage").dataset.k = k; }
+function drawStage() {
+  fitStage(); const st = $("#stage"); st.innerHTML = "";
+  scene().objects.forEach(o => { const p = at(o, t), e = document.createElement("div"); e.className = "o" + (sel.includes(o.id) ? " sel" : ""); e.dataset.id = o.id;
+    e.style.cssText = `left:${p.x}px;top:${p.y}px;width:${o.w}px;height:${o.h}px;opacity:${p.opacity};transform:scale(${p.scale}) rotate(${p.rotate}deg);font:${o.weight || 700} ${o.size || 32}px/1.15 system-ui,sans-serif;color:${o.color || "#18191c"};background:${o.kind === "rect" || o.kind === "ellipse" ? o.fill || "#f6c744" : "transparent"};border-radius:${o.kind === "ellipse" ? "50%" : (o.radius || 0) + "px"}`;
+    if (o.kind === "image") e.innerHTML = o.src ? `<img src="${o.src}" alt="">` : ""; else if (o.kind === "symbol") { const sy = M.symbols.find(s => s.id === o.symbol); e.style.outline = sel.includes(o.id) ? "" : "1px dashed #8a8f98"; e.innerHTML = `<small style="font:600 12px system-ui;color:#5b616a">${esc(sy?.name || "Symbol")}</small>`; (sy?.objects || []).forEach(c => { const q = at(c, 0), ce = document.createElement("div"); ce.style.cssText = `position:absolute;left:${q.x}px;top:${q.y}px;width:${c.w}px;height:${c.h}px;background:${c.fill || "transparent"};border-radius:${c.kind === "ellipse" ? "50%" : (c.radius || 0) + "px"};opacity:${q.opacity}`; e.append(ce); }); }
+    else e.textContent = o.text || "";
+    e.onpointerdown = ev => { ev.preventDefault(); const k = +st.dataset.k, sx = ev.clientX, sy = ev.clientY, ox = p.x, oy = p.y; let moved = false; e.setPointerCapture(ev.pointerId);
+      e.onpointermove = m => { const dx = (m.clientX - sx) / k, dy = (m.clientY - sy) / k; if (Math.abs(dx) + Math.abs(dy) > 2) moved = true; if (moved) { e.style.left = ox + dx + "px"; e.style.top = oy + dy + "px"; e.dataset.nx = ox + dx; e.dataset.ny = oy + dy; } };
+      e.onpointerup = () => { e.onpointermove = null; if (moved) { if (!sel.includes(o.id)) sel = [o.id]; setKey(o, { x: Math.round(+e.dataset.nx), y: Math.round(+e.dataset.ny) }); } else sel = ev.shiftKey ? (sel.includes(o.id) ? sel.filter(x => x !== o.id) : [...sel, o.id]) : [o.id]; all(); }; };
+    st.append(e); });
+  st.onpointerdown = e => { if (e.target === st) { sel = []; all(); } };
+}
+
+/* ---------- timeline ---------- */
+function drawTimeline() {
+  const S = scene(), dur = +S.duration || 3, tr = $("#tracks"), w = dur * PX + 40; tr.innerHTML = "";
+  const head = document.createElement("div"); head.className = "tr"; head.innerHTML = `<div class="nm"><b>${symEdit ? "Symbol: " + esc(symEdit.name) : esc(S.name)}</b></div>`; const ruler = document.createElement("div"); ruler.className = "lane ruler"; ruler.style.width = w + "px";
+  for (let s = 0; s <= dur + 1e-6; s += .5) { const k = document.createElement("span"); k.className = "tick"; k.style.left = s * PX + "px"; k.textContent = Number.isInteger(s) ? s + " s" : ""; ruler.append(k); }
+  const seek = e => { const r = ruler.getBoundingClientRect(); t = Math.max(0, Math.min(dur, Math.round((e.clientX - r.left) / PX * 10) / 10)); stop(); all(); };
+  ruler.onpointerdown = e => { seek(e); ruler.onpointermove = seek; ruler.setPointerCapture(e.pointerId); }; ruler.onpointerup = () => ruler.onpointermove = null;
+  head.append(ruler); tr.append(head);
+  const diamond = (lane, o, k, dur) => { const d = document.createElement("button"); d.className = "dia" + (Math.abs(k.t - t) < .03 && sel.includes(o.id) ? " on" : ""); d.style.left = k.t * PX + "px"; d.title = `${k.t.toFixed(1)} s${k.props ? " · " + k.props.join(", ") : " · all properties"}${k.ease ? " · " + k.ease : ""}`; d.setAttribute("aria-label", `${o.name || o.kind}: keyframe at ${k.t.toFixed(1)} seconds`);
+      d.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); const r = lane.getBoundingClientRect(); let moved = false; d.setPointerCapture(e.pointerId);
+        d.onpointermove = m => { moved = true; const nt = Math.max(0, Math.min(dur, Math.round((m.clientX - r.left) / PX * 10) / 10)); d.style.left = nt * PX + "px"; d.dataset.nt = nt; };
+        d.onpointerup = () => { d.onpointermove = null; if (moved && d.dataset.nt != null) { k.t = +d.dataset.nt; changed(); } t = k.t; sel = [o.id]; all(); }; };
+      d.onkeydown = e => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); k.t = Math.max(0, Math.min(dur, +(k.t + (e.key === "ArrowRight" ? .1 : -.1)).toFixed(1))); t = k.t; changed(); all(); setTimeout(() => document.querySelector(`.dia.on`)?.focus(), 0); } if (e.key === "Delete" && o.keys.length > 1) { o.keys.splice(o.keys.indexOf(k), 1); changed(); all(); } };
+      lane.append(d); };
+  S.objects.forEach(o => { const row = document.createElement("div"); row.className = "tr" + (sel.includes(o.id) ? " sel" : ""); const nm = document.createElement("div"); nm.className = "nm";
+    const tg = document.createElement("button"); tg.className = "tg"; tg.textContent = o._open ? "▾" : "▸"; tg.setAttribute("aria-expanded", String(!!o._open)); tg.setAttribute("aria-label", `Show property tracks for ${o.name || o.kind}`); tg.onclick = e => { e.stopPropagation(); o._open = !o._open; drawTimeline(); };
+    nm.append(tg, document.createTextNode(" " + (o.name || o.kind))); nm.onclick = e => { sel = e.shiftKey ? (sel.includes(o.id) ? sel.filter(x => x !== o.id) : [...sel, o.id]) : [o.id]; all(); }; nm.title = "Shift-click to select several";
+    const lane = document.createElement("div"); lane.className = "lane"; lane.style.width = w + "px";
+    lane.ondblclick = e => { if (e.target !== lane) return; const r = lane.getBoundingClientRect(); t = Math.max(0, Math.min(dur, Math.round((e.clientX - r.left) / PX * 10) / 10)); sel = [o.id]; setKey(o, {}); all(); };
+    o.keys.forEach(k => diamond(lane, o, k, dur));
+    row.append(nm, lane); tr.append(row);
+    if (o._open) TRACKS.forEach(([id, label, props]) => { const sr = document.createElement("div"); sr.className = "tr sub"; const sn = document.createElement("div"); sn.className = "nm"; sn.textContent = label; const sl = document.createElement("div"); sl.className = "lane"; sl.style.width = w + "px";
+      sl.ondblclick = e => { if (e.target !== sl) return; const r = sl.getBoundingClientRect(); t = Math.max(0, Math.min(dur, Math.round((e.clientX - r.left) / PX * 10) / 10)); sel = [o.id]; const cur = at(o, t); setKey(o, Object.fromEntries(props.map(p => [p, cur[p]]))); all(); };
+      o.keys.filter(k => props.some(p => setsProp(k, p))).forEach(k => diamond(sl, o, k, dur)); sr.append(sn, sl); tr.append(sr); }); });
+  const ph = document.createElement("div"); ph.className = "ph"; ph.style.left = 150 + t * PX + "px"; tr.append(ph); $("#timeTxt").textContent = `${t.toFixed(1)} s of ${dur} s`;
+}
+
+/* ---------- inspector ---------- */
+function fld(label, val, set, kind = "text", extra = {}) { const w = document.createElement("label"); w.className = "fld"; w.innerHTML = `<span>${esc(label)}</span>`; let e;
+  if (kind === "select") { e = document.createElement("select"); e.innerHTML = extra.options.map(([v, x]) => `<option value="${esc(v)}">${esc(x)}</option>`).join(""); e.value = val ?? ""; } else if (kind === "textarea") { e = document.createElement("textarea"); e.rows = 2; e.value = val ?? ""; } else { e = document.createElement("input"); e.type = kind; e.value = val ?? ""; if (extra.step) e.step = extra.step; }
+  e.setAttribute("aria-label", label); // a clean spoken name, not the label plus every option
+  e.addEventListener(kind === "select" ? "change" : "input", () => { set(kind === "number" ? +e.value : e.value); changed(); if (!extra.quiet) { drawStage(); drawTimeline(); } if (extra.re) drawInsp(); }); w.append(e); return w; }
+const two = (...n) => { const d = document.createElement("div"); d.className = "two"; d.append(...n); return d; };
+const H2 = t2 => Object.assign(document.createElement("h2"), { textContent: t2 });
+function drawInsp() {
+  const box = $("#insp"); box.innerHTML = ""; const o = obj(), S = scene();
+  if (!o) { box.append(H2(symEdit ? "Symbol" : "Scene"));
+    if (symEdit) { box.append(fld("Name", symEdit.name, v => symEdit.name = v), fld("Length (seconds)", symEdit.duration, v => symEdit.duration = Math.max(.2, v), "number", { step: .5 }), fld("Repeat", symEdit.loop === false ? "no" : "yes", v => symEdit.loop = v === "yes", "select", { options: [["yes", "Loop forever"], ["no", "Play once"]] }));
+      const done = document.createElement("button"); done.className = "btn primary"; done.textContent = "Done editing symbol"; done.onclick = () => { symEdit = null; sel = []; t = 0; all(); }; box.append(done); return; }
+    box.append(fld("Name", S.name, v => S.name = v, "text", { quiet: true }), fld("Length (seconds)", S.duration, v => S.duration = Math.max(.5, v), "number", { step: .5 }), fld("Background", S.bg, v => S.bg = v, "color"),
+      two(fld("Gravity (0 to 3)", S.gravity ?? 1, v => S.gravity = Math.max(0, Math.min(3, v)), "number", { step: .25 }), fld("Walls", S.walls === false ? "off" : "on", v => S.walls = v === "on", "select", { options: [["on", "Stage edges stop objects"], ["off", "Objects can leave the stage"]] })),
+      fld("When it ends", S.onEnd, v => S.onEnd = v, "select", { options: [["stop", "Stop and wait"], ["next", "Go to the next scene"], ["loop", "Loop this scene"], ["first", "Go back to the first scene"]] }), fld("Transition in", S.transition, v => S.transition = v, "select", { options: [["cut", "Cut"], ["fade", "Fade"]] }));
+    box.append(Object.assign(document.createElement("p"), { className: "hint", textContent: "Select an object on the stage or in the timeline to edit it." })); return; }
+  const p = at(o, t), k = o.keys.find(k => Math.abs(k.t - t) < .03);
+  box.append(H2(`${o.kind === "symbol" ? "Symbol instance" : "Object"}`), fld("Name", o.name, v => o.name = v, "text", { quiet: false }));
+  if (["text", "rect", "ellipse"].includes(o.kind)) box.append(fld("Text", o.text, v => o.text = v, "textarea"), two(fld("Text size", o.size || 32, v => o.size = v, "number"), fld("Text colour", o.color || "#18191c", v => o.color = v, "color")));
+  if (o.kind === "rect" || o.kind === "ellipse") box.append(two(fld("Fill", o.fill || "#f6c744", v => o.fill = v, "color"), o.kind === "rect" ? fld("Corners", o.radius || 0, v => o.radius = v, "number") : document.createElement("span")));
+  if (o.kind === "image") box.append(fld("Description for screen readers", o.alt, v => o.alt = v, "text", { quiet: true }));
+  box.append(two(fld("Width", o.w, v => o.w = v, "number"), fld("Height", o.h, v => o.h = v, "number")));
+  box.append(H2(`At ${t.toFixed(1)} s ${k ? "(keyframe)" : "(sets a keyframe)"}`), two(fld("Left", Math.round(p.x), v => setKey(o, { x: v }), "number"), fld("Top", Math.round(p.y), v => setKey(o, { y: v }), "number")), two(fld("Scale", +p.scale.toFixed(2), v => setKey(o, { scale: v }), "number", { step: .1 }), fld("Turn °", Math.round(p.rotate), v => setKey(o, { rotate: v }), "number")), fld("Opacity (0 to 1)", +p.opacity.toFixed(2), v => setKey(o, { opacity: Math.max(0, Math.min(1, v)) }), "number", { step: .1 }));
+  if (k) { box.append(fld("Easing to the next keyframe", k.ease || "", v => k.ease = v || undefined, "select", { options: [["", "Smooth (default)"], ["linear", "Steady"], ["ease-out", "Slow down"], ["ease-in", "Speed up"], ["cubic-bezier(.34,1.56,.64,1)", "Overshoot"], ["cubic-bezier(.68,-.6,.32,1.6)", "Bounce back"], ["steps(4, end)", "Steps"]] }));
+    if (o.keys.length > 1) { const del = document.createElement("button"); del.className = "btn mini"; del.textContent = "Delete this keyframe"; del.onclick = () => { o.keys.splice(o.keys.indexOf(k), 1); changed(); all(); }; box.append(del); } }
+  if (!symEdit) { const ph = o.physics ||= { on: false };
+    box.append(H2("Physics"), fld("Physics", ph.on ? "on" : "off", v => { ph.on = v === "on"; }, "select", { options: [["off", "Off: follows its keyframes"], ["on", "On: gravity, bouncing and collisions"]], re: true }));
+    if (ph.on) box.append(fld("Behaviour", ph.fixed ? "fixed" : ph.draggable ? "drag" : "free", v => { ph.fixed = v === "fixed"; ph.draggable = v === "drag"; }, "select", { options: [["free", "Falls and bounces"], ["drag", "Falls, bounces, and can be thrown"], ["fixed", "Fixed: others bounce off it"]], re: true }),
+      two(fld("Bounciness (0 to 1)", ph.bounce ?? .55, v => ph.bounce = Math.max(0, Math.min(1, v)), "number", { step: .05 }), fld("Friction (0 to 1)", ph.friction ?? .1, v => ph.friction = Math.max(0, Math.min(1, v)), "number", { step: .05 })),
+      two(fld("Starting push across", ph.vx || 0, v => ph.vx = v, "number", { step: 50 }), fld("Starting push down", ph.vy || 0, v => ph.vy = v, "number", { step: 50 })),
+      Object.assign(document.createElement("p"), { className: "hint", textContent: "Physics moves the object from where it starts, so its position keyframes are ignored; scale, rotation and opacity still follow their keyframes. Try it in Preview." }));
+    box.append(H2("Actions")); (o.actions ||= []).forEach((a, i) => { const d = document.createElement("div"); d.className = "act";
+      d.append(two(fld("When", a.on, v => a.on = v, "select", { options: [["click", "Clicked"], ["hover", "Hovered"]], quiet: true }), fld("Do", a.do, v => { a.do = v; a.value = ""; }, "select", { options: [["next", "Next scene"], ["prev", "Previous scene"], ["scene", "Go to scene…"], ["play", "Play"], ["pause", "Pause"], ["restart", "Restart scene"], ["seek", "Jump to time…"], ["url", "Open a web page…"]], re: true, quiet: true })));
+      if (a.do === "scene") d.append(fld("Scene", a.value, v => a.value = v, "select", { options: M.scenes.map(s => [s.id, s.name]), quiet: true })); if (a.do === "seek") d.append(fld("Seconds", a.value, v => a.value = v, "number", { quiet: true })); if (a.do === "url") d.append(fld("Address (https://…)", a.value, v => a.value = v, "text", { quiet: true }));
+      const rm = document.createElement("button"); rm.className = "btn mini"; rm.textContent = "Remove action"; rm.onclick = () => { o.actions.splice(i, 1); changed(); drawInsp(); }; d.append(rm); box.append(d); });
+    const add = document.createElement("button"); add.className = "btn mini"; add.textContent = "Add action"; add.onclick = () => { o.actions.push({ on: "click", do: "next" }); changed(); drawInsp(); }; box.append(add);
+    if (o.actions.length) box.append(Object.assign(document.createElement("p"), { className: "hint", textContent: "Objects with click actions become buttons that work with the keyboard too." })); }
+  const row = document.createElement("div"); row.className = "row"; [["Duplicate", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.name = (o.name || o.kind) + " copy"; c.keys.forEach(q => { q.x += 20; q.y += 20; }); S.objects.push(c); sel = [c.id]; }], ["Bring forward", () => { const i = S.objects.indexOf(o); if (i < S.objects.length - 1) [S.objects[i], S.objects[i + 1]] = [S.objects[i + 1], S.objects[i]]; }], ["Delete", () => { S.objects.splice(S.objects.indexOf(o), 1); sel = []; }]].forEach(([l, f]) => { const b = document.createElement("button"); b.className = "btn mini"; b.textContent = l; b.onclick = () => { f(); changed(); all(); }; row.append(b); });
+  if (o.kind === "symbol") { const b = document.createElement("button"); b.className = "btn mini"; b.textContent = "Edit symbol"; b.onclick = () => { symEdit = M.symbols.find(s => s.id === o.symbol); sel = []; t = 0; all(); }; row.append(b); }
+  box.append(row);
+}
+function drawLists() {
+  const sc = $("#scenes"); sc.innerHTML = ""; M.scenes.forEach((s, i) => { const b = document.createElement("button"); b.setAttribute("aria-current", String(i === si && !symEdit)); b.innerHTML = `<b>${i + 1}</b><span>${esc(s.name)}</span>`; b.onclick = () => { symEdit = null; si = i; sel = []; t = 0; all(); };
+    b.ondblclick = () => { const n = prompt("Rename scene", s.name); if (n) { s.name = n; changed(); all(); } }; b.title = "Double-click to rename"; sc.append(b); });
+  const sy = $("#symbols"); sy.innerHTML = M.symbols.length ? "" : '<p class="hint">No symbols yet.</p>'; M.symbols.forEach(s => { const b = document.createElement("button"); b.setAttribute("aria-current", String(symEdit === s)); b.innerHTML = `<span>${esc(s.name)}</span><small>Place</small>`; b.title = "Place this symbol in the scene"; b.onclick = () => { if (symEdit) return; const o = { id: uid(), name: s.name, kind: "symbol", symbol: s.id, w: s.w, h: s.h, keys: [{ t: +t.toFixed(2), x: M.w / 2 - s.w / 2, y: M.h / 2 - s.h / 2, scale: 1, rotate: 0, opacity: 1 }] }; scene().objects.push(o); sel = [o.id]; changed(); all(); }; sy.append(b); });
+  $("#mTitle").value = M.title; $("#mSize").value = `${M.w}x${M.h}`;
+}
+function all() { drawLists(); drawStage(); drawTimeline(); drawInsp(); }
+
+/* ---------- editing actions ---------- */
+document.querySelectorAll("[data-add]").forEach(b => b.onclick = async () => {
+  const k = b.dataset.add, o = { id: uid(), kind: k, name: { text: "Text", rect: "Box", ellipse: "Circle", image: "Picture" }[k] + " " + (scene().objects.length + 1), text: k === "text" ? "Your text" : "", size: 40, color: "#18191c", fill: k === "rect" ? "#2453d6" : "#f6c744", w: k === "text" ? 420 : 200, h: k === "text" ? 90 : 200, radius: 12, keys: [] };
+  if (k === "rect") o.color = "#ffffff";
+  if (k === "image") { const src = await new Promise(res => { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = async () => { const f = i.files[0]; if (!f) return res(null); const kind = await LightLitSniff(f); if (!LightLitPhotoKinds.has(kind) && kind !== "svg") { toast(LightLitWhyNot(f.name, kind)); return res(null); } const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); }; i.click(); }); if (!src) return; o.src = src; }
+  o.keys.push({ t: +t.toFixed(2), x: Math.round(M.w / 2 - o.w / 2), y: Math.round(M.h / 2 - o.h / 2), scale: 1, rotate: 0, opacity: 1 }); scene().objects.push(o); sel = [o.id]; changed(); all();
+});
+$("#addScene").onclick = () => { M.scenes.push(newScene(`Scene ${M.scenes.length + 1}`)); si = M.scenes.length - 1; symEdit = null; sel = []; t = 0; changed(); all(); };
+$("#dupScene").onclick = () => { const c = JSON.parse(JSON.stringify(M.scenes[si])); c.id = uid(); c.name += " copy"; c.objects.forEach(o => o.id = uid()); M.scenes.splice(si + 1, 0, c); si++; changed(); all(); };
+$("#makeSym").onclick = () => { if (symEdit) return; const S = scene(), objs = S.objects.filter(o => sel.includes(o.id) && o.kind !== "symbol"); if (!objs.length) return toast("Select one or more objects first (Shift-click to select several).");
+  const ps = objs.map(o => at(o, t)), x0 = Math.min(...ps.map(p => p.x)), y0 = Math.min(...ps.map(p => p.y)), x1 = Math.max(...objs.map((o, i) => ps[i].x + o.w)), y1 = Math.max(...objs.map((o, i) => ps[i].y + o.h));
+  const name = prompt("Name this symbol", `Symbol ${M.symbols.length + 1}`); if (!name) return;
+  const sym = { id: uid(), name, w: Math.round(x1 - x0), h: Math.round(y1 - y0), duration: Math.max(1, ...objs.flatMap(o => o.keys.map(k => k.t))) || 2, loop: true, objects: objs.map(o => ({ ...JSON.parse(JSON.stringify(o)), id: uid(), keys: o.keys.map(k => ({ ...k, x: k.x - x0, y: k.y - y0 })) })) };
+  M.symbols.push(sym); S.objects = S.objects.filter(o => !sel.includes(o.id) || o.kind === "symbol"); const inst = { id: uid(), name, kind: "symbol", symbol: sym.id, w: sym.w, h: sym.h, keys: [{ t: 0, x: x0, y: y0, scale: 1, rotate: 0, opacity: 1 }] }; S.objects.push(inst); sel = [inst.id]; changed(); all(); toast(`“${name}” is a symbol. Place it again from Symbols, or Edit symbol to change its animation.`, 5000); };
+$("#mTitle").oninput = e => { M.title = e.target.value; changed(); };
+$("#mSize").onchange = e => { const [w, h] = e.target.value.split("x").map(Number), kx = w / M.w, ky = h / M.h; M.scenes.forEach(s => s.objects.forEach(o => o.keys.forEach(k => { k.x = Math.round(k.x * kx); k.y = Math.round(k.y * ky); }))); M.w = w; M.h = h; changed(); all(); toast("Stage resized. Objects were moved to keep their places."); };
+$("#keyBtn").onclick = () => { const o = obj(); if (!o) return toast("Select an object first."); setKey(o, {}); all(); };
+function stop() { if (playing) { cancelAnimationFrame(playing); playing = null; $("#playBtn").textContent = "▶ Play"; } }
+$("#playBtn").onclick = () => { if (playing) return stop(); const dur = +scene().duration || 3; if (t >= dur) t = 0; let last = performance.now(); $("#playBtn").textContent = "❚❚ Pause";
+  const step = now => { t = Math.min(dur, t + (now - last) / 1000); last = now; drawStage(); drawTimeline(); if (t >= dur) { stop(); drawInsp(); return; } playing = requestAnimationFrame(step); }; playing = requestAnimationFrame(step); };
+addEventListener("keydown", e => { if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || $(".ovl")) return; if (e.key === " ") { e.preventDefault(); $("#playBtn").click(); } if (e.key.toLowerCase() === "k") $("#keyBtn").click(); if ((e.key === "Delete" || e.key === "Backspace") && obj() && !document.activeElement.classList.contains("dia")) { const kept = scene().objects.filter(o => !sel.includes(o.id)); if (symEdit) symEdit.objects = kept; else M.scenes[si].objects = kept; sel = []; changed(); all(); } });
+addEventListener("resize", () => drawStage());
+
+/* ---------- preview, save and export ---------- */
+const clean = () => JSON.parse(JSON.stringify(M));
+function overlay(title, inner) { const o = document.createElement("div"); o.className = "ovl"; o.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="bar"><b>${esc(title)}</b><span style="flex:1"></span><button class="btn" data-close>Close</button></div><div style="padding:14px">${inner}</div></div>`; document.body.append(o); const close = () => { o.remove(); removeEventListener("keydown", k); }; const k = e => { if (e.key === "Escape") close(); }; addEventListener("keydown", k); o.querySelector("[data-close]").onclick = close; o.onclick = e => { if (e.target === o) close(); }; o.querySelector("[data-close]").focus(); return o; }
+$("#previewBtn").onclick = () => { stop(); const o = overlay("Preview", `<div id="pv"></div><div class="row"><button class="btn mini" id="pvPrev">‹ Scene</button><button class="btn mini" id="pvNext">Scene ›</button><button class="btn mini" id="pvRestart">Restart</button></div>`); const api = LLLMotion.render(o.querySelector("#pv"), clean(), { scene: si }); o.querySelector("#pvPrev").onclick = api.prev; o.querySelector("#pvNext").onclick = api.next; o.querySelector("#pvRestart").onclick = api.restart; };
+async function motionHTML(data) { const player = await (await fetch("assets/motion-player.js")).text();
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(data.title)}</title><style>html,body{margin:0;height:100%;background:#000}body{display:grid;place-items:center}#m{width:min(100vw, calc(100vh * ${data.w} / ${data.h}))}</style></head><body><div id="m" role="img" aria-label="${esc(data.title)}"></div><script>${player.replace(/<\/script/gi, "<\\/script")}<\/script><script>LLLMotion.render(document.getElementById("m"), ${JSON.stringify(data).replace(/</g, "\\u003c")});<\/script></body></html>`; }
+$("#exportBtn").onclick = () => { stop(); const file = `${slug(M.title)}.html`, o = overlay("Export", `<div style="display:grid;gap:8px"><button class="btn primary" data-x="html">Web page (one HTML file): open in any browser, put online, or use in a presentation</button><button class="btn" data-x="course">Course file: import this animation’s current scene into Little Light Lit Course</button><h3 style="margin:12px 0 4px;font-size:14px">Embed code for websites</h3><p class="hint">Put the web page online (for example on GitHub Pages), then paste this where it should appear. Change the address to where you put the file.</p><code class="emb" id="emb">&lt;iframe src="https://your-site.example/${esc(file)}" title="${esc(M.title)}" width="${M.w}" height="${M.h}" style="border:0;max-width:100%;aspect-ratio:${M.w}/${M.h};height:auto" loading="lazy" allowfullscreen&gt;&lt;/iframe&gt;</code><button class="btn" data-x="copy">Copy embed code</button></div>`);
+  o.addEventListener("click", async e => { const x = e.target.closest("[data-x]")?.dataset.x; if (!x) return;
+    if (x === "html") { download(new Blob([await motionHTML(clean())], { type: "text/html" }), file); toast("Saved. It plays in any browser."); }
+    if (x === "course") { download(new Blob([JSON.stringify({ kind: "littlelightlit-motion", v: 1, motion: clean(), scene: si }, null, 1)], { type: "application/json" }), `${slug(M.title)}.motion.json`); toast("Saved. In Course, add an Animation block and choose Import from Motion.", 5500); }
+    if (x === "copy") { await navigator.clipboard.writeText(o.querySelector("#emb").textContent); toast("Embed code copied"); } }); };
+$("#saveBtn").onclick = () => { download(new Blob([JSON.stringify({ kind: "littlelightlit-motion", v: 1, motion: clean() }, null, 1)], { type: "application/json" }), `${slug(M.title)}.motion.json`); toast("Saved. Open this file here to keep editing."); };
+$("#openBtn").onclick = () => $("#openIn").click();
+$("#openIn").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const d = JSON.parse(await f.text()); if (d.kind !== "littlelightlit-motion") throw 0; start(d.motion); toast("Animation opened"); } catch { toast("That file isn’t a Little Light Lit Motion file."); } };
+function start(m) { M = m; si = 0; sel = []; t = 0; symEdit = null; all(); changed(); }
+(() => { let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT) || "null"); } catch {} const o = overlay("Motion", `<p>Make interactive HTML5 animations: keyframes on a timeline, scenes, symbols and click actions.</p><div class="row">${d ? `<button class="btn primary" data-s="draft">Carry on with “${esc(d.title)}”</button><button class="btn" data-s="discard">Discard draft</button>` : ""}<button class="btn ${d ? "" : "primary"}" data-s="blank">Start blank</button><button class="btn" data-s="sample">Try the sample</button></div>`);
+  o.querySelector("[data-close]").hidden = true;
+  o.addEventListener("click", e => { const s = e.target.closest("[data-s]")?.dataset.s; if (!s) return; if (s === "discard") { if (!confirm("Discard the saved draft?")) return; localStorage.removeItem(DRAFT); o.remove(); start(blank()); toast("Draft discarded"); return; } o.remove(); start(s === "draft" ? d : s === "sample" ? sample() : blank()); });
+  M = blank(); all(); })();
+</script>
+</body>
+</html>

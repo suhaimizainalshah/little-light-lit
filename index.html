@@ -259,6 +259,12 @@ a.brand:hover{background:var(--soft)}
   .pane{padding:.9rem 1rem 1.2rem}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.bck{display:flex;gap:.55rem;align-items:center;font-weight:600;margin-top:.5rem}.bck input{width:18px;height:18px;accent-color:var(--accent)}#bFocusWrap{margin-top:.6rem}#bFocusWrap .lbl{display:block;margin-bottom:.3rem}
+@media (prefers-color-scheme:dark){.good,.bres .good,.pp-sum.good{color:#5fd39a}}
+#cropApply.ready{box-shadow:0 0 0 3px var(--accent-soft,rgba(214,82,48,.25))}
+/* the crop's Cancel and Apply stay in view at the bottom of the panel, however far it scrolls */
+.crop-actions{position:sticky;bottom:0;z-index:2;grid-template-columns:auto 1fr!important;background:var(--panel,var(--card,#fff));padding:10px 0 12px;margin-bottom:-12px;box-shadow:0 -8px 12px -8px rgba(0,0,0,.18)}
+.crop-actions .btn{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -268,13 +274,13 @@ a.brand:hover{background:var(--soft)}
       <img src="assets/logo.png" alt="" width="28" height="28">
       <span>Little Light Lit</span>
     </a>
-    <nav class="modes" aria-label="Studios"><a href="./" id="navPhoto" aria-current="page">Photo</a><a href="./#batch" id="navBatch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html">Course</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+    <nav class="modes" aria-label="Studios"><a href="./" id="navPhoto" aria-current="page">Photo</a><a href="./#batch" id="navBatch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html">Course</a><a href="motion.html">Motion</a><a href="present.html">Present</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
     <button class="ibtn ed-only" id="openBtn" title="Open a photo (O)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3M12 4v12M7 9l5-5 5 5"/></svg><span class="t">Open</span></button>
     <button class="ibtn ed-only" id="undoBtn" disabled title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
     <button class="ibtn ed-only" id="redoBtn" disabled title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
     <button class="ibtn ed-only" id="compareBtn" disabled title="Hold to see the original"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg><span class="t">Hold to compare</span></button>
     <div class="spacer"></div>
-    <button class="ibtn" id="batchBtn" title="Compress or resize many photos at once"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="14" height="14" rx="2"/><path d="M3 7v12a2 2 0 0 0 2 2h12"/></svg><span class="t">Many photos</span></button>
+    <button class="ibtn" id="batchBtn" title="Crop, resize or compress many photos at once"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="3" width="14" height="14" rx="2"/><path d="M3 7v12a2 2 0 0 0 2 2h12"/></svg><span class="t">Many photos</span></button>
     <button class="ibtn ed-only" id="resetBtn" disabled title="Undo every change"><span class="t">Start over</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="m"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
     <button class="btn primary ed-only" id="exportBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Save</button>
   </header>
@@ -298,7 +304,7 @@ a.brand:hover{background:var(--soft)}
         <div class="row">
           <button class="btn primary" id="emptyOpen">Open a photo</button>
           <button class="btn" id="emptyPassport">Make a passport photo</button>
-          <button class="btn" id="emptyBatch">Compress or resize many photos</button>
+          <button class="btn" id="emptyBatch">Crop, resize or compress many photos</button>
         </div>
         <p class="note">You can also drop photos anywhere on this page, or paste one with Ctrl+V.</p>
         <nav class="studios" aria-label="More studios"><a href="video.html">Edit a video</a><a href="audio.html">Edit audio</a><a href="photobooth.html">Make a photo strip</a><a href="design.html">Design a post or poster</a><a href="animate.html">Make an animation</a><a href="lesson.html">Make a video lesson</a><a href="360.html">360° photos and videos</a><a href="3d.html">Make a 3D model</a></nav>
@@ -332,7 +338,7 @@ a.brand:hover{background:var(--soft)}
         <div class="group" id="exactGroup"><span class="lbl">Exact size</span>
           <div class="chips" id="sizePresets"></div>
           <div class="row2"><div class="field"><label for="eW">Width</label><input type="number" id="eW" min="16" placeholder="1280"></div><div class="field"><label for="eH">Height</label><input type="number" id="eH" min="16" placeholder="800"></div></div>
-          <button class="btn" id="eUse">Crop to this size</button>
+          <button class="btn" id="eUse">Set this size</button>
           <p class="note" id="eNote" aria-live="polite"></p>
         </div>
         <div class="group"><span class="lbl">Rotate and flip</span>
@@ -343,7 +349,7 @@ a.brand:hover{background:var(--soft)}
             <button class="sq" data-op="flipv" title="Flip vertically" aria-label="Flip vertically"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12h18" stroke-dasharray="2 2.5"/><path d="M6 9 18 3v6zM6 15l12 6v-6z"/></svg></button>
           </div>
         </div>
-        <div class="row2">
+        <div class="row2 crop-actions">
           <button class="btn" id="cropCancel">Cancel</button>
           <button class="btn primary" id="cropApply">Apply crop</button>
         </div>
@@ -478,7 +484,7 @@ a.brand:hover{background:var(--soft)}
     <div class="bmain" id="bMain">
       <div class="bhead">
         <div>
-          <h1 id="batchTitle">Compress and resize photos</h1>
+          <h1 id="batchTitle">Crop, resize and compress photos</h1>
           <p class="bsum" id="bSummary" aria-live="polite">Add photos to start. They stay on this device.</p>
         </div>
         <div class="row">
@@ -499,27 +505,45 @@ a.brand:hover{background:var(--soft)}
       <div class="pane">
         <h2 id="bSetTitle">Settings</h2>
         <p class="hint">Changes apply to every photo straight away.</p>
+        <div class="group"><span class="lbl" id="bRotL">Rotate</span>
+          <div class="chips" id="bRot" role="group" aria-labelledby="bRotL"><button class="chip" data-v="0" aria-pressed="true">None</button><button class="chip" data-v="90" aria-pressed="false">90°</button><button class="chip" data-v="180" aria-pressed="false">180°</button><button class="chip" data-v="270" aria-pressed="false">270°</button></div>
+          <label class="check bck"><input type="checkbox" id="bFlip">Mirror (flip left to right)</label>
+        </div>
+        <div class="group"><span class="lbl" id="bCropL">Crop</span>
+          <div class="chips" id="bCrop" role="group" aria-labelledby="bCropL"><button class="chip" data-v="none" aria-pressed="true">None</button><button class="chip" data-v="1:1" aria-pressed="false">Square 1:1</button><button class="chip" data-v="4:5" aria-pressed="false">4:5</button><button class="chip" data-v="3:2" aria-pressed="false">3:2</button><button class="chip" data-v="4:3" aria-pressed="false">4:3</button><button class="chip" data-v="16:9" aria-pressed="false">16:9</button><button class="chip" data-v="9:16" aria-pressed="false">9:16</button><button class="chip" data-v="custom" aria-pressed="false">Custom</button></div>
+          <div class="unit" id="bCropCustom" hidden><label class="sr" for="bCropW">Ratio width</label><input type="number" id="bCropW" value="5" min="1" max="100"><span>:</span><label class="sr" for="bCropH">Ratio height</label><input type="number" id="bCropH" value="7" min="1" max="100"></div>
+          <div id="bFocusWrap" hidden><span class="lbl" id="bFocusL">Keep the</span>
+            <div class="chips" id="bFocus" role="group" aria-labelledby="bFocusL"><button class="chip" data-v="c" aria-pressed="true">Centre</button><button class="chip" data-v="t" aria-pressed="false">Top</button><button class="chip" data-v="b" aria-pressed="false">Bottom</button><button class="chip" data-v="l" aria-pressed="false">Left</button><button class="chip" data-v="r" aria-pressed="false">Right</button></div></div>
+          <p class="note" id="bCropNote">Photos keep their shape.</p>
+        </div>
         <div class="group"><span class="lbl" id="bModeL">Size</span>
-          <div class="chips" id="bMode" role="radiogroup" aria-labelledby="bModeL">
-            <button class="chip" role="radio" data-v="none" aria-pressed="false">Keep size</button>
-            <button class="chip" role="radio" data-v="long" aria-pressed="true">Longest side</button>
-            <button class="chip" role="radio" data-v="width" aria-pressed="false">Width</button>
-            <button class="chip" role="radio" data-v="pct" aria-pressed="false">Percentage</button>
+          <div class="chips" id="bMode" role="group" aria-labelledby="bModeL">
+            <button class="chip" data-v="none" aria-pressed="false">Keep size</button>
+            <button class="chip" data-v="long" aria-pressed="true">Longest side</button>
+            <button class="chip" data-v="width" aria-pressed="false">Width</button>
+            <button class="chip" data-v="height" aria-pressed="false">Height</button>
+            <button class="chip" data-v="pct" aria-pressed="false">Percentage</button>
+            <button class="chip" data-v="exact" aria-pressed="false">Exact size</button>
           </div>
+          <div class="unit" id="bExact" hidden><label class="sr" for="bExW">Width in pixels</label><input type="number" id="bExW" value="1080" min="1" max="12000"><span>×</span><label class="sr" for="bExH">Height in pixels</label><input type="number" id="bExH" value="1080" min="1" max="12000"><span>px</span></div>
+          <div class="field" id="bFitWrap" hidden><label for="bFit">If the shape is different</label><select id="bFit"><option value="cover">Fill and crop the edges</option><option value="contain">Fit inside (keeps the shape)</option><option value="pad">Fit with a border</option><option value="stretch">Stretch to fit</option></select></div>
+          <div class="field" id="bPadWrap" hidden><label for="bPadC">Border colour</label><input type="color" id="bPadC" value="#ffffff"></div>
           <div class="unit" id="bValWrap"><label class="sr" for="bVal">Size value</label><input type="number" id="bVal" value="1600" min="1" max="12000"><span id="bUnit">px</span></div>
           <p class="note" id="bSizeNote">Photos smaller than this are left as they are.</p>
         </div>
         <div class="group"><span class="lbl" id="bFmtL">Format</span>
-          <div class="chips" id="bFmt" role="radiogroup" aria-labelledby="bFmtL">
-            <button class="chip" role="radio" data-v="same" aria-pressed="false">Same as original</button>
-            <button class="chip" role="radio" data-v="image/jpeg" aria-pressed="true">JPG</button>
-            <button class="chip" role="radio" data-v="image/webp" aria-pressed="false">WebP</button>
-            <button class="chip" role="radio" data-v="image/png" aria-pressed="false">PNG</button>
+          <div class="chips" id="bFmt" role="group" aria-labelledby="bFmtL">
+            <button class="chip" data-v="same" aria-pressed="false">Same as original</button>
+            <button class="chip" data-v="image/jpeg" aria-pressed="true">JPG</button>
+            <button class="chip" data-v="image/webp" aria-pressed="false">WebP</button>
+            <button class="chip" data-v="image/png" aria-pressed="false">PNG</button>
           </div>
         </div>
         <div class="slider" id="bQWrap"><label for="bQ">Quality</label><output id="bQOut">80%</output><input type="range" id="bQ" min="30" max="100" value="80"></div>
         <div class="field"><label for="bLimit">Keep each file under</label><select id="bLimit"><option value="0">No limit</option><option value="50">50 KB</option><option value="100">100 KB</option><option value="200">200 KB</option><option value="300">300 KB</option><option value="500">500 KB</option><option value="1000">1 MB</option><option value="2000">2 MB</option><option value="5000">5 MB</option><option value="custom">Custom…</option></select><div class="row2" id="bLimitCustom" hidden style="margin-top:.4rem"><input type="number" id="bLimitN" min="1" step="any" placeholder="750" aria-label="Size limit"><select id="bLimitU" aria-label="Unit"><option>KB</option><option>MB</option></select></div></div>
         <label class="check" style="display:flex;gap:.55rem;align-items:center;font-weight:600"><input type="checkbox" id="bSuffix" style="width:18px;height:18px;accent-color:var(--accent)">Add “-small” to file names</label>
+        <label class="check bck"><input type="checkbox" id="bNum">Number the files instead</label>
+        <div class="field" id="bNumWrap" hidden><label for="bPrefix">Name to number</label><input id="bPrefix" value="photo" maxlength="40" placeholder="class-trip"><p class="note" id="bNumNote">photo-001.jpg, photo-002.jpg…</p></div>
         <p class="note">Saving also removes hidden camera and location data from each photo.</p>
       </div>
     </aside>
@@ -864,7 +888,7 @@ const ASPECTS = [["Free", null], ["Original", "orig"], ["Square", 1], ["4:5", 4 
 let cr = { x: 0, y: 0, w: 1, h: 1 }, aspect = null, aspectKey = "Free", ppMode = null, exact = null;
 const SIZE_PRESETS = [[1280, 800], [1920, 1080], [1080, 1080], [1080, 1350], [1200, 630], [1584, 396]];
 $("#sizePresets").innerHTML = SIZE_PRESETS.map(([w, h]) => `<button class="chip" data-sw="${w}" data-sh="${h}" aria-pressed="false">${w} × ${h}</button>`).join("");
-function useExact(w, h) { exact = { w, h }; aspectKey = "exact"; $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", "false")); $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", +c.dataset.sw === w && +c.dataset.sh === h)); $("#eW").value = w; $("#eH").value = h; setAspect(w / h); toast(`Move the box to choose what to keep. The photo will be exactly ${w} × ${h} px.`); }
+function useExact(w, h) { exact = { w, h }; aspectKey = "exact"; $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", "false")); $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", +c.dataset.sw === w && +c.dataset.sh === h)); $("#eW").value = w; $("#eH").value = h; setAspect(w / h); $("#cropApply").textContent = `Crop to ${w} × ${h} px`; $("#cropApply").classList.add("ready"); $("#cropHint").textContent = `Move the box to choose what to keep, then press Crop to ${w} × ${h} px.`; toast(`Now move the box if you like, then press Crop to ${w} × ${h} px.`); $("#cropApply").focus({ preventScroll: true }); }
 $("#sizePresets").onclick = e => { const b = e.target.closest("[data-sw]"); if (b) useExact(+b.dataset.sw, +b.dataset.sh); };
 $("#eUse").onclick = () => { const w = Math.round(+$("#eW").value), h = Math.round(+$("#eH").value); if (!(w >= 16 && h >= 16 && w <= 12000 && h <= 12000)) return toast("Type a width and height between 16 and 12,000 pixels."); useExact(w, h); };
 function cropFromFields() {
@@ -875,7 +899,7 @@ function cropFromFields() {
 }
 ["#cW", "#cH", "#cX", "#cY"].forEach(id => $(id).addEventListener("change", cropFromFields));
 $("#aspects").innerHTML = ASPECTS.map(([n]) => `<button class="chip" data-a="${n}" aria-pressed="${n === "Free"}">${n}</button>`).join("");
-$("#aspects").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; exact = null; $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", "false")); aspectKey = b.dataset.a; const a = ASPECTS.find(x => x[0] === aspectKey)[1]; setAspect(a === "orig" ? S.base.width / S.base.height : a); $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); };
+$("#aspects").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; exact = null; resetApply(); $$("#sizePresets .chip").forEach(c => c.setAttribute("aria-pressed", "false")); aspectKey = b.dataset.a; const a = ASPECTS.find(x => x[0] === aspectKey)[1]; setAspect(a === "orig" ? S.base.width / S.base.height : a); $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", c === b)); };
 function setAspect(a) {
   aspect = a; cropEl.classList.toggle("locked", !!a);
   if (a) { const W = S.base.width, H = S.base.height; let w = 1, h = W / (a * H); if (h > 1) { h = 1; w = a * H / W; } w *= .92; h *= .92; cr = { x: (1 - w) / 2, y: (1 - h) / 2, w, h }; }
@@ -891,7 +915,8 @@ function startCrop(pp = null) {
   if (pp) setAspect(pp.w / pp.h);
   else { aspectKey = "Free"; $$("#aspects .chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.a === "Free")); setAspect(null); }
 }
-function endCrop() { wrap.classList.remove("cropping"); cropEl.hidden = true; ppMode = null; }
+function resetApply() { const a = $("#cropApply"); a.textContent = ppMode ? "Use this framing" : "Apply crop"; a.classList.remove("ready"); $("#cropHint").textContent = "Drag the corners to choose what to keep."; }
+function endCrop() { wrap.classList.remove("cropping"); cropEl.hidden = true; ppMode = null; resetApply(); }
 function placeCrop() {
   if (cropEl.hidden) return;
   Object.assign(cropEl.style, { left: cr.x * 100 + "%", top: cr.y * 100 + "%", width: cr.w * 100 + "%", height: cr.h * 100 + "%" });
@@ -1384,7 +1409,7 @@ cmp.addEventListener("pointerdown", cmpOn); ["pointerup", "pointerleave", "point
 cmp.addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") cmpOn(e); }); cmp.addEventListener("keyup", cmpOff);
 
 /* ---------- Batch compress and resize ---------- */
-const B = { items: [], gen: 0, mode: "long", fmt: "image/jpeg" };
+const B = { items: [], gen: 0, mode: "long", fmt: "image/jpeg", rot: "0", crop: "none", focus: "c" };
 const bList = $("#bList");
 function showBatch(on) {
   app.classList.toggle("batching", on); $("#batch").hidden = !on; $(".work").hidden = on; $("#batchBtn").hidden = on; syncNav(on);
@@ -1414,24 +1439,41 @@ async function addBatch(files) {
   }
   toast(`${files.length} photo${files.length > 1 ? "s" : ""} added`); processAll();
 }
+/* the shape after rotating and cropping, then the final size */
+function cropRatio() { if (B.crop === "none") return 0; const [a, b] = B.crop === "custom" ? [+$("#bCropW").value || 1, +$("#bCropH").value || 1] : B.crop.split(":").map(Number); return a / b; }
+function shapeOf(it) { const q = +B.rot % 180 !== 0, w0 = q ? it.h : it.w, h0 = q ? it.w : it.h, r = cropRatio(); if (!r) return [w0, h0]; return w0 / h0 > r ? [Math.round(h0 * r), h0] : [w0, Math.round(w0 / r)]; }
 function targetSize(it) {
-  const v = Math.max(1, +$("#bVal").value || 1);
-  if (B.mode === "long") { const k = Math.min(1, v / Math.max(it.w, it.h)); return [it.w * k, it.h * k]; }
-  if (B.mode === "width") return [v, it.h * v / it.w];
-  if (B.mode === "pct") return [it.w * v / 100, it.h * v / 100];
-  return [it.w, it.h];
+  const v = Math.max(1, +$("#bVal").value || 1), [bw, bh] = shapeOf(it);
+  if (B.mode === "long") { const k = Math.min(1, v / Math.max(bw, bh)); return [bw * k, bh * k]; }
+  if (B.mode === "width") return [v, bh * v / bw];
+  if (B.mode === "height") return [bw * v / bh, v];
+  if (B.mode === "pct") return [bw * v / 100, bh * v / 100];
+  if (B.mode === "exact") { const W = Math.max(1, +$("#bExW").value || 1), H = Math.max(1, +$("#bExH").value || 1); if ($("#bFit").value !== "contain") return [W, H]; const k = Math.min(W / bw, H / bh); return [bw * k, bh * k]; }
+  return [bw, bh];
+}
+function shaped(img, it) { // rotate and mirror, then crop to the chosen shape, keeping the chosen part
+  const q = +B.rot % 180 !== 0, rw = q ? it.h : it.w, rh = q ? it.w : it.h, r = canvas(rw, rh), x = r.getContext("2d");
+  x.translate(rw / 2, rh / 2); x.rotate(+B.rot * Math.PI / 180); if ($("#bFlip").checked) x.scale(-1, 1); x.drawImage(img, -it.w / 2, -it.h / 2, it.w, it.h);
+  const [cw, ch] = shapeOf(it); if (cw === rw && ch === rh) return r;
+  const f = B.focus, sx = f === "l" ? 0 : f === "r" ? rw - cw : (rw - cw) / 2, sy = f === "t" ? 0 : f === "b" ? rh - ch : (rh - ch) / 2, c = canvas(cw, ch);
+  c.getContext("2d").drawImage(r, sx, sy, cw, ch, 0, 0, cw, ch); return c;
 }
 const extFor = t => ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[t];
 function outType(it) { if (B.fmt !== "same") return B.fmt; return ["image/jpeg", "image/png", "image/webp"].includes(it.file.type) ? it.file.type : "image/png"; }
 async function processOne(it) {
-  const img = await decode(it.file), [w, h] = targetSize(it), type = outType(it), lossy = type !== "image/png";
+  const raw = await decode(it.file), img = shaped(raw, it), [w, h] = targetSize(it), type = outType(it), lossy = type !== "image/png"; raw.close && raw.close();
   let c = canvas(w, h); const x = c.getContext("2d");
-  if (type === "image/jpeg") { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); }
+  if (type === "image/jpeg" || (B.mode === "exact" && $("#bFit").value === "pad")) { x.fillStyle = B.mode === "exact" && $("#bFit").value === "pad" ? $("#bPadC").value : "#fff"; x.fillRect(0, 0, c.width, c.height); }
   x.imageSmoothingQuality = "high";
-  const src = (img.width > c.width * 2) ? resample(img, c.width, c.height) : img; x.drawImage(src, 0, 0, c.width, c.height); img.close && img.close();
+  let dx = 0, dy = 0, dw = c.width, dh = c.height, sx = 0, sy = 0, sw = img.width, sh = img.height;
+  if (B.mode === "exact" && $("#bFit").value === "cover") { const k = Math.max(c.width / sw, c.height / sh), vw = c.width / k, vh = c.height / k, f = B.focus; // fill, cropping the overflow from the chosen side
+    sx = f === "l" ? 0 : f === "r" ? sw - vw : (sw - vw) / 2; sy = f === "t" ? 0 : f === "b" ? sh - vh : (sh - vh) / 2; sw = vw; sh = vh; }
+  if (B.mode === "exact" && $("#bFit").value === "pad") { const k = Math.min(c.width / sw, c.height / sh); dw = sw * k; dh = sh * k; dx = (c.width - dw) / 2; dy = (c.height - dh) / 2; }
+  const part = (sx || sy || sw !== img.width || sh !== img.height) ? (() => { const t = canvas(sw, sh); t.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh); return t; })() : img;
+  const src = (part.width > dw * 2) ? resample(part, dw, dh) : part; x.drawImage(src, dx, dy, dw, dh);
   const fit = await fitToSize(c, type, limitBytes("#bLimit", "#bLimitN", "#bLimitU"), +$("#bQ").value / 100); let b = fit.b; c = fit.c;
   it.kept = false;
-  if (b.size >= it.size && type === it.file.type && c.width === it.w && c.height === it.h) { b = it.file; it.kept = true; }
+  if (b.size >= it.size && type === it.file.type && c.width === it.w && c.height === it.h && B.rot === "0" && !$("#bFlip").checked && B.crop === "none") { b = it.file; it.kept = true; }
   it.out = b; it.ow = c.width; it.oh = c.height; it.ext = extFor(type); it.status = "done";
 }
 let bTimer;
@@ -1446,12 +1488,14 @@ async function processAll() {
   }
 }
 const fmtKB = n => (n < 1048576 ? Math.max(1, Math.round(n / 1024)) + " KB" : (n / 1048576).toFixed(1) + " MB");
-const outName = it => `${it.name.replace(/\.[^.]+$/, "")}${$("#bSuffix").checked ? "-small" : ""}.${it.kept ? it.name.split(".").pop() : it.ext}`;
+const slugP = () => ($("#bPrefix").value || "photo").trim().replace(/[\\/:*?"<>|]+/g, "-").slice(0, 40) || "photo";
+const outName = it => { const ext = it.kept ? it.name.split(".").pop() : it.ext; if ($("#bNum").checked) { const n = B.items.filter(i => i.status !== "error").indexOf(it) + 1, w = Math.max(3, String(B.items.length).length); return `${slugP()}-${String(n).padStart(w, "0")}.${ext}`; }
+  return `${it.name.replace(/\.[^.]+$/, "")}${$("#bSuffix").checked ? "-small" : ""}.${ext}`; };
 function rowHTML(it) {
   const res = it.status === "done"
     ? `${fmtKB(it.out.size)}<small class="${it.out.size < it.size ? "good" : ""}">${it.kept ? "Already small, kept as is" : it.out.size < it.size ? `${Math.round((1 - it.out.size / it.size) * 100)}% smaller` : `${Math.round((it.out.size / it.size - 1) * 100)}% larger`}</small><small>${it.ow} × ${it.oh} px</small>`
     : it.status === "error" ? `<span class="err">Can’t open</span><small>Try saving it as JPG</small>` : `<span class="spin" aria-hidden="true"></span><small>${it.status === "working" ? "Working…" : "Waiting"}</small>`;
-  return `<img src="${it.thumb}" alt=""><div class="bname"><strong>${it.name.replace(/[&<>]/g, "")}</strong><small>${it.w} × ${it.h} px, ${fmtKB(it.size)}</small></div>
+  return `<img src="${it.thumb}" alt=""><div class="bname"><strong>${it.name.replace(/[&<>]/g, "")}</strong><small>${it.w} × ${it.h} px, ${fmtKB(it.size)}${it.status === "done" && (it.ow !== it.w || it.oh !== it.h) ? ` → <b>${it.ow} × ${it.oh}</b>` : ""}</small></div>
     <div class="bres">${res}</div>
     <div class="bacts"><button class="ibtn" data-bd="${it.id}" ${it.status === "done" ? "" : "disabled"} aria-label="Download ${it.name}" title="Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button><button class="ibtn" data-br="${it.id}" aria-label="Remove ${it.name}" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`;
 }
@@ -1472,14 +1516,23 @@ bList.addEventListener("click", e => {
   if (d) { const it = B.items.find(i => i.id === d.dataset.bd); download(it.out, outName(it)); count("saves"); }
   if (r) { B.items = B.items.filter(i => i.id !== r.dataset.br); renderBatch(); }
 });
+window.__lllBatch = { get items() { return B.items; }, outName: it => outName(it) }; // a read-only handle, for testing
 $("#bClear").onclick = () => { B.gen++; B.items = []; renderBatch(); $("#bChoose").focus(); };
 function bChips(id, key, after) { $(id).addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; B[key] = b.dataset.v; $$(`${id} .chip`).forEach(c => c.setAttribute("aria-pressed", c === b)); after && after(); scheduleBatch(); }); }
 bChips("#bMode", "mode", () => {
-  const m = B.mode; $("#bValWrap").hidden = m === "none";
-  $("#bUnit").textContent = m === "pct" ? "%" : "px"; $("#bVal").value = { long: 1600, width: 1080, pct: 50, none: 0 }[m];
-  $("#bSizeNote").textContent = { none: "Photos keep their original size.", long: "Photos smaller than this are left as they are.", width: "Height adjusts to keep proportions.", pct: "Height and width both change by this amount." }[m];
+  const m = B.mode; $("#bValWrap").hidden = m === "none" || m === "exact"; syncShape();
+  $("#bUnit").textContent = m === "pct" ? "%" : "px"; $("#bVal").value = { long: 1600, width: 1080, height: 1080, pct: 50, none: 0, exact: 0 }[m];
+  $("#bSizeNote").textContent = { none: "Photos keep their original size.", long: "Photos smaller than this are left as they are.", width: "Height adjusts to keep proportions.", pct: "Height and width both change by this amount.", height: "Width adjusts to keep proportions.", exact: "Every photo comes out at exactly this size." }[m];
 });
 bChips("#bFmt", "fmt", () => { $("#bQWrap").hidden = B.fmt === "image/png"; });
+function syncShape() { const ex = B.mode === "exact", fit = $("#bFit").value; $("#bExact").hidden = $("#bFitWrap").hidden = !ex; $("#bPadWrap").hidden = !(ex && fit === "pad"); $("#bCropCustom").hidden = B.crop !== "custom";
+  $("#bFocusWrap").hidden = B.crop === "none" && !(ex && fit === "cover");
+  $("#bCropNote").textContent = B.crop === "none" ? "Photos keep their shape." : "Each photo is trimmed to this shape before resizing. Choose which part to keep."; }
+bChips("#bRot", "rot", syncShape); bChips("#bCrop", "crop", syncShape); bChips("#bFocus", "focus", syncShape);
+["#bFlip", "#bCropW", "#bCropH", "#bExW", "#bExH", "#bFit", "#bPadC"].forEach(id => $(id).addEventListener("input", () => { syncShape(); scheduleBatch(); }));
+$("#bFit").addEventListener("change", () => { syncShape(); scheduleBatch(); });
+$("#bNum").addEventListener("change", () => { $("#bNumWrap").hidden = !$("#bNum").checked; $("#bSuffix").disabled = $("#bNum").checked; renderBatch(); });
+$("#bPrefix").addEventListener("input", () => { $("#bNumNote").textContent = `${slugP()}-001.jpg, ${slugP()}-002.jpg…`; renderBatch(); });
 ["#bLimitN", "#bLimitU"].forEach(id => $(id).addEventListener("input", scheduleBatch)); $("#bLimit").addEventListener("input", () => { $("#bLimitCustom").hidden = $("#bLimit").value !== "custom"; });
 ["#bVal", "#bLimit", "#bQ"].forEach(id => $(id).addEventListener("input", () => { $("#bQOut").textContent = $("#bQ").value + "%"; scheduleBatch(); }));
 $("#bSuffix").addEventListener("change", renderBatch);

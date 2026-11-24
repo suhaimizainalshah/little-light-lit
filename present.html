@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Little Light Lit Present: zooming, interactive presentations</title>
+<meta name="description" content="Make zooming presentations with interactive buttons, pop-ups and your own path. Present full screen or download one HTML file. Free and private.">
+<link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="assets/littlelightlit.css">
+<style>
+body{overflow:hidden}
+.pr{display:grid;grid-template-columns:240px minmax(0,1fr) 280px;height:calc(100vh - 58px)}
+@media (max-width:980px){body{overflow:auto}.pr{grid-template-columns:1fr;height:auto}.cv{height:70vh}}
+.side,.insp{overflow:auto;padding:12px;background:var(--panel,#fff);border-right:1px solid var(--line,#e3e1db)}.insp{border-right:0;border-left:1px solid var(--line,#e3e1db)}
+h2.s{font-size:.78rem;color:var(--muted,#5b616a);margin:14px 0 6px}h2.s:first-child{margin-top:0}
+.path{list-style:none;margin:0;padding:0;display:grid;gap:5px}.path li{display:flex;align-items:center;gap:4px;padding:5px 6px;border:1px solid var(--line,#e3e1db);border-radius:10px;background:var(--paper,#fff);font-size:13px}
+.path li[aria-current=true]{border-color:var(--accent,#c23a22);box-shadow:inset 3px 0 0 var(--accent,#c23a22)}.path li b{width:20px;text-align:center;color:var(--muted,#5b616a)}.path li button.nm{flex:1;min-width:0;text-align:left;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ib{border:1px solid var(--line,#e3e1db);background:transparent;border-radius:7px;width:26px;height:26px;cursor:pointer;color:inherit;font-size:12px;padding:0}.ib:disabled{opacity:.35}
+.cv{position:relative;overflow:hidden;background:var(--soft,#f1efea);touch-action:none}
+.cvbar{position:absolute;z-index:5;left:12px;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;pointer-events:none}.cvbar>*{pointer-events:auto}
+.cvbar .pill{background:var(--panel,#fff);border:1px solid var(--line,#e3e1db);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:650}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+.ef{position:absolute;width:1600px;height:900px;transform-origin:0 0;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.14);overflow:hidden;cursor:move}
+.ef.sel{outline:12px solid #2453d6;outline-offset:6px}.ef .lbl{position:absolute;left:0;bottom:100%;margin-bottom:14px;font:800 44px system-ui;color:var(--muted,#5b616a);white-space:nowrap}
+.ef .num{position:absolute;right:24px;top:20px;width:70px;height:70px;border-radius:50%;background:#2453d6;color:#fff;font:800 36px system-ui;display:grid;place-items:center;z-index:3}
+.ef.off .num{background:#8a8f98}.handle{position:absolute;right:-14px;bottom:-14px;width:44px;height:44px;border-radius:50%;background:#2453d6;border:6px solid #fff;cursor:nwse-resize;z-index:4}
+.fe .pp-item{cursor:move;outline:2px dashed rgba(36,83,214,.0)}.fe .pp-item:hover{outline-color:rgba(36,83,214,.35)}.fe .pp-item.sel{outline:4px solid #2453d6;outline-offset:2px}.fe .ih{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#2453d6;border:4px solid #fff;cursor:nwse-resize;z-index:6}
+.fld{display:grid;gap:3px;margin:6px 0}.fld>span{font-size:12px;font-weight:650;color:var(--muted,#5b616a)}
+.fld input,.fld select,.fld textarea{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line,#e3e1db);border-radius:8px;background:var(--paper,#fff);color:inherit;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px}.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.mini{padding:5px 10px;font-size:12.5px}.hint{font-size:12px;color:var(--muted,#5b616a);margin:4px 0}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin:6px 0}
+.ovl{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}.ovl .box{background:var(--paper,#fff);color:inherit;border-radius:14px;max-width:760px;width:100%;max-height:90vh;overflow:auto}
+.ovl .bar{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line,#e3e1db)}.ovl .in{padding:14px}
+.pp-show{position:fixed;inset:0;z-index:2100;background:#000} /* not ".show": the studio menu uses that name */
+.top #presentBtn{background:#b42e18;border-color:#b42e18;color:#fff}
+code.emb{display:block;white-space:pre-wrap;word-break:break-all;background:var(--soft,#f1efea);padding:10px;border-radius:8px;font-size:12px}
+.start{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}.start button{display:grid;gap:4px;text-align:left;padding:14px;border:1px solid var(--line,#e3e1db);border-radius:12px;background:var(--panel,#fff);font:inherit;color:inherit;cursor:pointer}.start button:hover{border-color:var(--accent,#c23a22)}.start small{color:var(--muted,#5b616a)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./" aria-label="Little Light Lit home"><img src="assets/logo.png" alt="" width="28" height="28"><span>Little Light Lit</span></a>
+  <nav class="modes" aria-label="Studios"><a href="./">Photo</a><a href="./#batch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html">Course</a><a href="motion.html">Motion</a><a href="present.html" aria-current="page">Present</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
+  <span class="spacer"></span>
+  <button class="btn" id="openBtn">Open</button><input type="file" id="openIn" accept=".json,application/json" hidden>
+  <button class="btn" id="saveBtn">Save</button>
+  <button class="btn" id="dlBtn">Download</button><button class="btn" id="pdfBtn">PDF</button>
+  <button class="btn" id="shareBtn">Present online</button>
+  <button class="btn primary" id="presentBtn">▶ Present</button>
+</header>
+<main class="pr">
+  <aside class="side" aria-label="Presentation and path">
+    <label class="fld"><span>Presentation name</span><input id="pTitle"></label>
+    <div class="two"><label class="fld"><span>Canvas colour</span><input type="color" id="pBg"></label><label class="fld"><span>Start with</span><select id="pStart"><option value="first">The first frame</option><option value="overview">The overview</option></select></label></div>
+    <h2 class="s">Path</h2><p class="hint">The order of your presentation. Frames off the path are reached only by buttons.</p>
+    <ol class="path" id="path"></ol>
+    <div class="row"><button class="btn mini" id="addFrame">Add frame</button><button class="btn mini" id="addPptx">Add slides from PowerPoint</button></div><input type="file" id="pptxIn" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden>
+    <h2 class="s" id="offH">Off the path</h2><ol class="path" id="off"></ol>
+  </aside>
+  <section class="cv" id="cv" aria-label="Canvas">
+    <div class="cvbar" id="cvbar"></div>
+    <div id="world"></div>
+  </section>
+  <aside class="insp" id="insp" aria-label="Inspector"></aside>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/littlelightlit-ux.js"></script>
+<script src="assets/nav.js"></script>
+<script src="vendor/jszip/jszip.min.js"></script>
+<script src="assets/present-player.js"></script>
+<script>
+/* Little Light Lit Present editor. The presentation (P) is plain data; assets/present-player.js presents it here and in
+   every download, so what you present is what others see. Everything stays on this device. */
+const $ = s => document.querySelector(s), uid = () => Math.random().toString(36).slice(2, 9), FW = 1600, FH = 900;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toast = (t, ms = 3200) => { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), ms); };
+if (!document.getElementById("pp-css")) { const st = document.createElement("style"); st.id = "pp-css"; st.textContent = LLLPresent.css; document.head.append(st); }
+const DRAFT = "littlelightlit-present-draft";
+let P, fsel = null, isel = null, editing = null, cam = { x: 0, y: 0, k: .2 };
+const frame = id => P.frames.find(f => f.id === id), item = () => editing?.items.find(i => i.id === isel);
+function newFrame(name, x, y, w = 1600, bg = "#ffffff") { return { id: uid(), name, x, y, w, bg, items: [{ id: uid(), kind: "heading", text: name, x: 120, y: 110, w: 1360, h: 160, size: 80, color: "#18191c", align: "left" }] }; }
+function blank() { const f = newFrame("Title", 0, 0); return { title: "Untitled presentation", canvasBg: "#f1efea", frames: [f], path: [f.id] }; }
+function sample() {
+  const big = { id: uid(), name: "Welcome", x: 0, y: 0, w: 4800, bg: "#1b2a49", items: [{ id: uid(), kind: "heading", text: "Our school garden", x: 160, y: 300, w: 1280, h: 180, size: 110, color: "#ffffff" }, { id: uid(), kind: "text", text: "A zooming tour. Use the buttons, or press → to follow the path.", x: 260, y: 500, w: 1080, h: 120, size: 38, color: "#cfd8ea" }] };
+  const menu = { id: uid(), name: "Explore", x: 5400, y: 0, w: 1600, bg: "#ffffff", items: [{ id: uid(), kind: "heading", text: "Choose what to explore", x: 120, y: 90, w: 1360, h: 140, size: 70, color: "#18191c" }] };
+  const topics = [["Plants", "#2f855a", "We grow kangkung, chilli and pandan."], ["Water", "#2453d6", "Rainwater tanks water the garden."], ["Bees", "#b7791f", "Flowers bring pollinators."]].map(([n, c, body], i) => ({ id: uid(), name: n, x: 5400 + i * 1900, y: 1300, w: 1600, bg: "#ffffff", items: [{ id: uid(), kind: "heading", text: n, x: 120, y: 90, w: 1360, h: 140, size: 80, color: c }, { id: uid(), kind: "text", text: body, x: 120, y: 280, w: 900, h: 240, size: 44, color: "#33363c", align: "left" }, { id: uid(), kind: "hotspot", text: "+", x: 1180, y: 330, w: 110, h: 110, size: 60, tooltip: "Click for a fun fact", action: { do: "popup" }, popup: { title: `${n}: a fun fact`, body: i === 0 ? "Pandan leaves can grow up to **one metre** long." : i === 1 ? "One rainy afternoon can fill a **200-litre** tank." : "A single bee visits up to **5,000** flowers a day." } }, { id: uid(), kind: "button", text: "← Back to the menu", x: 120, y: 700, w: 520, h: 110, size: 36, fill: c, color: "#ffffff", action: { do: "goto", target: menu.id } }] }));
+  topics.forEach((t, i) => menu.items.push({ id: uid(), kind: "button", text: t.name, x: 120 + i * 470, y: 380, w: 420, h: 220, size: 52, fill: ["#2f855a", "#2453d6", "#b7791f"][i], color: "#ffffff", radius: 26, action: { do: "goto", target: t.id } }));
+  menu.items.push({ id: uid(), kind: "button", text: "Finish the tour →", x: 1020, y: 720, w: 460, h: 100, size: 34, fill: "#18191c", color: "#ffffff", action: { do: "goto", target: "" } });
+  const end = { id: uid(), name: "Thank you", x: 1600, y: 2900, w: 1600, bg: "#fff4dc", items: [{ id: uid(), kind: "heading", text: "Thank you!", x: 120, y: 300, w: 1360, h: 200, size: 120, color: "#c23a22" }] };
+  menu.items[menu.items.length - 1].action.target = end.id;
+  return { title: "Our school garden", canvasBg: "#e9eef5", frames: [big, menu, ...topics, end], path: [big.id, menu.id, ...topics.map(t => t.id), end.id] };
+}
+let saveT = 0; const changed = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(DRAFT, JSON.stringify(P)); } catch { toast("Too large to keep as a draft in the browser: use Save.", 5000); } }, 400); };
+const download = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+const slug = s => (s || "presentation").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "presentation";
+
+/* ---------- canvas: pan, zoom, move and resize frames ---------- */
+const applyCam = () => { $("#world").style.transform = `translate(${cam.x}px,${cam.y}px) scale(${cam.k})`; };
+function fitAll() { if (!P.frames.length) return; const cv = $("#cv"), x0 = Math.min(...P.frames.map(f => f.x)), y0 = Math.min(...P.frames.map(f => f.y)), x1 = Math.max(...P.frames.map(f => f.x + f.w)), y1 = Math.max(...P.frames.map(f => f.y + f.w * FH / FW)), k = Math.min((cv.clientWidth - 80) / (x1 - x0), (cv.clientHeight - 120) / (y1 - y0)); cam = { k, x: (cv.clientWidth - (x1 - x0) * k) / 2 - x0 * k, y: (cv.clientHeight - (y1 - y0) * k) / 2 - y0 * k + 20 }; applyCam(); }
+function fitFrame(f) { const cv = $("#cv"), h = f.w * FH / FW, k = Math.min((cv.clientWidth - 60) / f.w, (cv.clientHeight - 110) / h); cam = { k, x: (cv.clientWidth - f.w * k) / 2 - f.x * k, y: (cv.clientHeight - h * k) / 2 - f.y * k + 22 }; applyCam(); }
+function drawCanvas() {
+  const w = $("#world"); w.innerHTML = ""; const order = new Map(P.path.map((id, i) => [id, i + 1]));
+  P.frames.forEach(f => { const el = document.createElement("div"); el.className = "ef" + (f.id === fsel ? " sel" : "") + (order.has(f.id) ? "" : " off") + (editing?.id === f.id ? " fe" : ""); el.dataset.id = f.id; el.style.cssText = `left:${f.x}px;top:${f.y}px;transform:scale(${f.w / FW});background:${f.bg}`;
+    if (editing && editing.id !== f.id) el.style.opacity = ".35";
+    if (!editing) el.innerHTML = `<div class="lbl">${esc(f.name)}</div><div class="num" title="${order.has(f.id) ? "Position in the path" : "Off the path"}">${order.get(f.id) || "–"}</div>`;
+    f.items.forEach(it => { const e = LLLPresent.item(it); e.dataset.iid = it.id; if (editing?.id === f.id && it.id === isel) e.classList.add("sel"); el.append(e);
+      if (editing?.id === f.id) { e.onpointerdown = ev => dragItem(ev, f, it, e); e.ondblclick = ev => { ev.stopPropagation(); if (["heading", "text", "button", "shape", "shape-circle"].includes(it.kind)) { const t = prompt("Text", it.text); if (t != null) { it.text = t; changed(); all(); } } }; } });
+    if (editing?.id === f.id) { const it = item(); if (it) { const hd = document.createElement("div"); hd.className = "ih"; hd.style.left = it.x + it.w + "px"; hd.style.top = it.y + it.h + "px"; hd.onpointerdown = ev => resizeItem(ev, it, f); el.append(hd); } }
+    if (!editing) { const hd = document.createElement("div"); hd.className = "handle"; hd.title = "Drag to resize"; hd.style.transform = `scale(${FW / f.w})`; hd.style.transformOrigin = "100% 100%"; hd.onpointerdown = ev => resizeFrame(ev, f); el.append(hd);
+      el.onpointerdown = ev => dragFrame(ev, f, el); el.ondblclick = () => editFrame(f); }
+    w.append(el); });
+  drawBar(); applyCam();
+}
+function dragFrame(ev, f, el) { if (ev.target.classList.contains("handle")) return; ev.preventDefault(); ev.stopPropagation(); const sx = ev.clientX, sy = ev.clientY, ox = f.x, oy = f.y; let moved = false; el.setPointerCapture(ev.pointerId);
+  el.onpointermove = m => { const dx = (m.clientX - sx) / cam.k, dy = (m.clientY - sy) / cam.k; if (Math.abs(dx) + Math.abs(dy) > 4 / cam.k) moved = true; if (moved) { f.x = Math.round(ox + dx); f.y = Math.round(oy + dy); el.style.left = f.x + "px"; el.style.top = f.y + "px"; } };
+  // a second click within 400 ms opens the frame: detected here because each click redraws the canvas
+  el.onpointerup = () => { el.onpointermove = null; fsel = f.id; isel = null; if (moved) { changed(); all(); return; } if (tap.id === f.id && Date.now() - tap.t < 400) { tap = {}; return editFrame(f); } tap = { id: f.id, t: Date.now() }; all(); }; }
+let tap = {};
+function resizeFrame(ev, f) { ev.preventDefault(); ev.stopPropagation(); const sx = ev.clientX, ow = f.w, t = ev.target; t.setPointerCapture(ev.pointerId); t.onpointermove = m => { f.w = Math.max(400, Math.round(ow + (m.clientX - sx) / cam.k)); drawCanvas(); }; t.onpointerup = () => { t.onpointermove = null; changed(); all(); }; }
+function dragItem(ev, f, it, e) { ev.preventDefault(); ev.stopPropagation(); const k = cam.k * f.w / FW, sx = ev.clientX, sy = ev.clientY, ox = it.x, oy = it.y; let moved = false; e.setPointerCapture(ev.pointerId);
+  e.onpointermove = m => { const dx = (m.clientX - sx) / k, dy = (m.clientY - sy) / k; if (Math.abs(dx) + Math.abs(dy) > 3) moved = true; if (moved) { it.x = Math.round(Math.max(-it.w / 2, Math.min(FW - it.w / 2, ox + dx))); it.y = Math.round(Math.max(-it.h / 2, Math.min(FH - it.h / 2, oy + dy))); e.style.left = it.x + "px"; e.style.top = it.y + "px"; } };
+  e.onpointerup = () => { e.onpointermove = null; isel = it.id; if (moved) { changed(); all(); return; }
+    if (tap.id === it.id && Date.now() - tap.t < 400 && ["heading", "text", "button", "shape", "shape-circle", "hotspot"].includes(it.kind)) { tap = {}; const t = prompt("Text", it.text); if (t != null) { it.text = t; changed(); } all(); return; } tap = { id: it.id, t: Date.now() }; all(); }; }
+function resizeItem(ev, it, f) { ev.preventDefault(); ev.stopPropagation(); const k = cam.k * f.w / FW, sx = ev.clientX, sy = ev.clientY, ow = it.w, oh = it.h, t = ev.target; t.setPointerCapture(ev.pointerId); t.onpointermove = m => { it.w = Math.max(40, Math.round(ow + (m.clientX - sx) / k)); it.h = Math.max(40, Math.round(oh + (m.clientY - sy) / k)); if (it.kind === "hotspot") it.h = it.w; drawCanvas(); }; t.onpointerup = () => { t.onpointermove = null; changed(); all(); }; }
+const cv = $("#cv");
+cv.addEventListener("pointerdown", ev => { if (ev.target !== cv && ev.target.id !== "world") return; if (!editing) { fsel = null; } isel = null; all(); const sx = ev.clientX, sy = ev.clientY, ox = cam.x, oy = cam.y; cv.setPointerCapture(ev.pointerId); cv.onpointermove = m => { cam.x = ox + m.clientX - sx; cam.y = oy + m.clientY - sy; applyCam(); }; cv.onpointerup = () => cv.onpointermove = null; });
+cv.addEventListener("wheel", ev => { ev.preventDefault(); const r = cv.getBoundingClientRect(), mx = ev.clientX - r.left, my = ev.clientY - r.top, f = Math.exp(-ev.deltaY * .0015), k = Math.max(.02, Math.min(3, cam.k * f)); cam.x = mx - (mx - cam.x) * k / cam.k; cam.y = my - (my - cam.y) * k / cam.k; cam.k = k; applyCam(); }, { passive: false });
+function editFrame(f) { editing = f; fsel = f.id; isel = null; all(); fitFrame(f); }
+function drawBar() { const b = $("#cvbar"); b.innerHTML = "";
+  if (editing) { b.innerHTML = `<button class="btn mini" data-b="back">← All frames</button><span class="pill">Editing: ${esc(editing.name)}</span>`; [["heading", "Heading"], ["text", "Text"], ["image", "Picture"], ["shape", "Box"], ["shape-circle", "Circle"], ["button", "Button"], ["hotspot", "Hotspot"]].forEach(([k, l]) => b.insertAdjacentHTML("beforeend", `<button class="btn mini" data-add="${k}">+ ${l}</button>`)); }
+  else b.innerHTML = `<button class="btn mini" data-b="fit">Fit all</button><span class="pill">Drag frames to arrange them · drag a corner to resize · double-click to edit · scroll to zoom</span>`;
+  b.onclick = async e => { const x = e.target.closest("[data-b]")?.dataset.b, k = e.target.closest("[data-add]")?.dataset.add; if (x === "back") { editing = null; isel = null; all(); fitAll(); } if (x === "fit") fitAll(); if (k) await addItem(k); }; }
+async function addItem(k) { const f = editing, it = { id: uid(), kind: k, text: { heading: "Heading", text: "Your text", button: "Button", hotspot: "+", shape: "", "shape-circle": "" }[k] ?? "", x: 600, y: 330, w: k === "hotspot" ? 110 : k === "heading" ? 900 : k === "text" ? 700 : 400, h: k === "hotspot" ? 110 : k === "heading" ? 140 : 200, size: k === "heading" ? 72 : k === "hotspot" ? 60 : 40, color: k === "button" ? "#ffffff" : "#18191c", fill: k === "button" ? "#2453d6" : k.startsWith("shape") ? "#f6c744" : "", align: "center" };
+  if (k === "button") it.action = { do: "next" }; if (k === "hotspot") { it.action = { do: "popup" }; it.popup = { title: "More about this", body: "Write the details here." }; it.tooltip = "Click to find out more"; }
+  if (k === "image") { const src = await new Promise(res => { const i = document.createElement("input"); i.type = "file"; i.accept = "image/*"; i.onchange = async () => { const fl = i.files[0]; if (!fl) return res(null); const kind = await LightLitSniff(fl); if (!LightLitPhotoKinds.has(kind)) { toast(LightLitWhyNot(fl.name, kind)); return res(null); } const bmp = await createImageBitmap(fl), sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas"); c.width = bmp.width * sc; c.height = bmp.height * sc; c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", .86)); }; i.click(); }); if (!src) return; it.src = src; it.w = 700; it.h = 450; }
+  f.items.push(it); isel = it.id; changed(); all(); }
+
+/* ---------- path panel ---------- */
+function drawPath() {
+  const p = $("#path"), off = $("#off"); p.innerHTML = ""; off.innerHTML = "";
+  const row = (f, i, inPath) => { const li = document.createElement("li"); li.setAttribute("aria-current", String(f.id === fsel)); li.innerHTML = `<b>${inPath ? i + 1 : "–"}</b><button class="nm" title="Select; double-click to rename">${esc(f.name)}</button>${inPath ? `<button class="ib" data-m="-1" aria-label="Move ${esc(f.name)} earlier" ${i ? "" : "disabled"}>↑</button><button class="ib" data-m="1" aria-label="Move ${esc(f.name)} later" ${i < P.path.length - 1 ? "" : "disabled"}>↓</button>` : ""}<button class="ib" data-e aria-label="Edit ${esc(f.name)}">✎</button>`;
+    li.querySelector(".nm").onclick = () => { fsel = f.id; isel = null; if (editing) editing = f; all(); editing ? fitFrame(f) : fitFrame(f); };
+    li.querySelector(".nm").ondblclick = () => { const n = prompt("Rename frame", f.name); if (n) { f.name = n; changed(); all(); } };
+    li.querySelector("[data-e]").onclick = () => editFrame(f);
+    li.querySelectorAll("[data-m]").forEach(b => b.onclick = () => { const j = i + +b.dataset.m; [P.path[i], P.path[j]] = [P.path[j], P.path[i]]; changed(); all(); });
+    return li; };
+  P.path.forEach((id, i) => { const f = frame(id); if (f) p.append(row(f, i, true)); });
+  const offs = P.frames.filter(f => !P.path.includes(f.id)); offs.forEach(f => off.append(row(f, 0, false))); $("#offH").hidden = !offs.length;
+  $("#pTitle").value = P.title; $("#pBg").value = P.canvasBg; $("#pStart").value = P.startOverview ? "overview" : "first";
+}
+$("#pTitle").oninput = e => { P.title = e.target.value; changed(); }; $("#pBg").oninput = e => { P.canvasBg = e.target.value; $("#cv").style.background = P.canvasBg; changed(); };
+$("#pStart").onchange = e => { P.startOverview = e.target.value === "overview"; changed(); };
+$("#addFrame").onclick = () => { const last = frame(P.path[P.path.length - 1]) || P.frames[P.frames.length - 1], f = newFrame(`Frame ${P.frames.length + 1}`, last ? last.x + last.w + 300 : 0, last ? last.y : 0); P.frames.push(f); P.path.push(f.id); fsel = f.id; changed(); all(); fitFrame(f); };
+
+/* ---------- inspector ---------- */
+function fld(label, val, set, kind = "text", extra = {}) { const w = document.createElement("label"); w.className = "fld"; w.innerHTML = `<span>${esc(label)}</span>`; let e;
+  if (kind === "select") { e = document.createElement("select"); e.innerHTML = extra.options.map(([v, x]) => `<option value="${esc(v)}">${esc(x)}</option>`).join(""); e.value = val ?? ""; } else if (kind === "textarea") { e = document.createElement("textarea"); e.rows = extra.rows || 3; e.value = val ?? ""; } else { e = document.createElement("input"); e.type = kind; e.value = val ?? ""; }
+  e.setAttribute("aria-label", label); // a clean spoken name, not the label plus every option
+  e.addEventListener(kind === "select" ? "change" : "input", () => { set(kind === "number" ? +e.value : e.value); changed(); drawCanvas(); if (extra.re) drawInsp(); if (extra.path) drawPath(); }); w.append(e); return w; }
+const two = (...n) => { const d = document.createElement("div"); d.className = "two"; d.append(...n); return d; };
+const H = t => Object.assign(document.createElement("h2"), { className: "s", textContent: t });
+const btns = (list) => { const r = document.createElement("div"); r.className = "row"; list.forEach(([l, f]) => { const b = document.createElement("button"); b.className = "btn mini"; b.textContent = l; b.onclick = f; r.append(b); }); return r; };
+function drawInsp() {
+  const box = $("#insp"); box.innerHTML = ""; const it = item(), f = frame(fsel);
+  if (editing && it) {
+    box.append(H({ heading: "Heading", text: "Text", image: "Picture", shape: "Box", "shape-circle": "Circle", button: "Button", hotspot: "Hotspot" }[it.kind]));
+    if (it.kind !== "image") box.append(fld("Text", it.text, v => it.text = v, "textarea", { rows: 2 }), two(fld("Text size", it.size, v => it.size = v, "number"), fld("Text colour", it.color || "#18191c", v => it.color = v, "color")));
+    if (it.kind !== "image" && it.kind !== "hotspot") box.append(two(fld("Fill", it.fill || "#ffffff", v => it.fill = v, "color"), fld("Align", it.align || "center", v => it.align = v, "select", { options: [["center", "Centre"], ["left", "Left"]] })), fld("Vertical position", it.valign || "center", v => it.valign = v, "select", { options: [["top", "Top"], ["center", "Middle"], ["bottom", "Bottom"]] }));
+    if (it.kind === "image") box.append(fld("Description for screen readers", it.alt, v => it.alt = v));
+    box.append(H("Interaction"), fld("When clicked", it.action?.do || "none", v => { it.action = { do: v }; if (v === "popup" && !it.popup) it.popup = { title: "", body: "" }; }, "select", { options: [["none", "Nothing"], ["next", "Go to the next frame"], ["prev", "Go back"], ["goto", "Go to a frame…"], ["popup", "Open a pop-up window"], ["url", "Open a web page…"]], re: true }));
+    if (it.action?.do === "goto") box.append(fld("Frame", it.action.target, v => it.action.target = v, "select", { options: [["", "Choose…"], ...P.frames.map(x => [x.id, x.name])] }));
+    if (it.action?.do === "url") box.append(fld("Address (https://…)", it.action.value, v => it.action.value = v));
+    if (it.action?.do === "popup") { it.popup ||= {}; box.append(fld("Pop-up title", it.popup.title, v => it.popup.title = v), fld("Pop-up text (use **bold**)", it.popup.body, v => it.popup.body = v, "textarea")); }
+    box.append(fld("Tooltip on hover or focus (optional)", it.tooltip, v => it.tooltip = v));
+    box.append(btns([["Duplicate", () => { const c = { ...JSON.parse(JSON.stringify(it)), id: uid(), x: it.x + 30, y: it.y + 30 }; editing.items.push(c); isel = c.id; changed(); all(); }], ["Bring forward", () => { const a = editing.items, i = a.indexOf(it); if (i < a.length - 1) [a[i], a[i + 1]] = [a[i + 1], a[i]]; changed(); all(); }], ["Delete", () => { editing.items = editing.items.filter(x => x !== it); isel = null; changed(); all(); }]]));
+    return;
+  }
+  if (f) {
+    const inPath = P.path.includes(f.id);
+    box.append(H("Frame"), fld("Name", f.name, v => f.name = v, "text", { path: true }), two(fld("Background", f.bg, v => f.bg = v, "color"), fld("Size on the canvas", f.w, v => f.w = Math.max(400, v), "number")));
+    const ck = document.createElement("label"); ck.className = "chk"; ck.innerHTML = `<input type="checkbox" ${inPath ? "checked" : ""}> In the path`; ck.querySelector("input").onchange = e => { if (e.target.checked) P.path.push(f.id); else P.path = P.path.filter(x => x !== f.id); changed(); all(); }; box.append(ck);
+    box.append(Object.assign(document.createElement("p"), { className: "hint", textContent: inPath ? "Presenting zooms to this frame in path order. A larger frame zooms out further; a smaller one zooms in." : "Off the path: reach it with a button that goes to it." }));
+    box.append(btns([[editing ? "Back to all frames" : "Edit this frame", () => editing ? (editing = null, all(), fitAll()) : editFrame(f)], ["Duplicate", () => { const c = JSON.parse(JSON.stringify(f)); c.id = uid(); c.name += " copy"; c.x += f.w + 200; c.items.forEach(i => i.id = uid()); P.frames.push(c); if (inPath) P.path.splice(P.path.indexOf(f.id) + 1, 0, c.id); fsel = c.id; changed(); all(); }], ["Delete", () => { if (!confirm(`Delete “${f.name}”?`)) return; P.frames = P.frames.filter(x => x !== f); P.path = P.path.filter(x => x !== f.id); fsel = null; editing = null; changed(); all(); }]]));
+    if (editing) box.append(Object.assign(document.createElement("p"), { className: "hint", textContent: "Add elements from the bar above the frame. Drag to move, drag the blue dot to resize, double-click text to change it." }));
+    return;
+  }
+  box.append(H("Presentation"), Object.assign(document.createElement("p"), { className: "hint", textContent: "Select a frame on the canvas or in the path. Double-click a frame to edit what’s on it. Add buttons that go to any frame to make a menu or a choose-your-path presentation." }));
+}
+function all() { drawPath(); drawCanvas(); drawInsp(); $("#cv").style.background = P.canvasBg; }
+
+/* ---------- present, share, save ---------- */
+function present(at) { const o = document.createElement("div"); o.className = "pp-show"; document.body.append(o); const exit = () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); o.remove(); $("#presentBtn").focus(); };
+  o.requestFullscreen?.().catch(() => {}); LLLPresent.render(o, JSON.parse(JSON.stringify(P)), { onExit: exit, at }); document.addEventListener("fullscreenchange", function f() { if (!document.fullscreenElement && o.isConnected) { o.remove(); } document.removeEventListener("fullscreenchange", f); }); }
+
+/* ---------- Present a PowerPoint: each slide becomes a frame, read on this device ----------
+   Text (titles, bullets and text boxes, with sizes, bold, colours and alignment), shapes, pictures and backgrounds come
+   through, with placeholder positions from the slide layout or master. Charts, SmartArt, tables and animations don't. */
+async function pptxFrames(file) {
+  const zip = await JSZip.loadAsync(await file.arrayBuffer()); if (!zip.file("ppt/presentation.xml")) throw new Error("not a PowerPoint");
+  const read = p => zip.file(p)?.async("string"), xml = t => new DOMParser().parseFromString(t, "application/xml");
+  const NS = { p: "http://schemas.openxmlformats.org/presentationml/2006/main", a: "http://schemas.openxmlformats.org/drawingml/2006/main", r: "http://schemas.openxmlformats.org/officeDocument/2006/relationships" };
+  const q = (el, pre, n) => el ? [...el.getElementsByTagNameNS(NS[pre], n)] : [], q1 = (el, pre, n) => q(el, pre, n)[0] || null, kids = (el, pre, n) => el ? [...el.children].filter(c => c.namespaceURI === NS[pre] && c.localName === n) : [];
+  const rels = async path => { const dir = path.replace(/[^/]+$/, ""), t = await read(dir + "_rels/" + path.split("/").pop() + ".rels"), m = {}; if (t) for (const r of xml(t).getElementsByTagName("Relationship")) m[r.getAttribute("Id")] = new URL(r.getAttribute("Target"), "http://x/" + dir).pathname.slice(1); return m; };
+  const pres = xml(await read("ppt/presentation.xml")), sz = q1(pres, "p", "sldSz"), cx = +sz.getAttribute("cx"), cy = +sz.getAttribute("cy");
+  const order = q(pres, "p", "sldId").map(x => x.getAttributeNS(NS.r, "id")), pr = await rels("ppt/presentation.xml");
+  // fit the slide into the 1600 × 900 frame, centred (4:3 slides get side margins)
+  const k = Math.min(FW / cx, FH / cy), ox0 = (FW - cx * k) / 2, oy0 = (FH - cy * k) / 2, ptPx = k * 12700;
+  const color = el => { const c = q1(el, "a", "srgbClr"); return c ? "#" + c.getAttribute("val") : null; };
+  const xfrm = sp => { const x = q1(sp, "a", "xfrm"), off = q1(x, "a", "off"), ext = q1(x, "a", "ext"); return off && ext ? { x: +off.getAttribute("x"), y: +off.getAttribute("y"), w: +ext.getAttribute("cx"), h: +ext.getAttribute("cy") } : null; };
+  const phKey = sp => { const ph = q1(sp, "p", "ph"); return ph ? (ph.getAttribute("type") || "body") + ":" + (ph.getAttribute("idx") || "") : null; };
+  const toJpeg = async blob => { try { const bmp = await createImageBitmap(blob), sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), c = document.createElement("canvas"); c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .86); } catch { return null; } };
+  const frames = [];
+  for (const [n, rid] of order.entries()) {
+    const sp = pr[rid]; if (!sp) continue; const sx = xml(await read(sp)), sr = await rels(sp), lp = Object.values(sr).find(v => /slideLayout/.test(v)), layout = lp ? xml(await read(lp)) : null;
+    const lay = {}, addFrom = d => { if (d) q(d, "p", "sp").forEach(s2 => { const kk = phKey(s2), x = xfrm(s2); if (kk && x) { lay[kk] ||= x; lay[kk.split(":")[0] + ":"] ||= x; } }); };
+    let st = { title: 0, body: 0, other: 0 }, master = null; addFrom(layout);
+    if (lp) { const mp = Object.values(await rels(lp)).find(v => /slideMaster/.test(v)); if (mp) { master = xml(await read(mp)); addFrom(master); const g = s3 => +q1(q1(q1(master, "p", s3), "a", "lvl1pPr"), "a", "defRPr")?.getAttribute("sz") / 100 || 0; st = { title: g("titleStyle"), body: g("bodyStyle"), other: g("otherStyle") }; } }
+    const items = [], f = { id: uid(), name: "", x: 0, y: 0, w: FW, bg: color(q1(q1(sx, "p", "bg"), "a", "solidFill")) || color(q1(q1(layout, "p", "bg"), "a", "solidFill")) || color(q1(q1(master, "p", "bg"), "a", "solidFill")) || "#ffffff", items };
+    const walk = async (el, ox = 0, oy = 0, fx = 1, fy = 1) => {
+      if (el.localName === "grpSp") { const gx = q1(q1(el, "p", "grpSpPr"), "a", "xfrm"), off = q1(gx, "a", "off"), ext = q1(gx, "a", "ext"), co = q1(gx, "a", "chOff"), ce = q1(gx, "a", "chExt");
+        const sx2 = ext && ce ? +ext.getAttribute("cx") / (+ce.getAttribute("cx") || 1) : 1, sy2 = ext && ce ? +ext.getAttribute("cy") / (+ce.getAttribute("cy") || 1) : 1;
+        const nx = off ? ox + (+off.getAttribute("x") - (co ? +co.getAttribute("x") * sx2 : 0)) * fx : ox, ny = off ? oy + (+off.getAttribute("y") - (co ? +co.getAttribute("y") * sy2 : 0)) * fy : oy;
+        for (const ch of [...el.children]) if (["sp", "pic", "grpSp"].includes(ch.localName)) await walk(ch, nx, ny, fx * sx2, fy * sy2); return; }
+      const spPr = kids(el, "p", "spPr")[0], key = phKey(el), kind = key?.split(":")[0];
+      let b = xfrm(spPr) || (key && (lay[key] || lay[kind + ":"] || (kind === "ctrTitle" && lay["title:"]) || (kind === "subTitle" && lay["body:"]) || (kind === "body" && lay["body:1"]))); if (!b) return;
+      const box = { x: Math.round(ox0 + (ox + b.x * fx) * k), y: Math.round(oy0 + (oy + b.y * fy) * k), w: Math.max(20, Math.round(b.w * fx * k)), h: Math.max(20, Math.round(b.h * fy * k)) };
+      if (el.localName === "pic") { const id = q1(el, "a", "blip")?.getAttributeNS(NS.r, "embed"), path = sr[id]; if (path && zip.file(path)) { const src = await toJpeg(new Blob([await zip.file(path).async("uint8array")])); if (src) items.push({ id: uid(), kind: "image", src, alt: q1(el, "p", "cNvPr")?.getAttribute("descr") || "", ...box }); } return; }
+      const geom = q1(spPr, "a", "prstGeom")?.getAttribute("prst") || "rect", fill = q1(spPr, "a", "noFill") ? null : color(kids(spPr, "a", "solidFill")[0]);
+      const isTitle = /^(title|ctrTitle)$/.test(kind || ""), isBox = q1(el, "p", "cNvSpPr")?.getAttribute("txBox") === "1", shapeText = !key && !isBox;
+      const defSize = isTitle ? (st.title || 40) * (kind === "ctrTitle" ? 1.1 : 1) : kind === "subTitle" ? (st.body || 24) * .75 : key ? (st.body || 22) : (st.other || 18);
+      const paras = q(kids(el, "p", "txBody")[0], "a", "p"), lines = []; let first = null, algn = null;
+      for (const para of paras) { const pPr = q1(para, "a", "pPr"), runs = q(para, "a", "r").map(r => { const rp = q1(r, "a", "rPr"); return { t: q1(r, "a", "t")?.textContent || "", size: +(rp?.getAttribute("sz")) / 100 || defSize, bold: rp?.getAttribute("b") === "1" || isTitle, color: color(rp) }; });
+        const txt = runs.map(r => r.t).join(""); if (!txt.trim()) continue; first ||= runs[0]; algn ||= pPr?.getAttribute("algn");
+        const bullet = q1(pPr, "a", "buChar") || (kind === "body" && !q1(pPr, "a", "buNone")); lines.push((bullet ? "• " : "") + txt); }
+      const text = lines.join("\n"); if (!text && !fill) return;
+      const it = { id: uid(), ...box, text, size: Math.max(10, Math.round((first?.size || defSize) * ptPx)), color: first?.color || "#18191c", weight: first?.bold ? 700 : 400,
+        align: (algn || (kind === "ctrTitle" || kind === "subTitle" || shapeText ? "ctr" : "l")) === "ctr" ? "center" : "left",
+        valign: (() => { const an = q1(kids(el, "p", "txBody")[0], "a", "bodyPr")?.getAttribute("anchor") || (isTitle || shapeText ? "ctr" : "t"); return an === "t" ? "top" : an === "b" ? "bottom" : "center"; })() };
+      if (fill) { it.kind = geom === "ellipse" ? "shape-circle" : "shape"; it.fill = fill; if (geom === "roundRect") it.radius = Math.round(Math.min(box.w, box.h) * .16); }
+      else it.kind = isTitle ? "heading" : "text";
+      if (isTitle && !f.name) f.name = text.split("\n")[0].slice(0, 60);
+      items.push(it);
+    };
+    for (const el of [...(q1(sx, "p", "spTree")?.children || [])]) if (["sp", "pic", "grpSp"].includes(el.localName)) await walk(el);
+    f.name ||= `Slide ${n + 1}`; frames.push(f);
+  }
+  return frames;
+}
+// slides laid out on the canvas in rows of four, after anything already there
+async function importPptx(file, append) {
+  toast("Reading the PowerPoint…", 20000);
+  let frames; try { frames = await pptxFrames(file); } catch { toast("That file isn’t a PowerPoint (.pptx) Present can read. Older .ppt files need saving as .pptx first.", 6500); return; }
+  if (!frames.length) return toast("No slides found in that file.");
+  if (!append) P = { title: file.name.replace(/\.pptx$/i, ""), canvasBg: "#e9eef5", frames: [], path: [] };
+  const y0 = P.frames.length ? Math.max(...P.frames.map(f => f.y + f.w * FH / FW)) + 600 : 0;
+  frames.forEach((f, i) => { f.x = (i % 4) * (FW + 300); f.y = y0 + Math.floor(i / 4) * (FH + 400); P.frames.push(f); P.path.push(f.id); });
+  fsel = frames[0].id; editing = null; changed(); all(); requestAnimationFrame(fitAll);
+  toast(`Added ${frames.length} slide${frames.length > 1 ? "s" : ""} as frames, in order. Charts, SmartArt and animations aren’t brought in. Now add zooming, buttons or pop-ups.`, 7000);
+}
+$("#addPptx").onclick = () => $("#pptxIn").click();
+$("#pptxIn").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (f) importPptx(f, $("#pptxIn").dataset.fresh !== "1"); $("#pptxIn").dataset.fresh = ""; };
+$("#presentBtn").onclick = () => present(Math.max(0, P.path.indexOf(fsel)));
+async function presentHTML() { const player = await (await fetch("assets/present-player.js")).text(), data = JSON.parse(JSON.stringify(P));
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(data.title)}</title><style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#p{position:fixed;inset:0}</style></head><body><div id="p"></div><script>${player.replace(/<\/script/gi, "<\\/script")}<\/script><script>LLLPresent.render(document.getElementById("p"), ${JSON.stringify(data).replace(/</g, "\\u003c")}, { onExit: document.fullscreenElement ? () => document.exitFullscreen() : null });addEventListener("keydown", e => { if (e.key === "f") document.documentElement.requestFullscreen?.(); });<\/script></body></html>`; }
+
+/* ---------- PDF export: each frame drawn on this device as a 16:9 page, with an invisible text layer so the PDF can be
+   searched and copied. Pop-up content, which can't open on paper, goes on a "More details" page. ---------- */
+const PW = 1920, PH = 1080, PT_W = 960, PT_H = 540; // pixels drawn, and the page size in points
+function wrap(ctx, text, maxW) { const out = []; for (const para of String(text).replace(/\*\*/g, "").split("\n")) { let line = ""; for (const w of para.split(/\s+/)) { const tryL = line ? line + " " + w : w; if (ctx.measureText(tryL).width > maxW && line) { out.push(line); line = w; } else line = tryL; } out.push(line); } return out; }
+const loadImg = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+async function drawFrame(f) {
+  const c = document.createElement("canvas"); c.width = PW; c.height = PH; const x = c.getContext("2d"), k = PW / FW, texts = [];
+  x.fillStyle = f.bg || "#ffffff"; x.fillRect(0, 0, PW, PH);
+  for (const it of f.items) {
+    const X = it.x * k, Y = it.y * k, W = it.w * k, Hh = it.h * k, round = it.kind === "hotspot" || it.kind === "shape-circle", r = round ? Math.min(W, Hh) / 2 : (it.radius ?? (it.kind === "button" ? 18 : 0)) * k;
+    const fill = it.kind === "hotspot" ? "rgba(255,255,255,.92)" : it.fill || (it.kind === "button" ? "#2453d6" : "");
+    if (fill) { x.fillStyle = fill; x.beginPath(); round ? x.ellipse(X + W / 2, Y + Hh / 2, W / 2, Hh / 2, 0, 0, Math.PI * 2) : x.roundRect(X, Y, W, Hh, r); x.fill(); }
+    if (it.kind === "image" && it.src) { const im = await loadImg(it.src); if (im) { const s2 = Math.min(W / im.width, Hh / im.height), iw = im.width * s2, ih = im.height * s2; x.drawImage(im, X + (W - iw) / 2, Y + (Hh - ih) / 2, iw, ih); } continue; }
+    const txt = it.kind === "hotspot" ? (it.text || "+") : it.text; if (!txt) continue;
+    const size = (it.size || 40) * k, weight = it.kind === "heading" ? 800 : it.weight || (it.kind === "button" ? 700 : 400);
+    x.font = `${weight} ${size}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; x.fillStyle = it.kind === "hotspot" ? "#c23a22" : it.color || "#18191c"; x.textBaseline = "top";
+    const pad = 12 * k, lines = wrap(x, txt, W - pad * 2), lh = size * 1.25, total = lines.length * lh, left = it.align === "left";
+    const top0 = it.valign === "top" ? Y + pad : it.valign === "bottom" ? Y + Hh - pad - total : Y + (Hh - total) / 2;
+    lines.forEach((ln, i) => { const lw = x.measureText(ln).width, tx = left ? X + pad : X + (W - lw) / 2, ty = top0 + i * lh; x.save(); x.beginPath(); x.rect(X, Y, W, Hh); x.clip(); x.fillText(ln, tx, ty); x.restore(); texts.push({ s: ln, x: tx / PW * PT_W, y: PT_H - (ty + size * .9) / PH * PT_H, size: size / PW * PT_W }); });
+  }
+  return { jpg: c.toDataURL("image/jpeg", .9), texts };
+}
+function detailsPage(rows) { // a plain page listing pop-up titles and text
+  const c = document.createElement("canvas"); c.width = PW; c.height = PH; const x = c.getContext("2d"), texts = []; x.fillStyle = "#ffffff"; x.fillRect(0, 0, PW, PH); x.textBaseline = "top"; let y = 90;
+  const put = (s, size, weight, color, indent = 120) => { x.font = `${weight} ${size}px system-ui, sans-serif`; x.fillStyle = color; for (const ln of wrap(x, s, PW - indent - 120)) { if (y > PH - 80) return; x.fillText(ln, indent, y); texts.push({ s: ln, x: indent / PW * PT_W, y: PT_H - (y + size * .9) / PH * PT_H, size: size / PW * PT_W }); y += size * 1.3; } };
+  put("More details", 64, 800, "#18191c"); y += 20;
+  rows.forEach(r => { const t = r.title || "Pop-up"; put(t.toLowerCase().startsWith(String(r.frame).toLowerCase()) ? t : `${r.frame}: ${t}`, 38, 700, "#2453d6"); put(r.body || "", 32, 400, "#33363c", 150); y += 18; });
+  return { jpg: c.toDataURL("image/jpeg", .9), texts };
+}
+// a small PDF writer: one JPEG image and an invisible text layer (text render mode 3) per page
+function buildPDF(pages, title) {
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0; const push = b => { const u = typeof b === "string" ? enc.encode(b) : b; parts.push(u); len += u.length; };
+  const winAnsi = s => [...s].map(ch => { const cp = ch.codePointAt(0), map = { 8217: 146, 8216: 145, 8220: 147, 8221: 148, 8211: 150, 8212: 151, 8226: 149, 8364: 128, 8230: 133 }; const v = cp < 128 || (cp >= 160 && cp < 256) ? cp : map[cp]; return v == null ? "" : v === 40 || v === 41 || v === 92 ? "\\" + String.fromCharCode(v) : v < 32 || v > 126 ? "\\" + v.toString(8).padStart(3, "0") : String.fromCharCode(v); }).join("");
+  const n = pages.length, pageObj = i => 4 + i * 3; let objs = [];
+  objs[1] = "<< /Type /Catalog /Pages 2 0 R >>"; objs[2] = `<< /Type /Pages /Count ${n} /Kids [${pages.map((_, i) => pageObj(i) + " 0 R").join(" ")}] >>`; objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+  const bin = []; pages.forEach((p, i) => { const id = pageObj(i), jpg = Uint8Array.from(atob(p.jpg.split(",")[1]), ch => ch.charCodeAt(0));
+    const content = `q ${PT_W} 0 0 ${PT_H} 0 0 cm /Im${i} Do Q\nBT 3 Tr\n${p.texts.map(t => `/F1 ${t.size.toFixed(2)} Tf 1 0 0 1 ${t.x.toFixed(2)} ${t.y.toFixed(2)} Tm (${winAnsi(t.s)}) Tj`).join("\n")}\nET`;
+    objs[id] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PT_W} ${PT_H}] /Resources << /XObject << /Im${i} ${id + 2} 0 R >> /Font << /F1 3 0 R >> >> /Contents ${id + 1} 0 R >>`;
+    objs[id + 1] = { stream: enc.encode(content) }; objs[id + 2] = { stream: jpg, dict: `/Type /XObject /Subtype /Image /Width ${PW} /Height ${PH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode` }; });
+  const infoId = objs.length; objs[infoId] = `<< /Title (${winAnsi(title || "Presentation")}) /Producer (Little Light Lit Present) >>`;
+  push("%PDF-1.4\n%\xe2\xe3\xcf\xd3\n");
+  for (let i = 1; i < objs.length; i++) { offs[i] = len; const o = objs[i]; if (o.stream) { push(`${i} 0 obj\n<< ${o.dict || ""} /Length ${o.stream.length} >>\nstream\n`); push(o.stream); push("\nendstream\nendobj\n"); } else push(`${i} 0 obj\n${o}\nendobj\n`); }
+  const xref = len; push(`xref\n0 ${objs.length}\n0000000000 65535 f \n${offs.slice(1).map(o => String(o).padStart(10, "0") + " 00000 n \n").join("")}trailer\n<< /Size ${objs.length} /Root 1 0 R /Info ${infoId} 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts, { type: "application/pdf" });
+}
+$("#pdfBtn").onclick = () => { const offCount = P.frames.filter(f => !P.path.includes(f.id)).length, pops = P.frames.flatMap(f => f.items.filter(i => i.action?.do === "popup").map(i => ({ frame: f.name, ...i.popup })));
+  const o = overlay("Download a PDF", `<p class="hint" style="font-size:13.5px">Each frame becomes a 16:9 page, in path order. Text stays searchable. Buttons and zooming can’t work on paper, so the PDF shows each frame as it looks.</p><label class="chk"><input type="checkbox" id="pdfOff" ${offCount ? "" : "disabled"}> Include frames off the path (${offCount})</label><label class="chk"><input type="checkbox" id="pdfPop" ${pops.length ? "checked" : "disabled"}> Add a “More details” page with pop-up content (${pops.length})</label><div class="row"><button class="btn primary" id="pdfGo">Download PDF</button></div>`);
+  o.querySelector("#pdfGo").onclick = async () => { const btn = o.querySelector("#pdfGo"); btn.disabled = true; btn.textContent = "Making the PDF…";
+    const list = [...P.path.map(frame).filter(Boolean), ...(o.querySelector("#pdfOff").checked ? P.frames.filter(f => !P.path.includes(f.id)) : [])], pages = [];
+    for (const f of list) pages.push(await drawFrame(f)); if (o.querySelector("#pdfPop").checked && pops.length) pages.push(detailsPage(pops));
+    download(buildPDF(pages, P.title), `${slug(P.title)}.pdf`); o.remove(); toast(`PDF saved: ${pages.length} page${pages.length > 1 ? "s" : ""}.`); }; };
+$("#dlBtn").onclick = async () => { download(new Blob([await presentHTML()], { type: "text/html" }), `${slug(P.title)}.html`); toast("Downloaded. Open it in any browser to present: press F for full screen."); };
+function overlay(title, inner) { const o = document.createElement("div"); o.className = "ovl"; o.innerHTML = `<div class="box" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="bar"><b>${esc(title)}</b><span style="flex:1"></span><button class="btn" data-close>Close</button></div><div class="in">${inner}</div></div>`; document.body.append(o); const close = () => { o.remove(); removeEventListener("keydown", k); }, k = e => { if (e.key === "Escape") close(); }; addEventListener("keydown", k); o.querySelector("[data-close]").onclick = close; o.onclick = e => { if (e.target === o) close(); }; o.querySelector("[data-close]").focus(); return o; }
+$("#shareBtn").onclick = () => { const file = `${slug(P.title)}.html`, o = overlay("Present online", `<p>Your presentation is one HTML file, so anyone with a browser can watch it. Nothing is uploaded by Little Light Lit: you choose where it goes.</p><ol class="hint" style="font-size:13.5px;line-height:1.55"><li><b>Download</b> the presentation.</li><li>Put the file online, for example in a GitHub Pages site, Google Sites (as an embedded file) or your school’s website.</li><li>Share its address. Viewers press → to follow your path and click buttons to explore.</li></ol><h3 style="font-size:14px;margin:12px 0 4px">Embed code</h3><code class="emb" id="emb">&lt;iframe src="https://your-site.example/${esc(file)}" title="${esc(P.title)}" style="width:100%;aspect-ratio:16/9;border:0" allowfullscreen loading="lazy"&gt;&lt;/iframe&gt;</code><div class="row"><button class="btn primary" data-a="dl">Download</button><button class="btn" data-a="copy">Copy embed code</button></div>`);
+  o.addEventListener("click", async e => { const a = e.target.closest("[data-a]")?.dataset.a; if (a === "dl") $("#dlBtn").click(); if (a === "copy") { await navigator.clipboard.writeText(o.querySelector("#emb").textContent); toast("Embed code copied"); } }); };
+$("#saveBtn").onclick = () => { download(new Blob([JSON.stringify({ kind: "littlelightlit-present", v: 1, present: P }, null, 1)], { type: "application/json" }), `${slug(P.title)}.present.json`); toast("Saved. Open this file here to keep editing."); };
+$("#openBtn").onclick = () => $("#openIn").click();
+$("#openIn").onchange = async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const d = JSON.parse(await f.text()); if (d.kind !== "littlelightlit-present") throw 0; start(d.present); toast("Presentation opened"); } catch { toast("That file isn’t a Little Light Lit presentation."); } };
+addEventListener("keydown", e => { if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || $(".ovl") || $(".pp-show")) return; if ((e.key === "Delete" || e.key === "Backspace") && editing && item()) { editing.items = editing.items.filter(x => x !== item()); isel = null; changed(); all(); } if (e.key === "Escape" && editing) { editing = null; isel = null; all(); fitAll(); } });
+addEventListener("resize", () => editing ? fitFrame(editing) : fitAll());
+function start(p) { P = p; P.path ||= P.frames.map(f => f.id); fsel = null; isel = null; editing = null; all(); requestAnimationFrame(fitAll); changed(); }
+(() => { let d = null; try { d = JSON.parse(localStorage.getItem(DRAFT) || "null"); } catch {}
+  P = blank(); all(); requestAnimationFrame(fitAll);
+  const o = overlay("Present", `<p>Zooming presentations with interactive buttons, pop-ups and your own path.</p><div class="start">${d ? `<button data-s="draft"><b>Carry on</b><small>“${esc(d.title)}”</small></button>` : ""}<button data-s="blank"><b>Blank</b><small>Start with one frame</small></button><button data-s="sample"><b>Sample tour</b><small>A menu, choose-your-path topics, pop-ups and zooming</small></button><button data-s="pptx"><b>From PowerPoint</b><small>Turn a .pptx into a zooming presentation</small></button>${d ? `<button data-s="discard"><b>Discard draft</b><small>Remove the saved draft</small></button>` : ""}</div>`);
+  o.querySelector("[data-close]").hidden = true;
+  o.addEventListener("click", e => { const s = e.target.closest("[data-s]")?.dataset.s; if (!s) return; if (s === "discard") { if (!confirm("Discard the saved draft?")) return; localStorage.removeItem(DRAFT); o.remove(); start(blank()); toast("Draft discarded"); return; }
+    if (s === "pptx") { o.remove(); start(blank()); $("#pptxIn").dataset.fresh = "1"; $("#pptxIn").click(); return; } o.remove(); start(s === "draft" ? d : s === "sample" ? sample() : blank()); }); })();
+</script>
+</body>
+</html>

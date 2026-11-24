@@ -1,6 +1,6 @@
 # Little Light Lit
 
-**Little Light Lit** is a set of free creative studios for photos, photo strips, designs, video, audio, animation, interactive lessons and courses, 360° media and 3D. Everything runs in your browser: there are no accounts, your files are never uploaded, and the studios work offline once loaded (apart from the downloads noted below).
+**Little Light Lit** is a set of free creative studios for photos, photo strips, designs, video, audio, animation, interactive lessons and courses, animations, zooming presentations, 360° media and 3D. Everything runs in your browser: there are no accounts, your files are never uploaded, and the studios work offline once loaded (apart from the downloads noted below).
 
 ## The studios at a glance
 
@@ -14,8 +14,20 @@
 | **Animate** | `animate.html` | Whiteboard and cartoon explainer videos |
 | **Lessons** | `lesson.html` | Interactive video lessons with questions, like Edpuzzle |
 | **Course** | `course.html` | Interactive courses from blocks, with questions, scenes, animations and software simulations |
+| **Motion** | `motion.html` | Interactive HTML5 animations with a keyframe timeline, scenes and symbols, like Tumult Hype |
+| **Present** | `present.html` | Zooming, interactive presentations with your own path, like Prezi and Genially |
 | **360°** | `360.html` | 360 photos and videos |
 | **3D** | `3d.html` | Simple 3D models, for printing, AR and pictures |
+
+
+### Many photos at once: crop, resize and compress
+Open **Many photos** (or **Crop, resize or compress many photos** on the start screen), add as many photos as you like, and every setting applies to all of them straight away:
+- **Rotate** by 90°, 180° or 270°, and **mirror**.
+- **Crop** to square (1:1), 4:5, 3:2, 4:3, 16:9, 9:16 or a custom ratio, keeping the centre, top, bottom, left or right.
+- **Size:** keep it, longest side, width, height, a percentage, or an **exact size** (such as 1080 × 1080), filling and cropping the edges, fitting inside, fitting with a coloured border, or stretching.
+- **Format and file size:** JPG, WebP or PNG, a quality setting, and an optional limit per file.
+- **Names:** keep them, add “-small”, or number them (class-trip-001.jpg, class-trip-002.jpg…).
+Each photo shows its new size before you download, one by one or all together as a ZIP. Photos never leave your device, and saving removes hidden camera and location data.
 
 ## Photo
 
@@ -123,6 +135,9 @@ Build interactive, responsive courses from blocks, and export them as a web page
 - **Variables:** set in the Course panel, shown in any text with `{{name}}`.
 
 ### Animations
+- **Controlled by scenes:** scene rules can play, pause, restart or jump an animation to a time, so a button can start it.
+- **Easing per keyframe:** smooth, steady, slow down, speed up, overshoot or steps, from each keyframe to the next.
+- **Import from Motion:** bring in a scene made in the Motion studio, with its keyframes and easing (symbols are left out).
 - **Keyframes on a timeline:** move the time slider, then drag an object or edit its position, scale, rotation and opacity to set a keyframe.
 - **Playback:** smooth, steady, slow-down or speed-up easing; looping; playing when scrolled into view; and Play and Replay buttons. It respects the “reduce motion” setting.
 
@@ -140,6 +155,31 @@ Build interactive, responsive courses from blocks, and export them as a web page
 - **Export:** a **single HTML file** that opens in any browser; a **SCORM 1.2** or **SCORM 2004** package that reports score, completion and pass or fail to Moodle, Canvas, Blackboard and other learning platforms; or a **Singapore Student Learning Space (SLS)** package, which sends the score as SLS expects (upload it as an Integrated Scorable Response question, with maximum marks set to the course’s total points, which the export tells you). SLS packages can’t load YouTube.
 - **Saving:** a draft is kept in the browser as you work (**Carry on** or **Discard draft** on the start screen), and **Save** and **Open** keep course files.
 - **Sample course:** a ready-made course showing every kind of block.
+
+## Motion
+Interactive HTML5 animations, like Tumult Hype.
+- **Timeline:** a row for every object, with keyframe diamonds you drag to change their time; click the ruler to move the playhead, double-click a row to add a keyframe, and use the arrow keys on a selected keyframe to nudge it.
+- **Separate tracks for each property:** expand an object’s row (▸) to see Position, Scale, Rotation and Opacity tracks. Dragging sets only position, and changing one value sets only that property, so each can have its own timing; K sets a keyframe for everything. Double-click a track to add a keyframe to it.
+- **Physics:** switch it on for any object, so it falls with gravity, bounces off the stage edges and other objects, and slows with friction. Choose falls and bounces, can be thrown (drag and let go), or fixed (others bounce off it), with bounciness, friction and a starting push. Each scene sets its gravity and whether the edges act as walls. Physics objects follow their scale, rotation and opacity keyframes but not their position ones.
+- **Keyframes:** position, scale, rotation and opacity, set by dragging on the stage or typing values, with easing from each keyframe to the next (smooth, steady, slow down, speed up, overshoot, bounce back or steps).
+- **Scenes:** as many as you like, each with its length, background, transition (cut or fade) and what happens at the end (stop, go to the next scene, loop, or go back to the start). Rename, duplicate and reorder them.
+- **Symbols:** select objects (Shift-click for several) and make a symbol: a reusable animated group with its own looping timeline. Place it again from the Symbols list, and edit it once to change every copy.
+- **Actions:** objects that are clicked or hovered can go to the next, previous or any scene, play, pause, restart, jump to a time, or open a web page. Clickable objects become real buttons that work with a keyboard.
+- **Sizes:** 16:9 video and slides, social posts and stories, web banners (728 × 90), ad rectangles (300 × 250) and link previews (1200 × 630).
+- **Export:** a **web page** (one HTML file that scales to fit any screen), an **embed code** for websites, or a **Course file** to import into Course. Animations respect the “reduce motion” setting.
+- **Keyboard:** Space plays and pauses, K adds a keyframe, Delete removes the selected object.
+
+## Present
+Zooming, interactive presentations, like Prezi and Genially.
+- **Present a PowerPoint:** choose **From PowerPoint** on the start screen, or **Add slides from PowerPoint**, and each slide of a `.pptx` becomes a frame, named after its title and in slide order. Titles, bullets and text boxes (with sizes, bold, colours, alignment and vertical position), shapes, pictures and backgrounds come through, with positions from the slide layout or master; charts, SmartArt, tables and animations don’t. Then add zooming, buttons and pop-ups. It is read on your device; nothing is uploaded.
+- **Canvas and frames:** frames sit on a large canvas. Drag them to arrange them, drag a corner to resize them (a big frame zooms out, a small one zooms in), scroll to zoom and drag the background to pan.
+- **Your path:** set the order with up and down buttons. Frames can be taken off the path, to be reached only through buttons.
+- **Editing a frame:** double-click it to add headings, text, pictures, boxes, circles, buttons and hotspots; drag to move, drag the blue dot to resize, double-click text to change it, and set each element’s alignment and vertical position.
+- **Interactive elements:** buttons and hotspots can go to the next frame, go back, go to any frame (for menus and choose-your-path presentations), open a pop-up window, or open a web page, and anything can show a tooltip on hover or keyboard focus.
+- **Presenting:** full screen, zooming and panning along your path. → or Space moves on, ← goes back, O shows the overview (select a frame to zoom into it), and Esc closes a pop-up or exits.
+- **Sharing:** rename it, download it as one HTML file that presents in any browser, and copy an embed code for presenting online.
+- **PDF:** each frame becomes a 16:9 page in path order, drawn on your device, with searchable text. Optionally include frames off the path, and a “More details” page with pop-up content, since buttons and pop-ups can’t work on paper.
+- **Sample tour:** a ready-made presentation with a menu, choose-your-path topics, pop-ups and zooming.
 
 ## 360°
 - **Open** stitched 360 photos and videos, or stitch raw dual-lens files (for example Samsung Gear 360).
@@ -202,8 +242,8 @@ Bundled in `vendor/` unless noted, and loaded only when needed.
 **About the AGPL library:** while Little Light Lit uses `@imgly/background-removal`, the app as a whole must follow AGPL 3.0 terms, and commercial use needs img.ly’s commercial licence. It is under review for replacement with a permissively licensed, locally bundled alternative.
 
 ## Files
-- **Studio pages:** `index.html`, `photobooth.html`, `design.html`, `video.html`, `audio.html`, `animate.html`, `lesson.html`, `course.html`, `360.html` and `3d.html`.
-- **Course player:** `assets/course-player.js`, which shows courses in Preview and inside every export.
+- **Studio pages:** `index.html`, `photobooth.html`, `design.html`, `video.html`, `audio.html`, `animate.html`, `lesson.html`, `course.html`, `motion.html`, `present.html`, `360.html` and `3d.html`.
+- **Players:** `assets/course-player.js`, `assets/motion-player.js` and `assets/present-player.js`, used in Preview and inside every export, so what you preview is what others see.
 - **Shared code, styles and fonts:** `assets/` (`littlelightlit-ux.js`, `nav.js`, `compact.js`, `labels.js`, `lesson-player.js` and others, `littlelightlit.css` and the fonts).
 - **Libraries:** `vendor/`.
 
