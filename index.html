@@ -271,7 +271,7 @@ a.brand:hover{background:var(--soft)}
 <div class="app">
   <header class="top">
     <a class="brand" href="./" id="homeLink" aria-label="Little Light Lit home">
-      <img src="assets/logo.png" alt="" width="28" height="28">
+      <img src="assets/logo.png" alt="" width="28" height="28" onerror="this.hidden=true">
       <span>Little Light Lit</span>
     </a>
     <nav class="modes" aria-label="Studios"><a href="./" id="navPhoto" aria-current="page">Photo</a><a href="./#batch" id="navBatch" class="m-hide">Many photos</a><a href="photobooth.html">Photo booth</a><a href="design.html">Design</a><a href="video.html">Video</a><a href="audio.html">Audio</a><a href="animate.html">Animate</a><a href="lesson.html">Lessons</a><a href="course.html">Course</a><a href="motion.html">Motion</a><a href="present.html">Present</a><a href="360.html">360°</a><a href="3d.html">3D</a></nav>
@@ -1573,6 +1573,13 @@ addEventListener("keydown", e => {
   else if (e.key === "Enter" && tool === "crop" && !typing && document.activeElement === cropEl) applyCrop();
 });
 })();
+</script>
+<div id="assetsWarn" role="alert" hidden style="position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:9999;max-width:min(620px,94vw);background:#fff4d6;color:#4a3500;border:1px solid #f0c75e;border-radius:12px;padding:10px 14px;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)">
+  <b>Some of Little Light Lit’s files didn’t load.</b> If you opened <code>index.html</code> on its own, open it from the complete folder, or use the website. If the address ends in <code>index.html/</code>, remove the final slash. Reloading with Ctrl+Shift+R (or Cmd+Shift+R) can also help.
+  <button type="button" onclick="this.parentNode.hidden=true" style="margin-left:8px;font:inherit;font-weight:700;border:0;border-radius:8px;padding:3px 10px;cursor:pointer">OK</button></div>
+<script>
+/* if the assets folder can't be reached, say so plainly instead of showing a quietly broken page */
+addEventListener("load", () => { const i = new Image(); i.onerror = () => { document.getElementById("assetsWarn").hidden = false; }; i.src = "assets/logo.png?check=" + Date.now(); });
 </script>
 </body>
 </html>
