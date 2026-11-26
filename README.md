@@ -10,6 +10,7 @@
 | **Photo booth** | `photobooth.html` | Take photo strips with any camera |
 | **Design** | `design.html` | Posts, posters, thumbnails, cards and other layouts |
 | **Video** | `video.html` | Edit videos and slideshows |
+| **Screen & GIF** | `gif.html` | Record your screen with your voice, and turn recordings or any video into GIFs |
 | **Audio** | `audio.html` | Record, edit and clean up sound |
 | **Animate** | `animate.html` | Whiteboard and cartoon explainer videos |
 | **Lessons** | `lesson.html` | Interactive video lessons with questions, like Edpuzzle |
@@ -86,6 +87,16 @@ Each photo is 1200 × 900 pixels, so strips are sharp enough to print. The camer
 - **Remove silences:** choose a pace (Natural, Tight or Very tight) for one clip or every clip; Undo restores everything.
 - **Titles** in five fonts, with fade, pop, slide-up and typewriter animations.
 - **Export:** video (MP4 where supported, otherwise WebM), animated GIF, audio only (M4A or WebM), or a PNG frame.
+
+## Screen & GIF
+Record a **tab**, a **window** or your **whole screen**, with sound from the screen and your **voice**, then download the video or make a GIF.
+- **Your voice:** switch on **Microphone**. A meter checks it before you start ("Speak to test"), and shows your voice while you record. Pause, resume and mute as you go.
+- **Make a GIF** from any part of the recording: **Set start here** and **Set end here** while you watch, then choose the width, the smoothness and whether it loops.
+- **Video to GIF:** turn part of any MP4, WebM or MOV file into a GIF. Open it from the page, or go straight to `gif.html#gif`.
+- **Small, crisp GIFs:** one palette built from the clip's own colours keeps text sharp, and each frame stores only the pixels that changed.
+  GIFs cannot hold sound, so your voice stays in the video.
+- Screen recording needs a computer: phone browsers don't allow it. On a phone, use your phone's own screen recorder, then **Video to GIF**.
+- Everything happens in your browser. Uses gifenc by Matt DesLauriers (MIT licence, `vendor/gifenc/LICENSE.md`), shared with Lassolve.
 
 ## Audio
 - **Open or record:** any audio file, a video’s sound, or the microphone.

@@ -1,7 +1,7 @@
 /* Little Light Lit studio menu: show as many studios as fit, always whole, and move the rest into "More".
    The current studio always stays visible. Recalculates when the window or header changes size. */
 (() => {
-  const DESC = { "./": "Edit photos and make passport photos", "./#batch": "Compress or resize many photos at once", "photobooth.html": "Snap a photo booth strip with your camera", "design.html": "Posts, posters, slides and more", "video.html": "Edit clips, add music and export video", "audio.html": "Edit, clean up and record audio", "animate.html": "Whiteboard and cartoon explainers", "lesson.html": "Interactive video lessons and quizzes", "360.html": "View and edit 360° photos and videos", "3d.html": "Build and export 3D models" };
+  const DESC = { "./": "Edit photos and make passport photos", "./#batch": "Compress or resize many photos at once", "photobooth.html": "Snap a photo booth strip with your camera", "design.html": "Posts, posters, slides and more", "video.html": "Edit clips, add music and export video", "gif.html": "Record your screen and voice, or turn a video into a GIF", "audio.html": "Edit, clean up and record audio", "animate.html": "Whiteboard and cartoon explainers", "lesson.html": "Interactive video lessons and quizzes", "360.html": "View and edit 360° photos and videos", "3d.html": "Build and export 3D models" };
   const css = `
 .modes{overflow:hidden!important}
 .modes a[data-more-hidden]{display:none!important}
